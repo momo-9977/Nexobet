@@ -1342,7 +1342,7 @@ app.patch("/api/admin/views/reset", (req, res) => {
   res.json({ message: "تم تصفير المشاهدات" });
 });
 
-/* Admin users management endpoints */
+/* Admin users management endpoints (ADDED) */
 app.get("/api/admin/users", (req, res) => {
   if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
   const users = readUsers();

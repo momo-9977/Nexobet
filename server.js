@@ -1,10 +1,10 @@
-// server.js (محدث — يتضمن تعديلات: /ad, /edit-ad, banners admin endpoints,
-// per-file size checks for images/video, logout endpoint, admin-compatible endpoints)
+// server.js (محدّث لدعم Postgres مع fallback لملفات JSON كما في الإصدار الأصلي)
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const cors = require("cors");
 const multer = require("multer");
+const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +19,65 @@ const PROFILE_FILE = path.join(DATA_DIR, "profile.json");
 const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
 const STATS_FILE = path.join(DATA_DIR, "stats.json");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
+
+/* ----------------------- Postgres setup (KV store) ----------------------- */
+/**
+ * نهج بسيط: نستخدم جدول kvstore(key TEXT PRIMARY KEY, value JSONB) لتخزين
+ * المستندات الكاملة: ads, users, settings, profile, stats
+ *
+ * - عند التشغيل: نحاول مزامنة DB مع الملفات المحلية (أو العكس) بحيث يعمل السيرفر
+ *   كما قبل لكن بياناتك تُخزن أيضاً في Postgres إن أعددت DATABASE_URL.
+ * - writeJson سيقوم بعمل upsert على جدول kvstore غير متزامن (background).
+ */
+
+const DATABASE_URL = process.env.DATABASE_URL || process.env.PG_CONNECTION || null;
+let pool = null;
+
+if (DATABASE_URL) {
+  pool = new Pool({
+    connectionString: DATABASE_URL,
+    // Railway and some hosts require ssl with rejectUnauthorized false
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
+
+  pool.on("error", (err) => {
+    console.error("Postgres pool error:", err);
+  });
+}
+
+async function ensureKVTable() {
+  if (!pool) return;
+  const createSQL = `
+    CREATE TABLE IF NOT EXISTS kvstore (
+      key TEXT PRIMARY KEY,
+      value JSONB NOT NULL
+    );
+  `;
+  await pool.query(createSQL);
+}
+
+async function kvGet(key) {
+  if (!pool) return null;
+  const r = await pool.query("SELECT value FROM kvstore WHERE key=$1", [key]);
+  if (r.rows.length === 0) return null;
+  return r.rows[0].value;
+}
+
+async function kvSet(key, value) {
+  if (!pool) return;
+  try {
+    await pool.query(
+      `INSERT INTO kvstore(key, value) VALUES($1,$2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      [key, value]
+    );
+  } catch (e) {
+    console.error("kvSet error:", e);
+  }
+}
+
+/* ---------------------- file helpers (existing behaviour) ---------------------- */
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -42,8 +101,33 @@ function readJson(filePath, fallback) {
 }
 
 function writeJson(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+  // write to disk synchronously (preserve original behavior)
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+  } catch (e) {
+    console.error("writeJson file write error:", e);
+  }
+
+  // if DB is configured, also persist asynchronously into kvstore
+  if (pool) {
+    // map filePath to a stable key name
+    let key = null;
+    if (path.resolve(filePath) === path.resolve(ADS_FILE)) key = "ads";
+    else if (path.resolve(filePath) === path.resolve(USERS_FILE)) key = "users";
+    else if (path.resolve(filePath) === path.resolve(SETTINGS_FILE)) key = "settings";
+    else if (path.resolve(filePath) === path.resolve(PROFILE_FILE)) key = "profile";
+    else if (path.resolve(filePath) === path.resolve(STATS_FILE)) key = "stats";
+
+    if (key) {
+      // do not await, run in background
+      kvSet(key, data).catch(err => {
+        console.error("Failed to kvSet:", err);
+      });
+    }
+  }
 }
+
+/* ---------------------- ensure directories + files ---------------------- */
 
 ensureDir(PUBLIC_DIR);
 ensureDir(UPLOADS_DIR);
@@ -101,9 +185,49 @@ ensureFile(STATS_FILE, {
   views: 0
 });
 
-//
-// MIDDLEWARE
-//
+/* ---------------------- إذا كان هناك قاعدة بيانات، نزامنها مع الملفات ---------------------- */
+async function syncDbAndFilesOnStartup() {
+  if (!pool) return;
+
+  try {
+    await ensureKVTable();
+
+    // keys to synchronize
+    const pairs = [
+      { key: "ads", file: ADS_FILE, defaultValue: readJson(ADS_FILE, []) },
+      { key: "users", file: USERS_FILE, defaultValue: readJson(USERS_FILE, []) },
+      { key: "settings", file: SETTINGS_FILE, defaultValue: readJson(SETTINGS_FILE, {}) },
+      { key: "profile", file: PROFILE_FILE, defaultValue: readJson(PROFILE_FILE, {}) },
+      { key: "stats", file: STATS_FILE, defaultValue: readJson(STATS_FILE, { views: 0 }) }
+    ];
+
+    for (const p of pairs) {
+      const dbVal = await kvGet(p.key);
+      if (dbVal !== null && dbVal !== undefined) {
+        // DB has data → overwrite local file with DB (so app uses DB state)
+        try {
+          fs.writeFileSync(p.file, JSON.stringify(dbVal, null, 2), "utf8");
+        } catch (e) {
+          console.error("Error writing file from DB sync:", p.file, e);
+        }
+      } else {
+        // DB empty for this key → write current local file content to DB
+        try {
+          const local = p.defaultValue;
+          await kvSet(p.key, local);
+        } catch (e) {
+          console.error("Error writing local data to DB kv:", e);
+        }
+      }
+    }
+
+    console.log("Postgres KV sync completed.");
+  } catch (e) {
+    console.error("Error during DB <-> file sync:", e);
+  }
+}
+
+/* ---------------------- MIDDLEWARE ---------------------- */
 app.use(
   cors({
     origin: true,
@@ -114,11 +238,7 @@ app.use(
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
-/* ---------------------- إعداد multer ---------------------- */
-/**
- * ضبط حد الحجم العام ليُسمح بفيديو كبير (حتى ~1.1GB).
- * ملاحظة: نحن نقوم أيضاً بفحص أحجام كل ملف بعد الرفع داخل المسارات (images 10MB, video 1GB).
- */
+/* ---------------------- Multer setup (كما في الأصل) ---------------------- */
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, UPLOADS_DIR);
@@ -347,7 +467,7 @@ app.patch("/api/auth/password", (req, res) => {
   res.json({ message: "تم تغيير كلمة السر" });
 });
 
-/* ---------------------- توجيه صفحات بدون امتداد (include /ad and /edit-ad) ---------------------- */
+/* ---------------------- Routes for pages without extension (same as original) ---------------------- */
 
 app.get(/^\/.*\.html$/i, (req, res) => {
   const p = req.path || "";
@@ -533,12 +653,6 @@ app.put("/api/admin/contacts", (req, res) => {
 });
 
 /* ----------------------------- banners endpoints compatible with admin panel ----------------------------- */
-/**
- * GET /api/admin/banners
- * POST /api/admin/banners  (multipart field 'images' or 'image')
- * DELETE /api/admin/banners/:index
- * PUT /api/admin/banners/:index/set-main
- */
 
 app.get("/api/admin/banners", (req, res) => {
   if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
@@ -595,11 +709,7 @@ app.put("/api/admin/banners/:index/set-main", (req, res) => {
   res.json({ message: "تم تعيين البانر كأول بانر", banners: settings.bannerImages });
 });
 
-/* -----------------------------
-  Compatibility / additional banner endpoints (ADDED)
-  - PUT /api/admin/banner  (compat to some admin UI calls)
-  - DELETE /api/settings/banner-images/:index  (compat)
-------------------------------*/
+/* ----------------------------- compat banner endpoints ----------------------------- */
 app.put("/api/admin/banner", upload.array("images", 20), (req, res) => {
   if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
 
@@ -643,7 +753,7 @@ app.get("/api/profile", (req, res) => {
   res.json(profile);
 });
 
-/* ----------------------------- API المستخدمين (تعديل/رفع افاتار...) ----------------------------- */
+/* ----------------------------- API المستخدمين ----------------------------- */
 
 app.get("/api/users", (req, res) => {
   if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
@@ -999,10 +1109,7 @@ app.get("/api/my/ads", (req, res) => {
 /* ----------------------------- API الأدمن ----------------------------- */
 
 app.get("/api/admin/init", (req, res) => {
-  if (!req.isAuthenticated) {
-    return res.status(401).json({ message: "مستخدم غير مصادق" });
-  }
-
+  if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
   const ads = readJson(ADS_FILE, []);
   const profile = readJson(PROFILE_FILE, {});
   const stats = readJson(STATS_FILE, { views: 0 });
@@ -1110,7 +1217,8 @@ app.patch("/api/admin/ads/:id/reject", (req, res) => {
 });
 
 app.post("/api/ads/:id/status", (req, res) => {
-  if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
+  if (!req.isAuthenticated) return res.status(401).json({ message: "خاص الحالة" });
+
   const status = req.body && req.body.status;
   if (!status) return res.status(400).json({ message: "خاص الحالة" });
 
@@ -1123,10 +1231,9 @@ app.post("/api/ads/:id/status", (req, res) => {
   res.json({ message: "تم تحديث حالة الإعلان", ad: ads[idx] });
 });
 
-/* admin: platform and categories already implemented above (PUT /api/settings, PUT /api/admin/platform, etc.) */
-/* For compatibility, add /api/admin/platform and /api/admin/categories wrappers if needed (the earlier code already implemented similar endpoints). */
+/* admin platform/categories endpoints were implemented earlier */
 
-/* additional admin helpers */
+/* admin helpers */
 app.put("/api/admin/platform", upload.single("logo"), (req, res) => {
   if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
 
@@ -1235,13 +1342,7 @@ app.patch("/api/admin/views/reset", (req, res) => {
   res.json({ message: "تم تصفير المشاهدات" });
 });
 
-/* -----------------------------
-  Admin users management endpoints (ADDED)
-  - GET /api/admin/users
-  - PUT /api/admin/users/:id
-  - DELETE /api/admin/users/:id
-  - POST /api/admin/users/:id/password
-------------------------------*/
+/* Admin users management endpoints */
 app.get("/api/admin/users", (req, res) => {
   if (!req.isAuthenticated) return res.status(401).json({ message: "مستخدم غير مصادق" });
   const users = readUsers();
@@ -1301,8 +1402,19 @@ app.use((err, req, res, next) => {
   });
 });
 
-/* ----------------------------- تشغيل السيرفر ----------------------------- */
+/* ----------------------------- تشغيل السيرفر (مع المزامنة إلى DB عند الحاجة) ----------------------------- */
 
-app.listen(PORT, () => {
-  console.log(`Server khdam f http://localhost:${PORT}`);
-});
+(async function start() {
+  try {
+    if (pool) {
+      console.log("Postgres detected -- syncing with local JSON files...");
+      await syncDbAndFilesOnStartup();
+    }
+  } catch (e) {
+    console.error("Startup DB sync error:", e);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server khdam f http://localhost:${PORT}`);
+  });
+})();

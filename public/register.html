@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>سمسار — إنشاء حساب</title>
+  <style>
+    :root{
+      --bg:#08101d; --card:rgba(255,255,255,0.06);
+      --muted:#94a3b8; --text:#f8fafc; --accent:#2563eb;
+      --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#08101d,#0c1524);font-family:Arial, sans-serif;color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px}
+    .panel{width:100%;max-width:520px;background:var(--card);border-radius:16px;padding:22px;box-shadow:0 18px 40px rgba(0,0,0,0.35)}
+    h2{margin:0 0 6px;font-size:26px}
+    p.lead{margin:0 0 14px;color:var(--muted)}
+    .field{margin-bottom:12px;display:flex;flex-direction:column;gap:6px}
+    label{font-weight:700;color:#e6eef8;font-size:13px}
+    input{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);outline:none}
+    input::placeholder{color:var(--muted)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{width:100%;padding:12px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),#3b82f6);color:#fff}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+    .muted{color:var(--muted);font-size:13px}
+    .error{color:var(--danger);font-size:13px;display:none;margin-top:6px}
+    .message{display:none;padding:10px;border-radius:8px;margin-bottom:12px}
+    .message.ok{background:rgba(16,185,129,0.08);color:#86efac}
+    .message.err{background:rgba(239,68,68,0.06);color:#fecaca}
+    @media (max-width:640px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="panel" role="main" aria-labelledby="title">
+    <h2 id="title">إنشاء حساب جديد</h2>
+    <p class="lead">دخل معلوماتك باش تقدر تنشر وتراسل أصحاب الإعلانات.</p>
+
+    <div id="msg" class="message" role="status" aria-live="polite"></div>
+
+    <form id="form">
+      <div class="row">
+        <div class="field">
+          <label for="fullName">الاسم الكامل</label>
+          <input id="fullName" name="name" type="text" placeholder="مثال: محمد أمين" required />
+        </div>
+        <div class="field">
+          <label for="phone">رقم الهاتف</label>
+          <input id="phone" name="phone" type="tel" placeholder="06XXXXXXXX" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">البريد الإلكتروني</label>
+        <input id="email" name="email" type="email" placeholder="example@email.com" required />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="password">كلمة المرور</label>
+          <input id="password" name="password" type="password" placeholder="أدخل كلمة المرور" required minlength="6" />
+        </div>
+        <div class="field">
+          <label for="confirm">تأكيد كلمة المرور</label>
+          <input id="confirm" name="confirm" type="password" placeholder="أعد كتابة كلمة المرور" required minlength="6" />
+        </div>
+      </div>
+
+      <div id="passErr" class="error">كلمتا المرور غير متطابقتين أو قصيرة</div>
+
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="submitBtn" class="btn primary" type="submit">تسجيل الحساب</button>
+        <a class="btn ghost" href="/login" role="button">سجل الدخول</a>
+      </div>
+
+      <p style="margin-top:12px" class="muted">بمواصلة التسجيل كتوافق على شروط الخدمة.</p>
+    </form>
+  </div>
+
+<script>
+  (function(){
+    const form = document.getElementById('form');
+    const passErr = document.getElementById('passErr');
+    const msgEl = document.getElementById('msg');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function showMessage(text, ok=true){
+      msgEl.style.display = 'block';
+      msgEl.className = 'message ' + (ok ? 'ok' : 'err');
+      msgEl.textContent = text;
+    }
+    function hideMessage(){ msgEl.style.display='none'; msgEl.textContent=''; }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      hideMessage();
+      passErr.style.display = 'none';
+
+      const name = document.getElementById('fullName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+
+      if(password.length < 6 || password !== confirm){
+        passErr.style.display = 'block';
+        return;
+      }
+
+      const payload = { name, phone, email, password };
+
+      // منع النقر المتكرر
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'جاري الإرسال...';
+
+      try{
+        let res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+
+        // fallback: لو register مش موجود نجرب login (بعض السيرفرات عندهم login فقط)
+        if(res.status === 404){
+          console.warn('/api/auth/register not found, trying /api/auth/login');
+          res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({ email, password })
+          });
+        }
+
+        const data = await res.json().catch(()=>({}));
+
+        if(res.ok){
+          showMessage(data.message || 'تم التسجيل بنجاح — غادي توجّه للصفحة الرئيسية', true);
+          setTimeout(()=> window.location.href = '/', 1200);
+        } else {
+          showMessage(data.message || ('خطأ: ' + res.status), false);
+        }
+
+        // debug hint: افتح Network tab وتأكد من Set-Cookie فـ response headers إذا بغيت الكوكي يخدم
+        console.log('server response', res.status, data);
+      }catch(err){
+        console.error(err);
+        showMessage('وقّع مشكل فالاتصال مع السيرفر', false);
+      }finally{
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'تسجيل الحساب';
+      }
+    });
+  })();
+</script>
+</body>
+</html>

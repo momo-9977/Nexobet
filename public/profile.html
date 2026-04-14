@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>بروفايل — Le Marché</title>
+  <style>
+    :root{
+      --bg-0:#071024; --bg-1:#081426;
+      --card-bg:rgba(255,255,255,0.03);
+      --card-border:rgba(255,255,255,0.04);
+      --text:#e6eef8; --muted:#9aa8c2;
+      --accent:#2ea3ff; --accent-2:#60a5fa;
+      --success:#34d399; --danger:#ef4444; --shadow:0 12px 30px rgba(3,6,23,0.6);
+
+      --diamond-size-desktop:64px;
+      --diamond-size-mobile:52px;
+      --diamond-gap-desktop:64px;
+      --diamond-gap-mobile:30px;
+      --nav-bottom-offset:calc(18px + env(safe-area-inset-bottom,0px));
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:
+      radial-gradient(circle at 10% 10%, rgba(46,163,255,0.06), transparent 12%),
+      linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 100%); color:var(--text); -webkit-font-smoothing:antialiased;}
+
+    .page{max-width:1180px;margin:20px auto;padding:18px;}
+
+    .profile-row { display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .profile-left { display:flex; gap:14px; align-items:center; min-width:0; }
+    .avatar-wrap{position:relative; width:96px; height:96px; flex-shrink:0;}
+    .avatar{
+      width:100%; height:100%; border-radius:16px; overflow:hidden; display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2)); font-weight:800; color:#02253a; font-size:34px; cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease; border:1px solid rgba(255,255,255,0.04);
+    }
+    .avatar:hover{ transform:translateY(-4px); box-shadow:0 12px 30px rgba(3,8,23,0.5) }
+    .avatar img{ width:100%; height:100%; object-fit:cover; display:block; border-radius:12px; }
+    .avatar input{ display:none; }
+    .avatar-badge{ position:absolute; bottom:-6px; left:-6px; transform:rotate(45deg); background:linear-gradient(135deg,var(--accent-2),var(--accent)); color:white; font-weight:800; padding:8px 10px; border-radius:8px; font-size:12px; box-shadow:0 8px 22px rgba(3,8,23,0.45); }
+
+    .profile-meta h2{margin:0;font-size:18px}
+    .profile-meta p{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .profile-details{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.6}
+
+    .actions { display:flex; gap:10px; align-items:center; flex-shrink:0; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer; border:none; text-decoration:none; color:white }
+    .btn.primary { background:linear-gradient(135deg,var(--accent),var(--accent-2)); box-shadow:var(--shadow) }
+    .btn.ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--text) }
+
+    .card { background:var(--card-bg); border-radius:12px; padding:0; margin-bottom:16px; border:1px solid var(--card-border); box-shadow:var(--shadow); overflow:hidden; }
+    .panel-header {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px 16px; cursor:pointer; user-select:none; background:linear-gradient(180deg, rgba(255,255,255,0.005), rgba(255,255,255,0.01));
+      border-bottom:1px solid rgba(255,255,255,0.02);
+    }
+    .panel-header h3{margin:0;font-size:15px;color:var(--text);font-weight:800}
+    .panel-header .chev{ color:var(--muted); transition:transform .2s ease; }
+    .panel-body{ padding:14px; border-top:0; background:transparent; transition:height .22s ease, opacity .18s ease; }
+    .panel-hidden { height:0;padding-top:0;padding-bottom:0; opacity:0; overflow:hidden; }
+    .panel-open { opacity:1; }
+
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start}
+    .full{grid-column:1/-1}
+    label{display:block;margin-bottom:6px;font-weight:700;color:var(--text);font-size:13px}
+    input[type="text"], input[type="email"], input[type="password"]{
+      width:100%; padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03); background:rgba(0,0,0,0.22); color:var(--text); outline:none; font-size:14px;
+    }
+    input[readonly]{ opacity:0.75; background:rgba(0,0,0,0.12); cursor:default }
+    .small-note{font-size:12px;color:var(--muted);margin-top:6px}
+
+    .ads-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .ad-card { background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01)); border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.03); color:var(--text); box-shadow:0 8px 22px rgba(3,8,23,0.45); position:relative }
+    .ad-image { width:100%; height:160px; object-fit:cover; display:block; background:#0b1220 }
+    .ad-content { padding:12px }
+    .ad-title { font-size:16px; margin:6px 0; font-weight:800; color:var(--text) }
+    .ad-desc { color:var(--muted); font-size:13px; line-height:1.6; min-height:44px }
+    .ad-meta { display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:8px; color:var(--muted) }
+
+    .ad-actions { position:absolute; top:12px; left:12px; display:flex; gap:10px; align-items:center; z-index:30; }
+    .action-diamond{ width:46px;height:46px; transform:rotate(45deg); border-radius:10px; display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04); cursor:pointer; box-shadow:0 8px 22px rgba(3,8,23,0.45); }
+    .action-diamond .inner{ transform:rotate(-45deg); display:inline-flex; align-items:center; justify-content:center; width:36px;height:36px;border-radius:8px; }
+    .action-diamond.edit .inner{ background:linear-gradient(135deg,#10b981,#059669); color:white; }
+    .action-diamond.del .inner{ background:linear-gradient(135deg,#ef4444,#f97316); color:white; }
+
+    .empty { padding:22px; border-radius:10px; text-align:center; color:var(--muted); border:1px dashed rgba(255,255,255,0.03) }
+
+    .nav-floating{ position:fixed; bottom:var(--nav-bottom-offset); left:50%; transform:translateX(-50%); display:flex; gap:var(--diamond-gap-desktop); align-items:center; z-index:140; pointer-events:auto; padding:6px; }
+    .nav-diamond{ --sz: var(--diamond-size-desktop); width:var(--sz); height:var(--sz); transform:rotate(45deg); display:inline-flex; align-items:center; justify-content:center; border-radius:10px; box-shadow:0 10px 26px rgba(3,8,23,0.6); cursor:pointer; text-decoration:none; transition:transform .14s ease, box-shadow .14s ease; border:1px solid rgba(255,255,255,0.04); background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); backdrop-filter: blur(6px); position:relative; padding:6px; }
+    .nav-diamond.premium{ background:linear-gradient(135deg,#a78bfa,#f472b6); box-shadow:0 12px 30px rgba(164,92,255,0.22); border:1px solid rgba(255,255,255,0.06) }
+    .nav-diamond .icon{ transform:rotate(-45deg); display:inline-flex; align-items:center; justify-content:center; color:var(--text); font-size:20px; width:44px;height:44px;border-radius:8px }
+    .nav-diamond:hover{ transform:translateY(-8px) rotate(45deg); box-shadow:0 18px 34px rgba(3,8,23,0.75) }
+
+    @media (max-width:900px){
+      .ads-grid{ grid-template-columns:1fr }
+      .row{grid-template-columns:1fr}
+      .profile-row{flex-direction:column; align-items:flex-start}
+      .actions{ order:0; margin-top:8px }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="msg" class="msg" style="display:none; color:var(--text); margin-bottom:12px;"></div>
+
+    <div class="profile-row">
+      <div class="profile-left">
+        <div class="avatar-wrap">
+          <label class="avatar" id="avatarBtn" title="تغيير صورة البروفايل" for="avatarInput">
+            <img id="avatarImg" src="" alt="avatar" style="display:none">
+            <span id="avatarFallback">S</span>
+          </label>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" />
+          <div class="avatar-badge">تغيير</div>
+        </div>
+
+        <div class="profile-meta">
+          <h2 id="userName">اسم المستخدم</h2>
+          <p id="userEmail">email@example.com</p>
+          <div class="profile-details">
+            <div id="userPhone">الهاتف: -</div>
+            <div id="joinedAt" style="margin-top:6px;color:var(--muted);font-size:12px">انضم: -</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="/post-ad" class="btn primary" id="postAdBtn">نشر إعلان</a>
+        <button id="logoutBtn" class="btn ghost" style="color:var(--text); border-color:rgba(255,255,255,0.04)">تسجيل الخروج</button>
+      </div>
+    </div>
+
+    <section class="card" id="accordionCard">
+      <div class="panel" id="panelPersonalWrap">
+        <div class="panel-header" data-target="personal">
+          <h3>المعلومات الشخصية</h3>
+          <div class="chev" aria-hidden="true">▾</div>
+        </div>
+        <div class="panel-body" id="personalBody">
+          <form id="personalForm">
+            <div class="row">
+              <div>
+                <label for="nameInput">الاسم الكامل</label>
+                <input id="nameInput" type="text" readonly />
+              </div>
+              <div>
+                <label for="emailInput">البريد الإلكتروني</label>
+                <input id="emailInput" type="email" readonly />
+              </div>
+
+              <div>
+                <label for="phoneInput">الهاتف</label>
+                <input id="phoneInput" type="text" />
+              </div>
+
+              <div>
+                <label style="visibility:hidden">زر</label>
+                <div style="display:flex;gap:8px; justify-content:flex-start; align-items:center">
+                  <button id="saveProfileBtn" class="btn primary" type="submit">حفظ التغييرات</button>
+                </div>
+              </div>
+            </div>
+            <div class="small-note" style="margin-top:10px">الاسم والبريد لا يمكن تغييره من هنا. يمكن تعديل الهاتف فقط.</div>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel" id="panelPwdWrap">
+        <div class="panel-header" data-target="password">
+          <h3>تغيير كلمة المرور</h3>
+          <div class="chev" aria-hidden="true">▾</div>
+        </div>
+        <div class="panel-body panel-hidden" id="passwordBody">
+          <form id="passwordForm">
+            <div class="row">
+              <div>
+                <label for="currentPwd">كلمة المرور الحالية</label>
+                <input id="currentPwd" type="password" />
+              </div>
+              <div>
+                <label for="newPwd">كلمة المرور الجديدة</label>
+                <input id="newPwd" type="password" />
+              </div>
+
+              <div class="full">
+                <label for="confirmPwd">تأكيد كلمة المرور</label>
+                <input id="confirmPwd" type="password" />
+              </div>
+
+              <div class="full" style="display:flex; gap:8px; margin-top:10px">
+                <button id="changePwdBtn" class="btn primary" type="submit">تغيير كلمة المرور</button>
+                <button id="cancelPwdBtn" class="btn ghost" type="button">إلغاء</button>
+              </div>
+            </div>
+            <div class="small-note" style="margin-top:10px">ادخل كلمة المرور الحالية ثم الجديدة لتحديثها.</div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h3 style="padding:14px 16px 0 16px">إعلاناتي</h3>
+      <div id="adsContainer" class="ads-grid" style="margin:12px"></div>
+      <div id="adsEmpty" class="empty" style="display:none; margin:12px">لم تقم بنشر أي إعلان بعد.</div>
+    </section>
+  </div>
+
+  <nav class="nav-floating" aria-label="التنقل">
+    <a class="nav-diamond" href="/" title="الرئيسية" aria-label="الرئيسية"><span class="icon" aria-hidden="true">🏠</span></a>
+    <a class="nav-diamond" href="/categories" title="الأقسام" aria-label="الأقسام"><span class="icon" aria-hidden="true">◫</span></a>
+    <a class="nav-diamond premium" href="/post-ad" title="نشر إعلان" aria-label="نشر إعلان"><span class="icon" aria-hidden="true">＋</span></a>
+    <a class="nav-diamond" href="/profile" title="بروفايل" aria-label="بروفايل"><span class="icon" aria-hidden="true">👤</span></a>
+  </nav>
+
+  <script>
+    // Helper utilities
+    const qs = s => document.querySelector(s);
+    const qsa = s => Array.from(document.querySelectorAll(s));
+    function showMsg(t, time=3000){ const el = qs('#msg'); el.textContent = t; el.style.display='block'; setTimeout(()=> el.style.display='none', time); }
+    function apiOpts(method='GET', body=null){ const opts = { method, credentials: 'include', headers: {} }; if (body && !(body instanceof FormData)) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); } else if (body instanceof FormData) { opts.body = body; } return opts; }
+
+    // Auth guard — يمنع الوصول إن لم يكن المستخدم مسجلاً
+    async function requireAuth(){
+      try {
+        const res = await fetch('/api/auth/me', apiOpts());
+        if (!res.ok) {
+          // غير مسجّل => أعد التوجيه إلى صفحة الدخول
+          window.location.href = '/login';
+          return null;
+        }
+        const u = await res.json();
+        return u;
+      } catch (e) {
+        // عند فشل غير متوقع — أعِد التوجيه إلى صفحة الدخول
+        console.error('auth check failed', e);
+        window.location.href = '/login';
+        return null;
+      }
+    }
+
+    // عناصر
+    const avatarInput = qs('#avatarInput');
+    const avatarImg = qs('#avatarImg');
+    const avatarFallback = qs('#avatarFallback');
+    const avatarBtn = qs('#avatarBtn');
+
+    const nameInput = qs('#nameInput');
+    const emailInput = qs('#emailInput');
+    const phoneInput = qs('#phoneInput');
+    const saveProfileBtn = qs('#saveProfileBtn');
+
+    const currentPwd = qs('#currentPwd');
+    const newPwd = qs('#newPwd');
+    const confirmPwd = qs('#confirmPwd');
+
+    const adsContainer = qs('#adsContainer');
+    const adsEmpty = qs('#adsEmpty');
+
+    // accordion behaviour
+    qsa('.panel-header').forEach(h => {
+      h.addEventListener('click', () => {
+        const target = h.dataset.target;
+        const body = (target === 'personal') ? qs('#personalBody') : qs('#passwordBody');
+        const open = !body.classList.contains('panel-hidden');
+        qs('#personalBody').classList.add('panel-hidden'); qs('#personalBody').classList.remove('panel-open');
+        qs('#passwordBody').classList.add('panel-hidden'); qs('#passwordBody').classList.remove('panel-open');
+        qsa('.panel-header .chev').forEach(c => c.style.transform = 'rotate(0deg)');
+        if (!open) {
+          body.classList.remove('panel-hidden'); body.classList.add('panel-open'); h.querySelector('.chev').style.transform = 'rotate(180deg)';
+        } else { h.querySelector('.chev').style.transform = 'rotate(0deg)'; }
+      });
+    });
+    // open personal by default
+    qs('.panel-header[data-target="personal"]').click();
+
+    // تحميل بيانات المستخدم والإعلانات (يُستدعى بعد requireAuth)
+    async function loadProfileAndAds(){
+      try {
+        const uRes = await fetch('/api/auth/me', apiOpts());
+        if (uRes.ok) {
+          const u = await uRes.json();
+          qs('#userName').textContent = u.name || 'مستخدم';
+          qs('#userEmail').textContent = u.email || '';
+          qs('#userPhone').textContent = 'الهاتف: ' + (u.phone || '-');
+          qs('#joinedAt').textContent = 'انضم: ' + (u.joinedAt ? new Date(u.joinedAt).toLocaleDateString() : '-');
+
+          nameInput.value = u.name || '';
+          emailInput.value = u.email || '';
+          phoneInput.value = u.phone || '';
+
+          if (u.avatar) { avatarImg.src = u.avatar; avatarImg.style.display='block'; avatarFallback.style.display='none'; } else { avatarImg.style.display='none'; avatarFallback.textContent = (u.name||'S').slice(0,1).toUpperCase(); avatarFallback.style.display='block'; }
+        } else {
+          // إذا صار هنا، الحارس لم يعمل — أعد التوجيه
+          window.location.href = '/login';
+          return;
+        }
+
+        const res = await fetch('/api/my/ads', apiOpts());
+        if (!res.ok) {
+          if (res.status === 401) { adsContainer.innerHTML = ''; adsEmpty.textContent = 'يجب تسجيل الدخول لعرض إعلاناتك.'; adsEmpty.style.display = ''; return; }
+          throw new Error('فشل جلب الإعلانات');
+        }
+        const ads = await res.json();
+        renderAds(ads);
+      } catch (e) {
+        console.error(e);
+        showMsg('حدث خطأ أثناء التحميل');
+      }
+    }
+
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    function renderAds(ads){
+      adsContainer.innerHTML = '';
+      if (!ads || !ads.length) { adsEmpty.style.display = ''; return; } else { adsEmpty.style.display = 'none'; }
+      ads.forEach(ad => {
+        const card = document.createElement('article'); card.className='ad-card';
+        const img = document.createElement('img'); img.className='ad-image'; img.src = (ad.images && ad.images[0]) ? ad.images[0] : '/uploads/default.png'; img.alt = escapeHtml(ad.title || 'إعلان');
+        const content = document.createElement('div'); content.className='ad-content';
+        const title = document.createElement('div'); title.className='ad-title'; title.textContent = ad.title || 'بدون عنوان';
+        const desc = document.createElement('div'); desc.className='ad-desc'; desc.textContent = (ad.description || '').slice(0,120);
+        const meta = document.createElement('div'); meta.className='ad-meta'; const price = document.createElement('div'); price.textContent = ad.price ? (ad.price + ' د.م') : ''; const city = document.createElement('div'); city.textContent = ad.city || '';
+        meta.appendChild(price); meta.appendChild(city);
+        content.appendChild(title); content.appendChild(desc); content.appendChild(meta);
+
+        const actionsWrap = document.createElement('div'); actionsWrap.className='ad-actions';
+        const editA = document.createElement('a'); editA.className='action-diamond edit'; editA.href = '/edit-ad?id=' + encodeURIComponent(ad.id || (ad.ref || '')); editA.title='تعديل الإعلان';
+        editA.innerHTML = `<span class="inner" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l3-1 11-11 2 2L8 22l-5 0zM20.7 7.3l-2-2 1.4-1.4a1 1 0 0 1 1.4 0l.6.6a1 1 0 0 1 0 1.4L20.7 7.3z" fill="white"/></svg></span>`;
+        actionsWrap.appendChild(editA);
+        const delBtn = document.createElement('button'); delBtn.className='action-diamond del'; delBtn.title='حذف الإعلان';
+        delBtn.innerHTML = `<span class="inner" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6M10 6V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+        delBtn.addEventListener('click', async (ev) => {
+          ev.preventDefault();
+          if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
+          try {
+            const resp = await fetch('/api/ads/' + encodeURIComponent(ad.id || (ad.ref || '')), apiOpts('DELETE'));
+            if (!resp.ok) throw new Error('delete failed');
+            showMsg('تم حذف الإعلان');
+            await loadProfileAndAds();
+          } catch (err) { console.error(err); showMsg('فشل الحذف'); }
+        });
+        actionsWrap.appendChild(delBtn);
+
+        card.appendChild(img); card.appendChild(actionsWrap); card.appendChild(content);
+        adsContainer.appendChild(card);
+      });
+    }
+
+    // avatar upload: preview + POST to server
+    avatarInput.addEventListener('change', async (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      avatarImg.src = url; avatarImg.style.display='block'; avatarFallback.style.display='none';
+      const fd = new FormData(); fd.append('avatar', f);
+      try {
+        const res = await fetch('/api/auth/avatar', apiOpts('POST', fd));
+        if (!res.ok) { showMsg('فشل رفع الصورة'); return; }
+        const data = await res.json();
+        if (data && data.url) { avatarImg.src = data.url; avatarImg.style.display='block'; avatarFallback.style.display='none'; showMsg('تم تحديث الصورة'); } else { showMsg('تم رفع الصورة (قد تحتاج تحديث الصفحة)'); }
+      } catch (e) { console.error(e); showMsg('خطأ عند رفع الصورة'); }
+    });
+    avatarBtn.addEventListener('click', ()=> avatarInput.click());
+
+    // save personal
+    qs('#personalForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const payload = { phone: phoneInput.value || '' };
+      try {
+        const res = await fetch('/api/auth/me', apiOpts('PUT', payload));
+        if (!res.ok) { const txt = await res.text().catch(()=>null); showMsg('فشل حفظ البيانات'); console.error('save profile failed', res.status, txt); return; }
+        showMsg('تم حفظ البيانات'); await loadProfileAndAds();
+      } catch (e) { console.error(e); showMsg('خطأ أثناء الحفظ'); }
+    });
+
+    // change password
+    qs('#passwordForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const cur = currentPwd.value || '', nw = newPwd.value || '', cf = confirmPwd.value || '';
+      if (!cur || !nw || !cf) { showMsg('يرجى ملء جميع الحقول'); return; }
+      if (nw !== cf) { showMsg('كلمة المرور الجديدة غير متطابقة'); return; }
+      try {
+        const res = await fetch('/api/auth/change-password', apiOpts('POST', { currentPassword: cur, newPassword: nw }));
+        if (!res.ok) { const txt = await res.text().catch(()=>null); showMsg('فشل تغيير كلمة المرور'); console.error('pwd change failed', res.status, txt); return; }
+        showMsg('تم تغيير كلمة المرور'); currentPwd.value = newPwd.value = confirmPwd.value = '';
+      } catch (e) { console.error(e); showMsg('حدث خطأ أثناء تغيير كلمة المرور'); }
+    });
+    qs('#cancelPwdBtn').addEventListener('click', (e) => { e.preventDefault(); currentPwd.value = newPwd.value = confirmPwd.value = ''; });
+
+    // logout: ينهي الجلسة ثم يعيد التوجيه لصفحة الدخول
+    qs('#logoutBtn').addEventListener('click', async (ev) => {
+      ev.preventDefault();
+      try {
+        const res = await fetch('/api/auth/logout', apiOpts('POST'));
+        // حتى لو لم تنجح الاستجابة نعيد التوجيه لتأمين UX
+        // نمسح أي بيانات محلية
+        try { localStorage.clear(); sessionStorage.clear(); } catch(e){}
+        window.location.href = '/login';
+      } catch (e) {
+        console.error(e);
+        try { localStorage.clear(); sessionStorage.clear(); } catch(e){}
+        window.location.href = '/login';
+      }
+    });
+
+    // init: أولاً تحقق من الدخول، إن OK حمل الصفحة
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await requireAuth();
+      if (!user) return; // سيتم إعادة التوجيه داخل requireAuth
+      // الآن نحمّل بيانات البروفايل والإعلانات
+      loadProfileAndAds();
+    });
+  </script>
+</body>
+</html>

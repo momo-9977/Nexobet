@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نشر إعلان — Le Marché</title>
+  <style>
+    :root{
+      --bg-0:#071024; --bg-1:#081426;
+      --card-bg:rgba(255,255,255,0.03);
+      --card-border:rgba(255,255,255,0.04);
+      --text:#e6eef8; --muted:#9aa8c2;
+      --accent:#2ea3ff; --accent-2:#60a5fa;
+      --shadow:0 12px 30px rgba(3,6,23,0.6);
+
+      /* NAV spacing (مطابق الصفحات الأخرى) */
+      --diamond-size-desktop:64px;
+      --diamond-size-mobile:52px;
+      --diamond-gap-desktop:64px;
+      --diamond-gap-mobile:30px;
+      --nav-bottom-offset:calc(18px + env(safe-area-inset-bottom,0px));
+
+      --page-max:1180px;
+
+      /* file limits */
+      --max-image-bytes:10485760; /* 10MB */
+      --max-video-bytes:1073741824; /* 1GB */
+      --max-images:3;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+    body.postad-page{
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(46,163,255,0.06), transparent 12%),
+        linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 100%);
+      padding-bottom:160px; /* for floating nav */
+    }
+
+    .container{ max-width:var(--page-max); margin:18px auto; padding:18px; }
+
+    .card{
+      background:var(--card-bg);
+      border:1px solid var(--card-border);
+      border-radius:12px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+
+    /* hero/banner slider */
+    .hero-slider { position:relative; height:260px; border-radius:12px; overflow:hidden; background:#0f172a; border:1px solid rgba(255,255,255,0.03); }
+    .hero-slide { position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity .45s ease; background-size:cover; background-position:center; display:flex; align-items:center; }
+    .hero-slide.active { opacity:1; pointer-events:auto; }
+    .hero-slide::after { content:""; position:absolute; inset:0; background: linear-gradient(90deg, rgba(6,12,24,0.12), rgba(6,12,24,0.62)); }
+    .hero-slide-content { position:absolute; left:22px; bottom:28px; z-index:4; color:var(--text); max-width:66%; }
+    .hero-mini-badge { display:inline-flex; align-items:center; gap:8px; background: rgba(255,255,255,0.06); padding:8px 12px; border-radius:999px; font-weight:800; color:var(--text); margin-bottom:10px; font-size:13px; }
+    .hero-slide-content h2 { margin:0 0 6px; font-size:20px; color:var(--text); font-weight:800; }
+    .hero-slide-content p { margin:0; color:var(--muted); font-size:13px; }
+
+    .hero-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:5; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.06); color:white; font-size:20px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .18s; }
+    .hero-slider:hover .hero-arrow { opacity:1; }
+    .hero-arrow.prev { right:14px; }
+    .hero-arrow.next { left:14px; }
+    .hero-dots { position:absolute; bottom:12px; right:18px; z-index:6; display:flex; gap:8px; }
+    .hero-dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.32); border:none; cursor:pointer; transition:all .25s; }
+    .hero-dot.active { width:28px; border-radius:999px; background:white; }
+
+    .section-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px }
+    .section-head h1{ font-size:20px; margin:0; color:var(--text) }
+    .section-sub{ color:var(--muted); margin:0; font-size:13px }
+
+    form.post-form{ display:grid; grid-template-columns:1fr 340px; gap:16px; align-items:start }
+    @media (max-width:980px){ form.post-form{ grid-template-columns:1fr } }
+
+    .left-col{ display:flex; flex-direction:column; gap:12px }
+    .right-col{ display:flex; flex-direction:column; gap:12px }
+
+    label.form-label{ display:block; margin-bottom:6px; color:var(--muted); font-weight:700; font-size:13px }
+    input[type="text"], input[type="number"], input[type="email"], textarea, select{
+      width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03);
+      background:rgba(0,0,0,0.24); color:var(--text); outline:none; font-size:14px; box-sizing:border-box;
+    }
+    textarea{ min-height:140px; resize:vertical; line-height:1.5 }
+
+    /* category overlay: black text inside light pill for visibility */
+    .category-label-pill{
+      display:inline-block; background:rgba(255,255,255,0.9); color:#0b1220; padding:6px 10px; border-radius:999px; font-weight:800; font-size:14px;
+    }
+
+    .small-note{ color:var(--muted); font-size:13px; margin-top:6px }
+
+    /* styled dropzones */
+    .dropzone{
+      border:2px dashed rgba(255,255,255,0.06);
+      border-radius:12px;
+      padding:12px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    }
+    .dropzone .dz-info{ flex:1; min-width:180px; color:var(--muted); font-size:13px }
+    .dropzone .dz-btn{ background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:800 }
+    .files-preview{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
+    .file-thumb{ width:96px; height:96px; border-radius:10px; overflow:hidden; background:#0b1220; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.03); position:relative }
+    .file-thumb img{ width:100%; height:100%; object-fit:cover }
+    .file-remove { position:absolute; top:6px; left:6px; background:rgba(0,0,0,0.5); color:#fff; border-radius:6px; padding:2px 6px; font-size:12px; cursor:pointer }
+    .file-meta{ font-size:12px; color:var(--muted); text-align:center; padding:6px }
+
+    .submit-row{ display:flex; gap:10px; align-items:center; justify-content:flex-start; margin-top:6px }
+    .btn-primary{ background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; border:none; padding:12px 16px; font-weight:800; border-radius:10px; cursor:pointer }
+    .btn-muted{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; cursor:pointer }
+
+    .meta-box{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01)); border-radius:10px; padding:12px; border:1px solid rgba(255,255,255,0.03) }
+    .muted{ color:var(--muted) }
+
+    /* NAV floating diamonds (match other pages) */
+    .nav-floating{
+      position:fixed; bottom:var(--nav-bottom-offset); left:50%; transform:translateX(-50%); display:flex;
+      gap:var(--diamond-gap-desktop); align-items:center; z-index:140; pointer-events:auto; padding:6px;
+    }
+    .nav-diamond{
+      --sz: var(--diamond-size-desktop);
+      width:var(--sz); height:var(--sz); transform:rotate(45deg);
+      display:inline-flex; align-items:center; justify-content:center; border-radius:10px;
+      box-shadow:0 10px 26px rgba(3,8,23,0.6); cursor:pointer; text-decoration:none; transition:transform .14s ease, box-shadow .14s ease;
+      border:1px solid rgba(255,255,255,0.04);
+      background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(6px); position:relative; padding:6px;
+    }
+    .nav-diamond.premium{ background:linear-gradient(135deg,#a78bfa,#f472b6); box-shadow:0 12px 30px rgba(164,92,255,0.22); border:1px solid rgba(255,255,255,0.06) }
+    .nav-diamond .icon{ transform:rotate(-45deg); display:inline-flex; align-items:center; justify-content:center; color:var(--text); font-size:20px; width:44px;height:44px;border-radius:8px }
+    .nav-diamond:hover{ transform:translateY(-8px) rotate(45deg); box-shadow:0 18px 34px rgba(3,8,23,0.75) }
+
+    @media (max-width:700px){
+      .nav-floating{ gap:var(--diamond-gap-mobile); bottom:calc(12px + env(safe-area-inset-bottom,0px)); }
+      .nav-diamond{ --sz: var(--diamond-size-mobile); width:var(--sz); height:var(--sz) }
+    }
+
+    .error { color:#ffb4b4; background:rgba(255,80,80,0.06); border:1px solid rgba(255,80,80,0.12); padding:8px 10px; border-radius:8px; margin-top:8px }
+  </style>
+</head>
+<body class="postad-page">
+  <div class="container">
+    <!-- header -->
+    <div class="section-head card">
+      <div>
+        <h1>نشر إعلان جديد</h1>
+        <p class="section-sub">املأ بيانات الإعلان بدقة — الصور والفيديو يساعدان في بيع أسرع</p>
+      </div>
+      <div class="muted">الإعلان يخضع لمراجعة الأدمن قبل الظهور</div>
+    </div>
+
+    <!-- banner slider -->
+    <div class="card">
+      <div class="hero-slider" id="bannerSlider">
+        <div id="heroSlideTrack" class="hero-slide-track"></div>
+        <button class="hero-arrow prev" id="heroPrevBtn" aria-label="السابق">‹</button>
+        <button class="hero-arrow next" id="heroNextBtn" aria-label="التالي">›</button>
+        <div class="hero-dots" id="heroDots"></div>
+      </div>
+    </div>
+
+    <!-- form -->
+    <div class="card">
+      <form id="postAdForm" class="post-form" autocomplete="off" novalidate>
+        <div class="left-col">
+          <div>
+            <label class="form-label">العنوان</label>
+            <input name="title" id="title" type="text" placeholder="مثال: هاتف سامسونج جالكسي S21 حالة جيدة" required />
+          </div>
+
+          <div>
+            <label class="form-label">الوصف</label>
+            <textarea name="description" id="description" placeholder="صف المنتج، الحالة، التفاصيل المهمة..." required></textarea>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="flex:1;min-width:160px">
+              <label class="form-label">الثمن (د.م)</label>
+              <input name="price" id="price" type="number" min="0" placeholder="مثال: 1200" required />
+            </div>
+
+            <div style="width:180px">
+              <label class="form-label">المدينة</label>
+              <input name="city" id="city" type="text" placeholder="الدار البيضاء" />
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">التصنيف</label>
+            <select name="category" id="categorySelect" required>
+              <option value="">اختر القسم</option>
+              <option value="phones">الهواتف</option>
+              <option value="cars">السيارات</option>
+              <option value="homes">العقارات</option>
+              <option value="furniture">الأثاث</option>
+              <option value="other">أخرى</option>
+            </select>
+
+            <div id="otherCategoryWrap" style="display:none;margin-top:8px">
+              <label class="form-label">اذكر القسم الخاص</label>
+              <input type="text" id="otherCategoryInput" placeholder="مثال: إلكترونيات أخرى" />
+            </div>
+          </div>
+
+          <!-- صور -->
+          <div>
+            <label class="form-label">صور الإعلان (حتى 3 صور — كل صورة ≤ 10MB)</label>
+            <div class="dropzone" id="imagesDropzone">
+              <div class="dz-info">
+                <div>اسحب وأسقط الصور هنا أو اضغط لاختيارها</div>
+                <div class="small-note">مسموح حتى 3 صور. صيغ: jpeg, png, webp</div>
+              </div>
+              <div>
+                <button type="button" class="dz-btn" id="pickImagesBtn">اختر الصور</button>
+                <input id="imagesInput" name="images" type="file" accept="image/*" multiple style="display:none" />
+              </div>
+            </div>
+            <div class="files-preview" id="imagesPreview"></div>
+            <div id="imagesError" class="error" style="display:none"></div>
+          </div>
+
+          <!-- فيديو -->
+          <div>
+            <label class="form-label">فيديو (اختياري — حتى 1GB)</label>
+            <div class="dropzone" id="videoDropzone">
+              <div class="dz-info">
+                <div>اسحب وأسقط الفيديو هنا أو اضغط لاختياره</div>
+                <div class="small-note">مسموح فيديو واحد كحد أقصى. الحجم الأقصى 1GB.</div>
+              </div>
+              <div>
+                <button type="button" class="dz-btn" id="pickVideoBtn">اختر الفيديو</button>
+                <input id="videoInput" name="video" type="file" accept="video/*" style="display:none" />
+              </div>
+            </div>
+            <div class="files-preview" id="videoPreview"></div>
+            <div id="videoError" class="error" style="display:none"></div>
+          </div>
+
+          <div class="submit-row">
+            <button type="submit" class="btn-primary">نشر الإعلان</button>
+            <button type="button" id="resetFormBtn" class="btn-muted">إعادة تعيين الحقول</button>
+            <div id="formStatus" class="muted" style="margin-left:8px"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT COL owner info only (no "منشور بواسطة" ولا خيارات إضافية) -->
+
+  <!-- Floating navigation (diamond) -->
+  <nav class="nav-floating" aria-label="التنقل">
+    <a class="nav-diamond" href="/" title="الرئيسية" aria-label="الرئيسية">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond" href="/categories" title="الأقسام" aria-label="الأقسام">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond premium" href="/post-ad" title="نشر إعلان" aria-label="نشر إعلان">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond" href="/profile" title="بروفايل" aria-label="بروفايل">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="3" stroke="currentColor" stroke-width="1.4"/></svg>
+      </span>
+    </a>
+  </nav>
+
+  <script>
+    // ----------------- HERO/SLIDER logic -----------------
+    let heroIndex = 0;
+    let heroTimer = null;
+
+    function buildHeroSlides(images, title = '', desc = '') {
+      const track = document.getElementById('heroSlideTrack');
+      const dots = document.getElementById('heroDots');
+      const slides = (images && images.length) ? images.map((img,i)=>({
+        title: title || '',
+        description: desc || '',
+        badge: `بانر ${i+1}`,
+        image: img
+      })) : [{ title: '', description: '', badge: 'مرحباً', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop' }];
+
+      track.innerHTML = slides.map((s, idx) => `
+        <div class="hero-slide ${idx===0?'active':''}" style="background-image:url('${s.image.replace(/'/g,"\\'")}')">
+          <div class="hero-slide-content">
+            <div class="hero-mini-badge">${s.badge}</div>
+            <h2>${s.title || ''}</h2>
+            <p>${s.description || ''}</p>
+          </div>
+        </div>
+      `).join('');
+
+      dots.innerHTML = slides.map((_, idx) => `<button class="hero-dot ${idx===0?'active':''}" onclick="goToHeroSlide(${idx})"></button>`).join('');
+      window.__heroLen = slides.length;
+      heroIndex = 0;
+    }
+
+    function updateHeroVisuals() {
+      const slides = document.querySelectorAll('.hero-slide');
+      const dots = document.querySelectorAll('.hero-dot');
+      slides.forEach((el,i)=> el.classList.toggle('active', i===heroIndex));
+      dots.forEach((el,i)=> el.classList.toggle('active', i===heroIndex));
+    }
+    function nextHeroSlide(){ if(!window.__heroLen) return; heroIndex=(heroIndex+1)%window.__heroLen; updateHeroVisuals(); }
+    function prevHeroSlide(){ if(!window.__heroLen) return; heroIndex=(heroIndex-1+window.__heroLen)%window.__heroLen; updateHeroVisuals(); }
+    function goToHeroSlide(i){ heroIndex=i; updateHeroVisuals(); restartHeroAuto(); }
+    function startHeroAuto(){ clearInterval(heroTimer); heroTimer=setInterval(()=> nextHeroSlide(), 4500); }
+    function restartHeroAuto(){ startHeroAuto(); }
+    window.goToHeroSlide = goToHeroSlide;
+
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#heroNextBtn')) { nextHeroSlide(); restartHeroAuto(); }
+      if (e.target.closest('#heroPrevBtn')) { prevHeroSlide(); restartHeroAuto(); }
+    });
+
+    // load banner images from /api/settings (if available)
+    async function initBanner() {
+      try{
+        const r = await fetch('/api/settings', { credentials: 'include' });
+        if (!r.ok) { buildHeroSlides([], 'مرحبا بك', ''); startHeroAuto(); return; }
+        const s = await r.json();
+        const imgs = Array.isArray(s.bannerImages) ? s.bannerImages : [];
+        const title = s.bannerTitle || '';
+        const desc = s.bannerDescription || '';
+        buildHeroSlides(imgs, title, desc);
+        startHeroAuto();
+      }catch(e){
+        console.warn('banner load failed', e);
+        buildHeroSlides([], 'مرحبا', '');
+        startHeroAuto();
+      }
+    }
+    initBanner();
+
+    // ----------------- FILE handling + validation -----------------
+    const MAX_IMAGE_BYTES = Number(getComputedStyle(document.documentElement).getPropertyValue('--max-image-bytes')) || 10485760;
+    const MAX_VIDEO_BYTES = Number(getComputedStyle(document.documentElement).getPropertyValue('--max-video-bytes')) || 1073741824;
+    const MAX_IMAGES = Number(getComputedStyle(document.documentElement).getPropertyValue('--max-images')) || 3;
+
+    const imagesInput = document.getElementById('imagesInput');
+    const imagesPreview = document.getElementById('imagesPreview');
+    const imagesError = document.getElementById('imagesError');
+    const pickImagesBtn = document.getElementById('pickImagesBtn');
+    const imagesDropzone = document.getElementById('imagesDropzone');
+
+    const videoInput = document.getElementById('videoInput');
+    const videoPreview = document.getElementById('videoPreview');
+    const videoError = document.getElementById('videoError');
+    const pickVideoBtn = document.getElementById('pickVideoBtn');
+    const videoDropzone = document.getElementById('videoDropzone');
+
+    let imageObjectURLs = [];
+
+    function clearImagePreviews(){
+      imagesPreview.innerHTML = '';
+      imageObjectURLs.forEach(url => URL.revokeObjectURL(url));
+      imageObjectURLs = [];
+    }
+    function clearVideoPreview(){
+      videoPreview.innerHTML = '';
+    }
+
+    // pick buttons open file inputs
+    pickImagesBtn.addEventListener('click', ()=> imagesInput.click());
+    pickVideoBtn.addEventListener('click', ()=> videoInput.click());
+
+    // drag & drop for images
+    ['dragenter','dragover'].forEach(ev => {
+      imagesDropzone.addEventListener(ev, e => { e.preventDefault(); imagesDropzone.style.borderColor='rgba(46,163,255,0.6)'; });
+    });
+    ['dragleave','drop'].forEach(ev => {
+      imagesDropzone.addEventListener(ev, e => { e.preventDefault(); imagesDropzone.style.borderColor='rgba(255,255,255,0.06)'; });
+    });
+    imagesDropzone.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      if(!dt) return;
+      const files = Array.from(dt.files).filter(f => f.type.startsWith('image/'));
+      if(files.length) {
+        const dt2 = new DataTransfer();
+        Array.from(imagesInput.files || []).forEach(f => dt2.items.add(f));
+        files.forEach(f => dt2.items.add(f));
+        imagesInput.files = dt2.files;
+        imagesInput.dispatchEvent(new Event('change'));
+      }
+    });
+
+    imagesInput.addEventListener('change', ()=> {
+      clearImagePreviews();
+      imagesError.style.display = 'none';
+      const files = Array.from(imagesInput.files).slice(0, MAX_IMAGES);
+      if(files.length === 0) return;
+      const tooLarge = files.filter(f => f.size > MAX_IMAGE_BYTES);
+      if(tooLarge.length > 0){
+        imagesError.style.display = '';
+        imagesError.textContent = `بعض الصور أكبر من 10 ميغابايت، الرجاء اختيار صور أصغر.`;
+        imagesInput.value = '';
+        return;
+      }
+      if(files.length > MAX_IMAGES){
+        imagesError.style.display = '';
+        imagesError.textContent = `مسموح فقط ${MAX_IMAGES} صور كحد أقصى.`;
+        imagesInput.value = '';
+        return;
+      }
+      files.forEach((f, idx) => {
+        const url = URL.createObjectURL(f);
+        imageObjectURLs.push(url);
+        const div = document.createElement('div'); div.className='file-thumb';
+        const img = document.createElement('img'); img.src = url; img.alt = f.name;
+        const rem = document.createElement('div'); rem.className='file-remove'; rem.textContent='✕';
+        rem.title='إزالة هذه الصورة';
+        rem.addEventListener('click', ()=> {
+          const dt = new DataTransfer();
+          Array.from(imagesInput.files).forEach((file, i) => { if(i !== idx) dt.items.add(file); });
+          imagesInput.files = dt.files;
+          div.remove();
+        });
+        div.appendChild(img); div.appendChild(rem);
+        imagesPreview.appendChild(div);
+      });
+    });
+
+    // drag & drop for video
+    ['dragenter','dragover'].forEach(ev => {
+      videoDropzone.addEventListener(ev, e => { e.preventDefault(); videoDropzone.style.borderColor='rgba(46,163,255,0.6)'; });
+    });
+    ['dragleave','drop'].forEach(ev => {
+      videoDropzone.addEventListener(ev, e => { e.preventDefault(); videoDropzone.style.borderColor='rgba(255,255,255,0.06)'; });
+    });
+    videoDropzone.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      if(!dt) return;
+      const files = Array.from(dt.files).filter(f => f.type.startsWith('video/'));
+      if(files.length) {
+        const dt2 = new DataTransfer();
+        // keep only first video
+        dt2.items.add(files[0]);
+        videoInput.files = dt2.files;
+        videoInput.dispatchEvent(new Event('change'));
+      }
+    });
+
+    videoInput.addEventListener('change', ()=> {
+      clearVideoPreview();
+      videoError.style.display = 'none';
+      const f = videoInput.files[0];
+      if(!f) return;
+      if(f.size > MAX_VIDEO_BYTES){
+        videoError.style.display = '';
+        videoError.textContent = `حجم الفيديو أكبر من 1 جيجابايت. الرجاء اختيار فيديو أصغر.`;
+        videoInput.value = '';
+        return;
+      }
+      const div = document.createElement('div'); div.className='file-thumb';
+      const info = document.createElement('div'); info.className='file-meta';
+      info.innerHTML = `<div style="font-size:20px">🎬</div><div style="font-size:12px">${(f.size/1024/1024).toFixed(1)} MB</div>`;
+      const rem = document.createElement('div'); rem.className='file-remove'; rem.textContent='✕';
+      rem.addEventListener('click', ()=> { videoInput.value = ''; div.remove(); });
+      div.appendChild(info); div.appendChild(rem);
+      videoPreview.appendChild(div);
+    });
+
+    // ----------------- other form behaviour -----------------
+    const categorySelect = document.getElementById('categorySelect');
+    const otherWrap = document.getElementById('otherCategoryWrap');
+    const otherInput = document.getElementById('otherCategoryInput');
+
+    categorySelect.addEventListener('change', ()=> {
+      if(categorySelect.value === 'other'){
+        otherWrap.style.display = '';
+        otherInput.required = true;
+      } else {
+        otherWrap.style.display = 'none';
+        otherInput.required = false;
+      }
+    });
+
+    document.getElementById('resetFormBtn').addEventListener('click', ()=>{
+      document.getElementById('postAdForm').reset();
+      clearImagePreviews();
+      clearVideoPreview();
+      otherWrap.style.display = 'none';
+      imagesError.style.display = 'none';
+      videoError.style.display = 'none';
+      document.getElementById('formStatus').textContent = '';
+    });
+
+    // populate owner fields from /api/auth/me if logged
+    (async function fillUser(){
+      try{
+        const r = await fetch('/api/auth/me', { credentials: 'include' });
+        if(!r.ok) return;
+        const u = await r.json();
+        if(u.name){ document.getElementById('ownerName').value = u.name; }
+        if(u.email) document.getElementById('ownerEmail').value = u.email;
+        if(u.phone) document.getElementById('ownerPhone').value = u.phone;
+      }catch(e){}
+    })();
+
+    // ----------------- submit handler with final validation -----------------
+    document.getElementById('postAdForm').addEventListener('submit', async (ev)=>{
+      ev.preventDefault();
+      imagesError.style.display = 'none';
+      videoError.style.display = 'none';
+      const statusEl = document.getElementById('formStatus');
+      statusEl.textContent = '';
+
+      // basic client validation
+      const files = Array.from(imagesInput.files || []);
+      if(files.length > MAX_IMAGES){ imagesError.style.display=''; imagesError.textContent=`مسموح فقط ${MAX_IMAGES} صور كحد أقصى.`; return; }
+      const bigImg = files.find(f => f.size > MAX_IMAGE_BYTES);
+      if(bigImg){ imagesError.style.display=''; imagesError.textContent = `الملف "${bigImg.name}" أكبر من 10MB.`; return; }
+
+      const v = videoInput.files[0];
+      if(v && v.size > MAX_VIDEO_BYTES){ videoError.style.display=''; videoError.textContent='حجم الفيديو أكبر من 1GB.'; return; }
+
+      // build formdata
+      const fd = new FormData();
+      fd.append('title', document.getElementById('title').value.trim());
+      fd.append('description', document.getElementById('description').value.trim());
+      fd.append('price', document.getElementById('price').value || '');
+      fd.append('city', document.getElementById('city').value.trim() || '');
+      let category = categorySelect.value;
+      if(category === 'other') category = otherInput.value.trim() || 'other';
+      fd.append('category', category);
+
+      fd.append('ownerName', document.getElementById('ownerName').value || '');
+      fd.append('ownerEmail', document.getElementById('ownerEmail').value || '');
+      fd.append('ownerPhone', document.getElementById('ownerPhone').value || '');
+
+      // append images
+      Array.from(files).slice(0, MAX_IMAGES).forEach(f=> fd.append('images', f, f.name));
+      if(v) fd.append('video', v, v.name);
+
+      try{
+        statusEl.textContent = 'جارٍ الإرسال...';
+        const res = await fetch('/api/ads', { method:'POST', body: fd, credentials: 'include' });
+        if(res.ok){
+          const data = await res.json();
+          statusEl.textContent = 'تم إرسال الإعلان بنجاح — سيظهر بعد مراجعة الأدمن.';
+          if(data && data.ad && data.ad.id){
+            setTimeout(()=> location.href = '/ad.html?id=' + encodeURIComponent(data.ad.id), 900);
+          }
+        } else {
+          const err = await res.json().catch(()=>({message:'فشل الإرسال'}));
+          statusEl.textContent = err.message || 'فشل الإرسال';
+        }
+      }catch(e){
+        statusEl.textContent = 'خطأ في الاتصال';
+        console.error(e);
+      }
+    });
+  </script>
+</body>
+</html>

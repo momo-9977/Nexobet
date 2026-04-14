@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>تعديل الإعلان — سمسار</title>
+  <style>
+    :root{
+      --bg-0:#071024; --bg-1:#081426;
+      --card-bg:rgba(255,255,255,0.03);
+      --card-border:rgba(255,255,255,0.04);
+      --text:#e6eef8; --muted:#9aa8c2;
+      --accent:#2ea3ff; --accent-2:#60a5fa;
+      --shadow:0 12px 30px rgba(3,6,23,0.6);
+
+      --diamond-size-desktop:64px;
+      --diamond-size-mobile:52px;
+      --diamond-gap-desktop:64px;
+      --diamond-gap-mobile:30px;
+      --nav-bottom-offset:calc(18px + env(safe-area-inset-bottom,0px));
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:
+      radial-gradient(circle at 10% 10%, rgba(46,163,255,0.06), transparent 12%),
+      linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 100%); color:var(--text); -webkit-font-smoothing:antialiased;}
+
+    .page{max-width:1180px;margin:20px auto;padding:18px;}
+
+    .card{background:var(--card-bg); border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid var(--card-border); box-shadow:var(--shadow);}
+
+    h1{margin:0 0 8px;font-size:20px;color:var(--text)}
+    p.lead{margin:0 0 12px;color:var(--muted);font-size:13px}
+
+    form .row{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px}
+    form .full{grid-column:1/-1}
+    label{display:block;margin-bottom:6px;font-weight:700;color:var(--text);font-size:13px}
+    input[type="text"], input[type="number"], textarea, select{
+      width:100%; padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03); background:rgba(0,0,0,0.22); color:var(--text); outline:none; font-size:14px;
+    }
+    textarea{min-height:120px; resize:vertical; }
+
+    .small-note{font-size:12px;color:var(--muted);margin-top:6px}
+
+    .btn { display:inline-block; padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer; border:none; }
+    .btn.primary { background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; }
+    .btn.ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--text); }
+    .btn.warn { background:linear-gradient(135deg,#ef4444,#f97316); color:white; }
+
+    /* upload area */
+    .uploads { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+    .upload-slot { width:120px; height:96px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01)); border:1px dashed rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--muted); font-size:12px; position:relative; overflow:hidden; }
+    .upload-slot img { width:100%; height:100%; object-fit:cover; display:block; }
+    .upload-remove { position:absolute; top:6px; left:6px; background:rgba(0,0,0,0.6); border-radius:6px; padding:4px; cursor:pointer; font-size:12px; }
+
+    .file-info{font-size:12px;color:var(--muted); margin-top:8px}
+
+    /* small preview for video */
+    .video-preview{width:220px; max-width:100%; border-radius:8px; overflow:hidden; background:#000; border:1px solid rgba(255,255,255,0.04)}
+
+    /* responsive */
+    @media (max-width:900px){ form .row{ grid-template-columns:1fr } .uploads{justify-content:flex-start} }
+
+    /* floating diamond nav (same used elsewhere) */
+    .nav-floating{
+      position:fixed; bottom:var(--nav-bottom-offset); left:50%; transform:translateX(-50%); display:flex;
+      gap:var(--diamond-gap-desktop); align-items:center; z-index:140; pointer-events:auto; padding:6px;
+    }
+    .nav-diamond{
+      --sz: var(--diamond-size-desktop);
+      width:var(--sz); height:var(--sz); transform:rotate(45deg);
+      display:inline-flex; align-items:center; justify-content:center; border-radius:10px;
+      box-shadow:0 10px 26px rgba(3,8,23,0.6); cursor:pointer; text-decoration:none; transition:transform .14s ease, box-shadow .14s ease;
+      border:1px solid rgba(255,255,255,0.04);
+      background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(6px); position:relative; padding:6px;
+    }
+    .nav-diamond.premium{ background:linear-gradient(135deg,#a78bfa,#f472b6); box-shadow:0 12px 30px rgba(164,92,255,0.22); border:1px solid rgba(255,255,255,0.06) }
+    .nav-diamond .icon{ transform:rotate(-45deg); display:inline-flex; align-items:center; justify-content:center; color:var(--text); font-size:20px; width:44px;height:44px;border-radius:8px }
+    .nav-diamond:hover{ transform:translateY(-8px) rotate(45deg); box-shadow:0 18px 34px rgba(3,8,23,0.75) }
+
+    /* messages */
+    .msg { padding:10px 12px; border-radius:8px; background:rgba(0,0,0,0.45); color:var(--text); margin-bottom:12px; display:none;}
+    .msg.show{ display:block;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="card">
+      <h1>تعديل الإعلان</h1>
+      <p class="lead">حرّر محتوى الإعلان ثم اضغط "حفظ" لحفظ التغييرات. بعد الحفظ سيتم إرجاعك إلى بروفايلك.</p>
+
+      <div id="msg" class="msg"></div>
+
+      <form id="editAdForm">
+        <div class="row">
+          <div>
+            <label for="title">العنوان</label>
+            <input id="title" name="title" type="text" required />
+          </div>
+          <div>
+            <label for="price">الثمن (د.م)</label>
+            <input id="price" name="price" type="number" step="1" />
+          </div>
+
+          <div>
+            <label for="city">المدينة</label>
+            <input id="city" name="city" type="text" />
+          </div>
+
+          <div>
+            <label for="category">الصنف</label>
+            <select id="category" name="category">
+              <option value="phones">الهواتف</option>
+              <option value="cars">السيارات</option>
+              <option value="homes">العقارات</option>
+              <option value="furniture">الأثاث</option>
+              <option value="other">أخرى</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="description">الوصف</label>
+            <textarea id="description" name="description"></textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <label>صور الإعلان (الحد الأقصى: 3 صور — كل صورة حتى 10 ميغابايت)</label>
+          <div class="uploads" id="imagesContainer">
+            <!-- upload slots -->
+            <label class="upload-slot" id="imgSlot1">
+              <input type="file" accept="image/*" style="display:none" id="imgInput1" />
+              <div class="slot-label">اختيار صورة</div>
+            </label>
+            <label class="upload-slot" id="imgSlot2">
+              <input type="file" accept="image/*" style="display:none" id="imgInput2" />
+              <div class="slot-label">اختيار صورة</div>
+            </label>
+            <label class="upload-slot" id="imgSlot3">
+              <input type="file" accept="image/*" style="display:none" id="imgInput3" />
+              <div class="slot-label">اختيار صورة</div>
+            </label>
+          </div>
+          <div class="file-info">ملاحظة: سيتم رفع الصور إلى الخادم عند حفظ الإعلان.</div>
+        </div>
+
+        <div class="card">
+          <label>فيديو (اختياري — الحد الأقصى: 1 جيجابايت)</label>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div>
+              <input type="file" accept="video/*" id="videoInput" />
+              <div class="small-note">اختياري: فيديو تعريفي للإعلان</div>
+            </div>
+            <div id="videoPreviewWrap"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="submit" class="btn primary">حفظ التغييرات</button>
+          <button type="button" id="deleteBtn" class="btn warn">حذف الإعلان</button>
+          <a href="/profile" class="btn ghost">إلغاء</a>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- floating nav -->
+  <nav class="nav-floating" aria-label="التنقل">
+    <a class="nav-diamond" href="/" title="الرئيسية" aria-label="الرئيسية"><span class="icon">🏠</span></a>
+    <a class="nav-diamond" href="/categories" title="الأقسام" aria-label="الأقسام"><span class="icon">◫</span></a>
+    <a class="nav-diamond premium" href="/post-ad" title="نشر إعلان" aria-label="نشر"><span class="icon">＋</span></a>
+    <a class="nav-diamond" href="/profile" title="بروفايل" aria-label="بروفايل"><span class="icon">👤</span></a>
+  </nav>
+
+  <script>
+    // config
+    const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
+    const MAX_VIDEO_BYTES = 1024 * 1024 * 1024; // 1GB
+
+    const msgEl = document.getElementById('msg');
+    function showMsg(text, t=3000){ msgEl.textContent = text; msgEl.classList.add('show'); setTimeout(()=> msgEl.classList.remove('show'), t); }
+
+    // helpers
+    const qs = (s) => document.querySelector(s);
+    const qsa = (s) => Array.from(document.querySelectorAll(s));
+    function apiOpts(method='GET', body=null){
+      const opts = { method, credentials: 'include', headers: {} };
+      if (body && !(body instanceof FormData)) {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(body);
+      } else if (body instanceof FormData) {
+        opts.body = body;
+      }
+      return opts;
+    }
+
+    // parse id from ?id=...
+    const params = new URLSearchParams(window.location.search);
+    const adId = params.get('id');
+
+    // elements
+    const form = qs('#editAdForm');
+    const titleIn = qs('#title');
+    const priceIn = qs('#price');
+    const cityIn = qs('#city');
+    const categoryIn = qs('#category');
+    const descIn = qs('#description');
+
+    // image inputs
+    const imgInputs = [qs('#imgInput1'), qs('#imgInput2'), qs('#imgInput3')];
+    const imgSlots = [qs('#imgSlot1'), qs('#imgSlot2'), qs('#imgSlot3')];
+    let currentImageFiles = [null, null, null]; // File or null
+    let existingImageUrls = [null, null, null]; // from server (strings)
+
+    // video
+    const videoInput = qs('#videoInput');
+    const videoPreviewWrap = qs('#videoPreviewWrap');
+    let currentVideoFile = null;
+    let existingVideoUrl = null;
+
+    // attach click to slots
+    imgSlots.forEach((slot, idx) => {
+      slot.addEventListener('click', (e) => {
+        imgInputs[idx].click();
+      });
+      imgInputs[idx].addEventListener('change', (ev) => handleImageSelected(ev.target.files[0], idx));
+    });
+
+    // video selection
+    videoInput.addEventListener('change', (ev) => {
+      const f = ev.target.files[0];
+      if (!f) return;
+      if (f.size > MAX_VIDEO_BYTES) { showMsg('حجم الفيديو أكبر من 1 جيجابايت'); videoInput.value = ''; return; }
+      currentVideoFile = f;
+      renderVideoPreview(f);
+    });
+
+    function renderVideoPreview(fileOrUrl){
+      videoPreviewWrap.innerHTML = '';
+      const video = document.createElement('video');
+      video.controls = true;
+      video.className = 'video-preview';
+      if (typeof fileOrUrl === 'string') {
+        video.src = fileOrUrl;
+      } else {
+        video.src = URL.createObjectURL(fileOrUrl);
+      }
+      videoPreviewWrap.appendChild(video);
+    }
+
+    function handleImageSelected(file, idx){
+      if (!file) return;
+      if (file.size > MAX_IMAGE_BYTES) { showMsg('حجم الصورة أكبر من 10 ميغابايت'); imgInputs[idx].value=''; return; }
+      currentImageFiles[idx] = file;
+      existingImageUrls[idx] = null; // overwrite existing if choosing new
+      // show preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imgSlots[idx].innerHTML = '<img src="'+e.target.result+'" alt="preview">';
+        const rm = document.createElement('div'); rm.className='upload-remove'; rm.textContent='✕';
+        rm.addEventListener('click', (ev)=> { ev.stopPropagation(); currentImageFiles[idx]=null; imgInputs[idx].value=''; imgSlots[idx].innerHTML = '<div class="slot-label">اختيار صورة</div>'; });
+        imgSlots[idx].appendChild(rm);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // delete button
+    qs('#deleteBtn').addEventListener('click', async () => {
+      if (!adId) return showMsg('لا يوجد معرف إعلان');
+      if (!confirm('هل أنت متأكد أنك تريد حذف هذا الإعلان؟')) return;
+      try {
+        const res = await fetch('/api/ads/' + encodeURIComponent(adId), apiOpts('DELETE'));
+        if (!res.ok) throw new Error('failed');
+        showMsg('تم الحذف');
+        setTimeout(()=> { window.location.href = '/profile'; }, 900);
+      } catch (e) {
+        showMsg('فشل حذف الإعلان');
+        console.error(e);
+      }
+    });
+
+    // load ad data
+    async function loadAd(){
+      if (!adId) return showMsg('لم يتم توفير معرف الإعلان'); 
+      try {
+        const res = await fetch('/api/ads/' + encodeURIComponent(adId), apiOpts());
+        if (!res.ok) {
+          if (res.status === 404) showMsg('الإعلان غير موجود'); else showMsg('خطأ في جلب الإعلان');
+          return;
+        }
+        const ad = await res.json();
+        // fill fields
+        titleIn.value = ad.title || '';
+        priceIn.value = ad.price || '';
+        cityIn.value = ad.city || '';
+        categoryIn.value = ad.category || 'other';
+        descIn.value = ad.description || '';
+
+        // images (show into slots)
+        const imgs = Array.isArray(ad.images) ? ad.images.slice(0,3) : [];
+        existingImageUrls = [null, null, null];
+        imgs.forEach((u, i) => {
+          existingImageUrls[i] = u;
+          imgSlots[i].innerHTML = '<img src="'+u+'" alt="img">';
+          const rm = document.createElement('div'); rm.className='upload-remove'; rm.textContent='✕';
+          rm.addEventListener('click', (ev)=> { ev.stopPropagation(); existingImageUrls[i]=null; imgSlots[i].innerHTML = '<div class="slot-label">اختيار صورة</div>'; });
+          imgSlots[i].appendChild(rm);
+        });
+
+        // video
+        if (ad.video) {
+          existingVideoUrl = ad.video;
+          renderVideoPreview(ad.video);
+        }
+      } catch (e) {
+        console.error(e);
+        showMsg('خطأ عند تحميل الإعلان');
+      }
+    }
+
+    // submit (PUT)
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      if (!adId) return showMsg('لا يوجد معرف إعلان');
+
+      // Prepare formData for PUT -> support images & video
+      const fd = new FormData();
+      fd.append('title', titleIn.value || '');
+      fd.append('description', descIn.value || '');
+      fd.append('price', priceIn.value || '');
+      fd.append('city', cityIn.value || '');
+      fd.append('category', categoryIn.value || '');
+      // attach images: if new file selected, append; otherwise send keep marker or nothing (server keeps current images unless new provided)
+      currentImageFiles.forEach((f, idx) => {
+        if (f) fd.append('images', f);
+      });
+      // video
+      if (currentVideoFile) fd.append('video', currentVideoFile);
+
+      try {
+        const res = await fetch('/api/ads/' + encodeURIComponent(adId), apiOpts('PUT', fd));
+        if (!res.ok) {
+          const txt = await res.text().catch(()=>null);
+          showMsg('فشل الحفظ');
+          console.error('save failed', res.status, txt);
+          return;
+        }
+        const data = await res.json();
+        showMsg('تم الحفظ');
+        setTimeout(()=> { window.location.href = '/profile'; }, 900);
+      } catch (e) {
+        console.error(e);
+        showMsg('خطأ أثناء الحفظ');
+      }
+    });
+
+    // initialize
+    loadAd();
+  </script>
+</body>
+</html>

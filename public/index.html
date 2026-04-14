@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Le Marché</title>
+  <style>
+    :root{
+      --bg-0:#071024; --bg-1:#081426;
+      --card-bg:rgba(255,255,255,0.03);
+      --card-border:rgba(255,255,255,0.04);
+      --text:#e6eef8; --muted:#9aa8c2;
+      --accent:#2ea3ff; --accent-2:#60a5fa;
+      --success:#34d399; --shadow:0 12px 30px rgba(3,6,23,0.6);
+
+      /* NAV spacing increased per request */
+      --diamond-size-desktop:64px;
+      --diamond-size-mobile:52px;
+      --diamond-gap-desktop:64px;     /* <<< increased gap on desktop */
+      --diamond-gap-mobile:30px;      /* <<< increased gap on mobile */
+      --nav-bottom-offset:calc(18px + env(safe-area-inset-bottom,0px));
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(46,163,255,0.06), transparent 12%),
+        linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 100%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .page{max-width:1180px;margin:20px auto;padding:18px;}
+
+    /* Header */
+    .home-brand-bar{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      padding:10px 14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid var(--card-border);box-shadow:var(--shadow);margin-bottom:18px;
+    }
+    .home-brand-left{display:flex;align-items:center;gap:12px;min-width:0;}
+    .home-logo-shell{width:56px;height:56px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#043b66,#0b7bd6);box-shadow:0 10px 24px rgba(6,46,92,0.5);}
+    .home-logo-shell img{width:100%;height:100%;object-fit:cover;display:block}
+    .home-logo-shell span{font-weight:800;color:rgba(255,255,255,0.95);font-size:18px}
+    .home-brand-text h1{margin:0;font-size:20px;color:var(--text)}
+    .home-brand-text p{margin:0;color:var(--muted);font-size:13px}
+    .home-actions{display:flex;align-items:center;gap:10px}
+    .support-btn{display:inline-flex;align-items:center;gap:8px;border:none;background:transparent;cursor:pointer;font-weight:700;color:var(--accent)}
+    .support-icon{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(46,163,255,0.12), rgba(96,165,250,0.08));color:var(--accent);box-shadow:0 6px 18px rgba(2,6,23,0.5);font-size:20px}
+
+    /* card */
+    .home-card{background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--card-border);box-shadow:0 8px 22px rgba(3,8,23,0.45)}
+
+    /* hero */
+    .hero-slider{position:relative;min-height:260px;border-radius:10px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:flex;align-items:center}
+    .hero-slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s ease;background-size:cover;background-position:center}
+    .hero-slide.active{opacity:1;pointer-events:auto}
+    .hero-slide::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, rgba(7,20,36,0.35), rgba(7,20,36,0.6))}
+    .hero-slide-content{position:relative;z-index:2;padding:28px;max-width:56%;color:var(--text)}
+    .hero-mini-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;margin-bottom:10px}
+    .hero-slide-content h2{margin:0 0 8px;font-size:28px;color:var(--text)}
+    .hero-slide-content p{margin:0;color:var(--muted)}
+    .hero-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:30;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,0.04);color:var(--text);font-size:22px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);user-select:none}
+    .hero-arrow.left{left:14px}
+    .hero-arrow.right{right:14px}
+    .hero-arrow:active{transform:translateY(-50%) scale(.98)}
+    .hero-dots{position:absolute;bottom:12px;left:12px;z-index:20;display:flex;gap:8px}
+    .hero-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;cursor:pointer}
+    .hero-dot.active{width:28px;border-radius:999px;background:var(--accent)}
+
+    /* search */
+    .search-panel{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-top:12px}
+    .search-box input{width:100%;border-radius:10px;padding:12px 14px;border:1px solid rgba(255,255,255,0.035);background:rgba(0,0,0,0.28);color:var(--text);outline:none}
+    .search-main-btn{border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(46,163,255,0.12)}
+    .suggestions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .suggestion-item{background:rgba(46,163,255,0.06);color:var(--accent);padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:700;border:1px solid rgba(46,163,255,0.06)}
+
+    /* categories: minimal vertical boxes (no images) */
+    .quick-categories{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
+    .quick-cat-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);text-decoration:none;color:var(--text);box-shadow:0 6px 18px rgba(3,8,23,0.55);transition:transform .12s ease;min-height:110px}
+    .quick-cat-card:hover{transform:translateY(-6px)}
+    .quick-cat-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:var(--accent)}
+    .quick-cat-title{font-weight:800;font-size:16px}
+    .quick-cat-desc{font-size:12px;color:var(--muted);text-align:center}
+
+    /* ads grid (dark cards) */
+    .ads-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:12px}
+    .ad-card{position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);color:var(--text);box-shadow:0 8px 26px rgba(3,8,23,0.55);transition:transform .18s}
+    .ad-card:hover{transform:translateY(-6px)}
+    .ad-image{width:100%;height:200px;object-fit:cover;display:block;background:#0b1220;filter:brightness(0.95)}
+    .ad-content{padding:12px 14px}
+    .ad-category{display:inline-block;background:rgba(46,163,255,0.08);color:var(--accent);padding:6px 10px;border-radius:999px;font-weight:700;margin-bottom:8px;font-size:13px}
+    .ad-title{font-size:18px;margin:6px 0;color:var(--text)}
+    .ad-desc{color:var(--muted);font-size:14px;min-height:44px;margin-bottom:10px}
+    .ad-meta{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .ad-price{font-size:18px;font-weight:800;color:var(--text)}
+    .owner-box{background:transparent;padding:10px;border-radius:8px;margin-top:10px;color:var(--text);border:1px solid rgba(255,255,255,0.02)}
+    .contact-actions{display:flex;gap:8px;margin-top:8px}
+    .contact-btn{flex:1;text-decoration:none;padding:9px 8px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:white}
+    .contact-btn.call{background:linear-gradient(135deg,var(--success),#059669)}
+    .contact-btn.mail{background:linear-gradient(135deg,var(--accent),#7c3aed)}
+    .empty-state{padding:20px;text-align:center;border-radius:12px;color:var(--muted);background:transparent;border:1px dashed rgba(255,255,255,0.02)}
+
+    /* premium badge (crown) */
+    .premium-badge{position:absolute;top:12px;left:12px;background:linear-gradient(135deg,#ffd166,#ff8a00);padding:6px 8px;border-radius:999px;display:flex;align-items:center;gap:8px;color:#1f1f1f;font-weight:800;box-shadow:0 8px 20px rgba(255,150,0,0.12);z-index:60;font-size:13px}
+
+    /* NAV: diamond-style floating icons WITHOUT bar
+       Gap increased per user's request
+    */
+    .nav-floating{
+      position:fixed;
+      bottom:var(--nav-bottom-offset);
+      left:50%;
+      transform:translateX(-50%);
+      display:flex;
+      gap:var(--diamond-gap-desktop); /* desktop gap (overriden on mobile) */
+      align-items:center;
+      z-index:140;
+      pointer-events:auto;
+      padding:6px;
+      transition:transform .12s ease;
+    }
+
+    .nav-diamond{
+      --sz: var(--diamond-size-desktop);
+      width:var(--sz);
+      height:var(--sz);
+      transform:rotate(45deg);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:10px;
+      box-shadow:0 10px 26px rgba(3,8,23,0.6);
+      cursor:pointer;
+      text-decoration:none;
+      transition:transform .14s ease, box-shadow .14s ease;
+      border:1px solid rgba(255,255,255,0.04);
+      background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(6px);
+      position:relative;
+      padding:6px;
+    }
+    /* premium diamond variant */
+    .nav-diamond.premium{
+      background:linear-gradient(135deg,#a78bfa,#f472b6);
+      box-shadow:0 12px 30px rgba(164,92,255,0.22);
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    .nav-diamond .icon{
+      transform:rotate(-45deg); /* unrotate the inner icon so it appears upright */
+      display:inline-flex;align-items:center;justify-content:center;
+      color:var(--text);font-size:20px;
+      width:44px;height:44px;border-radius:8px;
+    }
+    .nav-diamond:hover{transform:translateY(-8px) rotate(45deg);box-shadow:0 18px 34px rgba(3,8,23,0.75)}
+    .nav-diamond:active{transform:translateY(-4px) rotate(45deg)}
+    .nav-diamond .label{display:none;position:absolute;bottom:calc(var(--diamond-size-desktop) + 8px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:var(--text);padding:6px 8px;border-radius:8px;font-size:12px}
+
+    /* desktop wide screens: add slightly more gap */
+    @media (min-width:1300px){
+      .nav-floating{ gap: calc(var(--diamond-gap-desktop) + 10px); }
+    }
+
+    @media (max-width:700px){
+      .quick-categories{grid-template-columns:1fr}
+      .ads-grid{grid-template-columns:1fr}
+      .page{padding:12px;margin:12px auto}
+      .home-brand-text h1{font-size:18px}
+      .hero-slide-content{max-width:100%;padding:18px}
+
+      /* mobile adjustments: use mobile gap */
+      .nav-floating{
+        gap:var(--diamond-gap-mobile);
+        bottom:calc(12px + env(safe-area-inset-bottom,0px));
+      }
+      .nav-diamond{ --sz: var(--diamond-size-mobile); width:var(--sz); height:var(--sz); }
+      .nav-diamond .label{bottom:calc(var(--diamond-size-mobile) + 6px)}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="home-brand-bar">
+      <div class="home-brand-left">
+        <div class="home-logo-shell" id="logoShell">
+          <img id="siteLogo" src="/uploads/logo.png" alt="logo" onerror="this.style.display='none'">
+          <span id="logoFallback">LM</span>
+        </div>
+        <div class="home-brand-text">
+          <h1 id="platformName">Le Marché</h1>
+          <p id="platformSubtitle">Vendre et acheter facilement</p>
+        </div>
+      </div>
+
+      <div class="home-actions">
+        <a href="support.html" class="support-btn" title="Support / Service client">
+          <span class="support-icon" aria-hidden="true">🎧</span>
+          <span style="color:var(--muted);font-weight:700">Support</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- hero -->
+    <section class="home-card">
+      <div class="hero-slider" id="heroSlider" aria-hidden="false">
+        <div id="heroSlideTrack" class="hero-slide-track"></div>
+
+        <!-- fixed arrows: left / right -->
+        <button id="heroPrevBtn" class="hero-arrow left" aria-label="السابق">‹</button>
+        <button id="heroNextBtn" class="hero-arrow right" aria-label="التالي">›</button>
+
+        <div class="hero-dots" id="heroDots" role="tablist"></div>
+      </div>
+    </section>
+
+    <!-- search -->
+    <section class="home-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <h2 style="margin:0;color:var(--text)">ابحث عن الإعلان المناسب</h2>
+          <p style="margin:2px 0 0;color:var(--muted)">بحث سريع وذكي داخل المنصة</p>
+        </div>
+      </div>
+
+      <div class="search-panel">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="ابحث عن هاتف، سيارة، شقة..." />
+        </div>
+        <button class="search-main-btn" id="searchBtn">بحث</button>
+      </div>
+
+      <div id="suggestions" class="suggestions"></div>
+    </section>
+
+    <!-- categories (no images) -->
+    <section class="home-card" id="categoriesCard">
+      <div style="display:flex;justify-content:space-between;align-items:end;margin-bottom:12px">
+        <div>
+          <h2 style="margin:0;color:var(--text)">الأقسام الرئيسية</h2>
+          <p style="margin:2px 0 0;color:var(--muted)">اختَر القسم للانتقال إلى الإعلانات المتعلقة</p>
+        </div>
+        <a href="categories.html" style="color:var(--accent-2);font-weight:700;text-decoration:none">عرض كل الأقسام →</a>
+      </div>
+
+      <div class="quick-categories" id="categoriesGrid"></div>
+    </section>
+
+    <!-- ads -->
+    <section class="home-card">
+      <div style="display:flex;justify-content:space-between;align-items:end;margin-bottom:12px">
+        <div>
+          <h2 style="margin:0;color:var(--text)">إعلانات مميزة</h2>
+          <p style="margin:2px 0 0;color:var(--muted)">آخر الإعلانات المميزة في المنصة</p>
+        </div>
+        <a href="categories.html" style="color:var(--accent-2);font-weight:700;text-decoration:none">المزيد</a>
+      </div>
+
+      <div id="adsContainer" class="ads-grid"></div>
+      <div id="adsEmpty" style="display:none;margin-top:12px" class="empty-state">لا توجد إعلانات حالياً</div>
+    </section>
+  </div>
+
+  <!-- Floating navigation (diamond style) - icons stay, NO bottom bar; gap increased -->
+  <nav class="nav-floating" aria-label="التنقل">
+    <a class="nav-diamond" href="index.html" title="الرئيسية" aria-label="الرئيسية">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond" href="categories.html" title="الأقسام" aria-label="الأقسام">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond premium" href="post-ad.html" title="نشر إعلان" aria-label="نشر إعلان">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond" href="profile.html" title="بروفايل" aria-label="بروفايل">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="7" r="3" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+      </span>
+    </a>
+  </nav>
+
+  <script>
+    // helpers
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+    const apiOpts = (method='GET', body=null) => {
+      const opts = { method, headers:{}, credentials:'include' };
+      if (body && !(body instanceof FormData)) { opts.headers['Content-Type']='application/json'; opts.body = JSON.stringify(body); }
+      else if (body instanceof FormData) opts.body = body;
+      return opts;
+    };
+
+    // state
+    let settings = null;
+    let featuredAds = [];
+    let allAdsCache = [];
+    let heroIndex = 0;
+    let heroTimer = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage();
+
+      // arrow listeners fixed: attach directly
+      const prev = document.getElementById('heroPrevBtn');
+      const next = document.getElementById('heroNextBtn');
+      if (prev) prev.addEventListener('click', () => { prevHeroSlide(); restartHeroAutoPlay(); });
+      if (next) next.addEventListener('click', () => { nextHeroSlide(); restartHeroAutoPlay(); });
+
+      // search
+      const sBtn = $('#searchBtn'); if (sBtn) sBtn.addEventListener('click', onSearchSubmit);
+      const sInput = $('#searchInput'); if (sInput) {
+        sInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') onSearchSubmit(); debounceSuggest(); });
+      }
+    });
+
+    async function initPage(){
+      await Promise.all([ loadSettings(), loadFeaturedAds() ]);
+      await loadAllAdsCache();
+      renderSuggestions();
+      startHeroAutoPlay();
+    }
+
+    async function loadSettings(){
+      try{
+        const res = await fetch('/api/settings', apiOpts());
+        if (!res.ok) throw new Error('no settings');
+        settings = await res.json();
+
+        // brand (french)
+        $('#platformName').textContent = settings.platformName || 'Le Marché';
+        $('#platformSubtitle').textContent = settings.platformSubtitle || 'Vendre et acheter facilement';
+        if (settings.logo){
+          const img = $('#siteLogo'); img.src = settings.logo; img.style.display='block'; $('#logoFallback').style.display='none';
+        } else {
+          $('#logoFallback').textContent = (settings.platformName || 'LM').slice(0,2).toUpperCase();
+        }
+
+        renderCategories(settings.categories || null);
+        const slides = Array.isArray(settings.bannerImages) && settings.bannerImages.length ? settings.bannerImages : [];
+        buildHeroSlidesFromSettings(slides, settings.bannerTitle, settings.bannerDescription);
+      }catch(err){
+        console.warn('فشل في جلب الإعدادات، استخدام قيم افتراضية', err);
+        renderCategories(null);
+        buildHeroSlidesFromSettings([], 'مرحبا بك في Le Marché', 'Vendre et acheter facilement');
+      }
+    }
+
+    // categories with SVG icons (no emoji)
+    function renderCategories(catObj){
+      const grid = $('#categoriesGrid'); grid.innerHTML = '';
+      const fallback = [
+        { key:'phones', title:'الهواتف', desc:'هواتف جديدة ومستعملة', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="18" r="0.9" fill="currentColor"/></svg>` },
+        { key:'cars', title:'السيارات', desc:'سيارات متنوعة', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 13l2-5h14l2 5v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4z" stroke="currentColor" stroke-width="1.4"/><circle cx="7.5" cy="16.5" r="1" fill="currentColor"/><circle cx="17.5" cy="16.5" r="1" fill="currentColor"/></svg>` },
+        { key:'homes', title:'العقارات', desc:'شقق ومنازل ومحلات', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 21V11h10v10" stroke="currentColor" stroke-width="1.4"/></svg>` },
+        { key:'furniture', title:'الأثاث', desc:'أثاث منزلي ومكتبي', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="7" width="18" height="6" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M7 13v6M17 13v6" stroke="currentColor" stroke-width="1.4"/></svg>` }
+      ];
+
+      const keys = ['phones','cars','homes','furniture'];
+      keys.forEach(k => {
+        const cat = (catObj && catObj[k]) ? {
+          key:k, title:catObj[k].name || fallback.find(f=>f.key===k).title,
+          desc:catObj[k].description || fallback.find(f=>f.key===k).desc,
+          svg: fallback.find(f=>f.key===k).svg
+        } : fallback.find(f=>f.key===k);
+
+        const a = document.createElement('a');
+        a.className = 'quick-cat-card';
+        a.href = `categories.html?cat=${encodeURIComponent(cat.key)}`;
+        a.setAttribute('data-category-key', cat.key);
+        a.innerHTML = `
+          <div class="quick-cat-icon">${cat.svg}</div>
+          <div class="quick-cat-title">${cat.title}</div>
+          <div class="quick-cat-desc">${cat.desc}</div>
+        `;
+        grid.appendChild(a);
+      });
+    }
+
+    // hero
+    function buildHeroSlidesFromSettings(images=[], title='', desc=''){
+      const track = document.getElementById('heroSlideTrack');
+      const dots = document.getElementById('heroDots');
+      const slides = (images && images.length) ? images.map((img,i)=>({
+        title: title || (settings && settings.platformName) || 'Le Marché',
+        description: desc || '',
+        badge: `بانر ${i+1}`,
+        image: img
+      })) : [{ title: title || 'مرحبا بك في Le Marché', description: desc || 'Vendre et acheter facilement', badge:'مرحبًا', image:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop' }];
+
+      track.innerHTML = slides.map((s, idx)=>`
+        <div class="hero-slide ${idx===0? 'active' : '' }" style="background-image:url('${s.image.replace(/'/g,"\\'")}')">
+          <div class="hero-slide-content">
+            <div class="hero-mini-badge">${s.badge}</div>
+            <h2>${s.title}</h2>
+            <p>${s.description}</p>
+          </div>
+        </div>
+      `).join('');
+
+      dots.innerHTML = slides.map((_, idx)=>`<button class="hero-dot ${idx===0? 'active' : ''}" aria-label="slide ${idx+1}" onclick="goToHeroSlide(${idx})"></button>`).join('');
+      window.__heroLen = slides.length; heroIndex = 0;
+    }
+
+    function goToHeroSlide(i){ heroIndex = i; updateHeroVisuals(); restartHeroAutoPlay(); }
+    function nextHeroSlide(){ if (!window.__heroLen) return; heroIndex = (heroIndex + 1) % window.__heroLen; updateHeroVisuals(); }
+    function prevHeroSlide(){ if (!window.__heroLen) return; heroIndex = (heroIndex - 1 + window.__heroLen) % window.__heroLen; updateHeroVisuals(); }
+    function updateHeroVisuals(){
+      const slides = $$('.hero-slide'); const dots = $$('.hero-dot');
+      slides.forEach((el,i)=> el.classList.toggle('active', i===heroIndex));
+      dots.forEach((el,i)=> el.classList.toggle('active', i===heroIndex));
+    }
+    function startHeroAutoPlay(){ clearInterval(heroTimer); heroTimer = setInterval(()=> nextHeroSlide(), 4500); }
+    function restartHeroAutoPlay(){ startHeroAutoPlay(); }
+
+    // load featured ads
+    async function loadFeaturedAds(){
+      try {
+        const res = await fetch('/api/ads/featured', apiOpts());
+        if (!res.ok) throw new Error('no featured');
+        const list = await res.json();
+        featuredAds = Array.isArray(list) ? list : [];
+        renderAds(featuredAds);
+      } catch (err) {
+        console.warn('فشل جلب الإعلانات المميزة', err);
+        try {
+          const r2 = await fetch('/api/ads', apiOpts());
+          const list2 = r2.ok ? await r2.json() : [];
+          featuredAds = Array.isArray(list2) ? list2.slice(0,6) : [];
+          renderAds(featuredAds);
+        } catch(e){
+          renderAds([]);
+        }
+      }
+    }
+
+    // render ads (with premium badge if featured)
+    function renderAds(list){
+      const cont = $('#adsContainer'); const empty = $('#adsEmpty'); cont.innerHTML = '';
+      if (!list || !list.length){ empty.style.display='block'; return; } else empty.style.display='none';
+
+      list.forEach(ad=>{
+        const card = document.createElement('div'); card.className='ad-card';
+        const premiumHtml = ad.featured ? `<div class="premium-badge" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l2.5 4.5L19 7l-3.5 3L16 16l-4-2-4 2 1.5-6L5 7l4.5-.5L12 2z" fill="#1f1f1f"/></svg>
+          بروميوم</div>` : '';
+
+        card.innerHTML = `
+          ${premiumHtml}
+          <img class="ad-image" src="${(ad.images && ad.images[0]) ? ad.images[0] : '/uploads/default.png'}" alt="${escapeHtml(ad.title||'إعلان')}">
+          <div class="ad-content">
+            <div class="ad-category">${escapeHtml(ad.category || '')}</div>
+            <h3 class="ad-title">${escapeHtml(ad.title || 'بدون عنوان')}</h3>
+            <div class="ad-desc">${escapeHtml(truncate(ad.description || '', 140))}</div>
+            <div class="ad-meta">
+              <div class="ad-price">${ad.price? (ad.price+' د.م') : ''}</div>
+              <div class="ad-city">${escapeHtml(ad.city || '')}</div>
+            </div>
+            <div class="owner-box" data-ad-id="${ad.id}">
+              <h4 style="margin:0 0 6px">البائع</h4>
+              <p style="margin:0">${ad.ownerName ? escapeHtml(ad.ownerName) : (ad.ownerEmail ? escapeHtml(ad.ownerEmail) : 'مجهول')}</p>
+              <div class="contact-actions">
+                ${ad.ownerPhone ? `<a class="contact-btn call" href="tel:${encodeURIComponent(ad.ownerPhone)}">اتصال</a>` : ''}
+                ${ad.ownerEmail ? `<a class="contact-btn mail" href="mailto:${encodeURIComponent(ad.ownerEmail)}">بريد</a>` : ''}
+                <a class="contact-btn" style="background:linear-gradient(135deg,#111827,#334155);color:white" href="/ad.html?id=${encodeURIComponent(ad.id)}">عرض</a>
+              </div>
+            </div>
+          </div>
+        `;
+        cont.appendChild(card);
+      });
+    }
+
+    // cache all ads for search suggestions
+    async function loadAllAdsCache(){
+      try{ const res = await fetch('/api/ads', apiOpts()); if (!res.ok) return; const list = await res.json(); allAdsCache = Array.isArray(list) ? list : []; }
+      catch(e){ console.warn('failed fetch all ads', e); allAdsCache = []; }
+    }
+
+    function onSearchSubmit(){
+      const q = ($('#searchInput').value || '').trim().toLowerCase();
+      if (!q){ renderAds(featuredAds); return; }
+      const filtered = allAdsCache.filter(ad=>{
+        return (ad.title && ad.title.toLowerCase().includes(q)) ||
+               (ad.description && ad.description.toLowerCase().includes(q)) ||
+               (String(ad.price || '').toLowerCase().includes(q)) ||
+               (ad.city && ad.city.toLowerCase().includes(q)) ||
+               (ad.category && ad.category.toLowerCase().includes(q));
+      });
+      renderAds(filtered);
+    }
+
+    function renderSuggestions(){
+      const root = $('#suggestions'); root.innerHTML = '';
+      const items = [];
+      if (settings && settings.categories) for (const k of Object.keys(settings.categories)) items.push(settings.categories[k].name || k);
+      items.push('هواتف','سيارات','شقق','أثاث');
+      items.slice(0,8).forEach(txt=>{
+        const btn = document.createElement('button'); btn.className='suggestion-item'; btn.textContent=txt;
+        btn.addEventListener('click',()=>{ $('#searchInput').value = txt; onSearchSubmit(); });
+        root.appendChild(btn);
+      });
+    }
+
+    let _deb = null;
+    function debounceSuggest(){
+      if (_deb) clearTimeout(_deb);
+      _deb = setTimeout(()=>{
+        const q = ($('#searchInput').value || '').trim();
+        if (!q) return renderSuggestions();
+        const matches = allAdsCache.filter(ad => (ad.title||'').toLowerCase().includes(q.toLowerCase())).slice(0,6);
+        const root = $('#suggestions'); root.innerHTML = '';
+        if (matches.length){
+          matches.forEach(m=>{
+            const b = document.createElement('button'); b.className='suggestion-item'; b.textContent = m.title;
+            b.addEventListener('click', ()=> { $('#searchInput').value = m.title; onSearchSubmit(); });
+            root.appendChild(b);
+          });
+        } else renderSuggestions();
+      }, 300);
+    }
+
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function truncate(s,n){ return s.length>n ? s.slice(0,n-1)+'…' : s; }
+
+    // expose hero controls
+    window.goToHeroSlide = (i) => goToHeroSlide(i);
+  </script>
+</body>
+</html>

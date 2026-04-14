@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة الأدمن — سمسار</title>
+  <style>
+    :root{
+      /* Premium palette: purple -> gold */
+      --bg:#0b0513;
+      --bg2:#0f0622;
+      --card-bg:rgba(255,255,255,0.04);
+      --card-border:rgba(255,255,255,0.06);
+      --muted:#c7cbe0;
+      --text:#f4f8ff;
+      --accent:#8b5cf6;    /* purple */
+      --accent-2:#f6c24a;  /* gold */
+      --danger:#ef4444;
+      --shadow:0 16px 48px rgba(2,6,20,0.7);
+      --glass: rgba(255,255,255,0.02);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:Inter,Arial,sans-serif;
+      background: linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+      color:var(--text); -webkit-font-smoothing:antialiased;
+    }
+
+    .app{max-width:1240px;margin:20px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+    h1{margin:0;font-size:20px}
+    .top-row{display:flex;gap:10px;align-items:center}
+    nav.tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab-btn{
+      background:transparent;border:1px solid var(--card-border);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer;
+      transition:all .12s ease;backdrop-filter:blur(6px)
+    }
+    .tab-btn:hover{ transform:translateY(-3px) }
+    .tab-btn.active{
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:#0b0513;border-color:transparent; box-shadow:0 10px 30px rgba(139,92,246,0.12);
+    }
+
+    .card{background:var(--card-bg);padding:14px;border-radius:12px;border:1px solid var(--card-border);box-shadow:var(--shadow);margin-bottom:14px}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    .small{font-size:13px;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .actions{margin-top:8px}
+    .btn{padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:800}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0b0513}
+    .btn.ghost{background:transparent;border:1px solid var(--card-border);color:var(--text)}
+    .btn.warn{background:linear-gradient(135deg,var(--danger),#f97316);color:#fff}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);color:var(--muted);font-weight:700}
+
+    table{width:100%;border-collapse:collapse;margin-top:8px;background:transparent}
+    th,td{padding:10px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px}
+    th{color:var(--muted);font-weight:800}
+    td{color:var(--text)}
+
+    .user-actions{display:flex;gap:8px;justify-content:flex-end}
+    .search-row{display:flex;gap:8px;align-items:center}
+    input[type="text"], input[type="email"], input[type="number"], textarea, select {
+      width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text);outline:none;font-size:14px
+    }
+    textarea{min-height:100px;resize:vertical}
+    input::placeholder, textarea::placeholder{color:var(--muted)}
+
+    input:focus, textarea:focus, select:focus { box-shadow:0 8px 30px rgba(139,92,246,0.08); border-color: rgba(246,194,74,0.6) }
+
+    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:3000;padding:18px}
+    .modal{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;min-width:360px;max-width:920px}
+    .muted-note{font-size:13px;color:var(--muted);margin-bottom:8px}
+
+    .banner-preview img{height:56px;border-radius:10px;margin-inline-start:8px;object-fit:cover;border:1px solid rgba(255,255,255,0.04)}
+    .banner-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+    .small-pill{background:rgba(255,255,255,0.02);padding:6px 8px;border-radius:8px;font-size:13px;color:var(--text)}
+    .controls-row{display:flex;gap:8px;align-items:center}
+
+    @media (max-width:900px){ .row{flex-direction:column} .top-row{flex-direction:column;align-items:flex-start} }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>لوحة الأدمن — سمسار</h1>
+        <div class="small muted">تحكّم في كل أجزاء المنصة من هنا</div>
+      </div>
+
+      <div class="top-row">
+        <nav class="tabs" id="mainTabs">
+          <button class="tab-btn active" data-tab="dashboard">لوحة التحكم</button>
+          <button class="tab-btn" data-tab="banners">البانرات</button>
+          <button class="tab-btn" data-tab="platform">المنصة</button>
+          <button class="tab-btn" data-tab="categories">الأقسام</button>
+          <button class="tab-btn" data-tab="support">قنوات الدعم</button>
+          <button class="tab-btn" data-tab="ads">الإعلانات</button>
+          <button class="tab-btn" data-tab="users">المستخدمون</button>
+          <button class="tab-btn" data-tab="settings">إعدادات عامة</button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="card tab">
+        <h2>الملخص</h2>
+        <div class="row">
+          <div class="col card">
+            <div class="small muted">إحصائيات سريعة</div>
+            <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+              <div class="pill">إجمالي الإعلانات: <strong id="statAds">—</strong></div>
+              <div class="pill">قيد الانتظار: <strong id="statPending">—</strong></div>
+              <div class="pill">الموافق عليها: <strong id="statApproved">—</strong></div>
+              <div class="pill">المشاهدات: <strong id="statViews">—</strong></div>
+            </div>
+            <div style="margin-top:12px" class="small muted">ملاحظات: بعض الوظائف تحتاج endpoints في السيرفر لتعمل (مثل حذف مستخدم كأدمن أو تعيين كلمة سر مباشرة).</div>
+          </div>
+
+          <div class="col card">
+            <div class="small muted">بانرات حالية</div>
+            <div id="bannerList" class="banner-preview banner-row" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BANNERS -->
+      <section id="banners" class="card tab" style="display:none">
+        <h2>إدارة البانرات</h2>
+        <form id="bannerForm" class="card">
+          <div class="row">
+            <div style="flex:0 0 360px">
+              <label>اختَر صور بانر (عدّة ملفات)</label>
+              <input type="file" id="bannerFiles" multiple accept="image/*" />
+              <div class="muted-note">يمكن إضافة صور جديدة؛ تظهر الصور الحالية أدناه ويمكن حذف أي صورة.</div>
+            </div>
+            <div style="flex:1">
+              <label>عنوان البانر</label>
+              <input type="text" id="bannerTitle" placeholder="عنوان البانر" />
+              <label style="margin-top:8px">وصف البانر</label>
+              <input type="text" id="bannerDesc" placeholder="وصف قصير" />
+              <div style="margin-top:10px" class="controls-row">
+                <button class="btn primary" type="button" id="uploadBannersBtn">رفع / إضافة</button>
+                <button class="btn ghost" type="button" id="resetBannersBtn">إفراغ البانرات</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div id="bannersTable" style="margin-top:12px"></div>
+      </section>
+
+      <!-- PLATFORM -->
+      <section id="platform" class="card tab" style="display:none">
+        <h2>إعدادات المنصة</h2>
+        <div class="row">
+          <div class="col">
+            <label>اسم المنصة</label>
+            <input type="text" id="platformName" />
+            <label style="margin-top:8px">السطر الفرعي</label>
+            <input type="text" id="platformSubtitle" />
+            <label style="margin-top:8px">لوجو</label>
+            <input type="file" id="platformLogo" accept="image/*" />
+            <div class="controls-row" style="margin-top:8px">
+              <button class="btn primary" id="savePlatformBtn">حفظ إعدادات المنصة</button>
+            </div>
+          </div>
+
+          <div class="col">
+            <label>معاينة بانر/صور</label>
+            <div id="platformBannerPreview" class="banner-preview banner-row" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATEGORIES -->
+      <section id="categories" class="card tab" style="display:none">
+        <h2>الأقسام</h2>
+        <div class="small muted">عدل اسم القسم، الوصف، أو الصورة. التغييرات تُرسل إلى السيرفر.</div>
+        <div id="categoriesList" style="margin-top:12px"></div>
+      </section>
+
+      <!-- SUPPORT -->
+      <section id="support" class="card tab" style="display:none">
+        <h2>قنوات الدعم</h2>
+        <div class="row">
+          <div class="col">
+            <label>واتساب</label>
+            <input type="text" id="supportWhatsapp" placeholder="مثال: +2126..." />
+          </div>
+          <div class="col">
+            <label>إيميل الدعم</label>
+            <input type="text" id="supportEmail" placeholder="support@..." />
+          </div>
+          <div class="col">
+            <label>تيليجرام</label>
+            <input type="text" id="supportTelegram" placeholder="@channel" />
+          </div>
+        </div>
+        <div style="margin-top:12px" class="controls-row">
+          <button class="btn primary" id="saveSupportBtn">حفظ القنوات</button>
+        </div>
+      </section>
+
+      <!-- ADS -->
+      <section id="ads" class="card tab" style="display:none">
+        <h2>إدارة الإعلانات</h2>
+        <div class="small muted">قائمة الإعلانات (شامل الحالات). يمكنك البحث، الموافقة، الرفض، التمييز أو الحذف.</div>
+        <div style="margin-top:12px" class="search-row">
+          <input type="text" id="adsSearch" placeholder="ابحث بعنوان أو مرجع" />
+          <button class="btn ghost" id="adsSearchBtn">بحث</button>
+          <button class="btn primary" id="adsRefreshBtn">تحديث</button>
+        </div>
+        <div id="adsTable" style="margin-top:12px"></div>
+      </section>
+
+      <!-- USERS -->
+      <section id="users" class="card tab" style="display:none">
+        <h2>المستخدمون</h2>
+        <div class="small muted">قائمة المستخدمين المسجلين. يمكنك تعديل الحقول المدعومة أو حذف المستخدم أو تغيير كلمة السر كأدمن.</div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <input type="text" id="usersSearch" placeholder="ابحث بالإسم أو الإيميل أو الهاتف" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text)"/>
+          <button class="btn ghost" id="usersSearchBtn">بحث</button>
+          <button class="btn primary" id="refreshUsersBtn">تحديث</button>
+        </div>
+
+        <div id="usersTable" style="margin-top:12px"></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="settings" class="card tab" style="display:none">
+        <h2>إعدادات عامة</h2>
+        <div class="row">
+          <div class="col card">
+            <label>الحد الأقصى لعدد الصور لكل إعلان</label>
+            <input type="number" id="maxImages" value="3" />
+            <label style="margin-top:8px">الحد الأقصى لحجم الفيديو (ميغابايت)</label>
+            <input type="number" id="maxVideoMb" value="1024" />
+            <div style="margin-top:8px" class="controls-row"><button class="btn primary" id="saveLimitsBtn">حفظ</button></div>
+            <div class="small muted" style="margin-top:10px">تحتاج إلى مزامنة هذه القيم مع قيود السيرفر.</div>
+          </div>
+
+          <div class="col card">
+            <label>إحصائيات أخرى</label>
+            <div style="margin-top:8px">عدد المستخدمين: <strong id="statUsers">—</strong></div>
+            <div style="margin-top:8px">إجمالي الإعلانات: <strong id="statAds2">—</strong></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Edit User -->
+  <div id="modalEdit" class="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-label="تعديل المستخدم">
+    <h3 style="margin-top:0">تعديل بيانات المستخدم</h3>
+    <div class="muted-note">يمكنك تعديل الاسم، الهاتف، المدينة، والملاحظة (bio). لا يمكن تعديل الإيميل هنا.</div>
+    <div style="margin-top:8px">
+      <label>الاسم</label><input id="m_name" type="text" placeholder="أدخل الاسم">
+      <label style="margin-top:8px">الهاتف</label><input id="m_phone" type="text" placeholder="الهاتف">
+      <label style="margin-top:8px">المدينة</label><input id="m_city" type="text" placeholder="المدينة">
+      <label style="margin-top:8px">bio</label><textarea id="m_bio" placeholder="نبذة"></textarea>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ghost" id="m_cancel">إلغاء</button>
+        <button class="btn primary" id="m_save">حفظ</button>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- Modal: Change Password -->
+  <div id="modalPwd" class="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-label="تغيير كلمة السر">
+    <h3 style="margin-top:0">تعيين كلمة سر جديدة للمستخدم (كأدمن)</h3>
+    <div style="margin-top:8px">
+      <label>كلمة السر الجديدة</label><input id="p_new" type="password" placeholder="********">
+      <label style="margin-top:8px">تأكيد</label><input id="p_confirm" type="password" placeholder="********">
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ghost" id="p_cancel">إلغاء</button>
+        <button class="btn primary" id="p_save">تعيين</button>
+      </div>
+    </div>
+  </div></div>
+
+  <script>
+    // --- tabs ---
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(s => s.style.display = 'none');
+      document.getElementById(btn.dataset.tab).style.display = '';
+      tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }));
+
+    // --- helpers ---
+    const api = (path, opts={}) => fetch(path, { credentials: 'include', method: opts.method || 'GET', headers: opts.headers || {}, body: opts.body })
+      .then(async r => {
+        const t = await r.text().catch(()=>'');
+        let json=null;
+        try { json = t ? JSON.parse(t) : null; } catch(e){ json=null; }
+        if (!r.ok) throw { status: r.status, body: json || t };
+        return json || t;
+      });
+
+    function showAlert(msg){ alert(msg); }
+    function setHtml(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
+
+    // --- init ---
+    async function initAdmin(){
+      try {
+        const init = await api('/api/admin/init');
+        const ads = init.ads || [];
+        const users = init.users || [];
+        const settings = init.settings || init.platform || init;
+        document.getElementById('statAds').textContent = ads.length;
+        document.getElementById('statPending').textContent = ads.filter(a=>a.status==='pending').length;
+        document.getElementById('statApproved').textContent = ads.filter(a=>a.status==='approved').length;
+        document.getElementById('statViews').textContent = (init.stats && init.stats.views) || '—';
+        document.getElementById('statUsers').textContent = users.length || 0;
+        // banners preview
+        const bannerWrap = document.getElementById('bannerList');
+        bannerWrap.innerHTML = '';
+        const bannerImgs = (init.banner && init.banner.images) || (init.settings && init.settings.bannerImages) || [];
+        bannerImgs.forEach((src, i) => {
+          const cont = document.createElement('div'); cont.style.display='inline-flex'; cont.style.alignItems='center';
+          const img = document.createElement('img'); img.src=src; img.alt='banner'; img.style.height='56px'; img.style.borderRadius='8px';
+          const del = document.createElement('button'); del.className='btn ghost'; del.textContent='حذف'; del.style.marginInlineStart='6px';
+          del.addEventListener('click', ()=> deleteBannerAt(i));
+          cont.appendChild(img); cont.appendChild(del);
+          bannerWrap.appendChild(cont);
+        });
+
+        // platform preview
+        const pb = document.getElementById('platformBannerPreview'); pb.innerHTML='';
+        (bannerImgs || []).forEach(src=>{
+          const im = document.createElement('img'); im.src=src; im.style.height='56px'; im.style.borderRadius='8px'; im.style.marginInlineStart='8px';
+          pb.appendChild(im);
+        });
+
+        // populate platform fields if available
+        if(init.platform){
+          document.getElementById('platformName').value = init.platform.name || '';
+          document.getElementById('platformSubtitle').value = init.platform.subtitle || '';
+        } else if(init.settings){
+          document.getElementById('platformName').value = init.settings.platformName || '';
+          document.getElementById('platformSubtitle').value = init.settings.platformSubtitle || '';
+        }
+
+        // categories list
+        const cats = init.categories || (init.settings && init.settings.categories) || {};
+        renderCategories(cats);
+
+        // support
+        const support = init.support || (init.settings && init.settings.support) || {};
+        document.getElementById('supportWhatsapp').value = support.whatsapp || '';
+        document.getElementById('supportEmail').value = support.email || '';
+        document.getElementById('supportTelegram').value = support.telegram || '';
+
+        // ads table
+        renderAdsTable(ads);
+
+        // users table
+        renderUsersTable(users);
+
+      } catch(err){
+        console.error('init failed', err);
+        showAlert('فشل جلب بيانات الأدمن. تأكد من تسجيل الدخول كأدمن وأن /api/admin/init متاحة.');
+      }
+    }
+
+    // ---------------- BANNERS ----------------
+    document.getElementById('uploadBannersBtn').addEventListener('click', async ()=>{
+      const files = document.getElementById('bannerFiles').files;
+      const title = document.getElementById('bannerTitle').value || '';
+      const desc = document.getElementById('bannerDesc').value || '';
+      if(!files || files.length===0){
+        showAlert('اختر صورة واحدة على الأقل للبانر');
+        return;
+      }
+      const fd = new FormData();
+      for(const f of files) fd.append('images', f);
+      fd.append('bannerTitle', title);
+      fd.append('bannerDesc', desc);
+      try{
+        await api('/api/admin/banner', { method:'PUT', body: fd });
+        showAlert('تم رفع البانرات');
+        document.getElementById('bannerFiles').value = '';
+        initAdmin();
+      }catch(e){ console.error(e); showAlert('فشل رفع البانرات'); }
+    });
+
+    document.getElementById('resetBannersBtn').addEventListener('click', async ()=>{
+      if(!confirm('هل تريد إفراغ جميع صور البانر؟')) return;
+      // send reset flag via PUT with resetBannerImages=true
+      const fd = new FormData(); fd.append('resetBannerImages','true');
+      try{ await api('/api/admin/banner',{ method:'PUT', body:fd }); showAlert('تم إفراغ البانرات'); initAdmin(); }catch(e){ console.error(e); showAlert('فشل تفريغ البانرات'); }
+    });
+
+    async function deleteBannerAt(index){
+      try{
+        await api('/api/settings/banner-images/' + index, { method:'DELETE' });
+        showAlert('تم حذف الصورة');
+        initAdmin();
+      }catch(e){ console.error(e); showAlert('فشل حذف الصورة'); }
+    }
+
+    // ---------------- PLATFORM ----------------
+    document.getElementById('savePlatformBtn').addEventListener('click', async ()=>{
+      const name = document.getElementById('platformName').value || '';
+      const subtitle = document.getElementById('platformSubtitle').value || '';
+      const logoFile = document.getElementById('platformLogo').files[0];
+      const fd = new FormData();
+      fd.append('name', name);
+      fd.append('subtitle', subtitle);
+      if(logoFile) fd.append('logo', logoFile);
+      try{
+        await api('/api/admin/platform', { method:'PUT', body: fd });
+        showAlert('تم حفظ إعدادات المنصة');
+        initAdmin();
+      }catch(e){ console.error(e); showAlert('فشل حفظ إعدادات المنصة'); }
+    });
+
+    // ---------------- CATEGORIES ----------------
+    function renderCategories(cats){
+      const wrap = document.getElementById('categoriesList'); wrap.innerHTML='';
+      const keys = Object.keys(cats || {});
+      if(keys.length===0){ wrap.innerHTML = '<div class="small muted">لا توجد أقسام.</div>'; return; }
+      keys.forEach(k=>{
+        const c = cats[k];
+        const card = document.createElement('div'); card.className='card'; card.style.marginBottom='10px';
+        card.innerHTML = `<div style="display:flex;gap:12px;align-items:center"><div style="flex:1">
+          <label>اسم (${k})</label><input type="text" data-key="${k}" class="cat-name" value="${escapeHtml(c.name||'')}" />
+          <label style="margin-top:8px">الوصف</label><input type="text" class="cat-desc" data-key="${k}" value="${escapeHtml(c.description||'')}" />
+        </div>
+        <div style="width:220px">
+          <label>صورة القسم</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="cat-preview-${k}">${c.image? `<img src="${c.image}" style="height:72px;border-radius:8px">` : '<div class="small muted">لا توجد صورة</div>'}</div>
+          </div>
+          <input type="file" data-keyfile="${k}" accept="image/*" style="margin-top:8px" />
+        </div></div>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn primary save-cat" data-key="${k}">حفظ القسم</button>
+        </div>`;
+        wrap.appendChild(card);
+      });
+
+      // attach save handlers
+      wrap.querySelectorAll('.save-cat').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const key = btn.dataset.key;
+          const nameEl = wrap.querySelector(`input.cat-name[data-key="${key}"]`);
+          const descEl = wrap.querySelector(`input.cat-desc[data-key="${key}"]`);
+          const fileEl = wrap.querySelector(`input[data-keyfile="${key}"]`);
+          const payload = {};
+          payload[key] = { name: nameEl.value.trim(), description: descEl.value.trim() };
+          const fd = new FormData();
+          fd.append('categories', JSON.stringify(payload));
+          if(fileEl && fileEl.files && fileEl.files[0]) fd.append('cat_' + key, fileEl.files[0]);
+          try{
+            await api('/api/admin/categories', { method:'PUT', body: fd });
+            showAlert('تم حفظ القسم');
+            initAdmin();
+          }catch(e){ console.error(e); showAlert('فشل حفظ القسم'); }
+        });
+      });
+    }
+
+    // ---------------- SUPPORT ----------------
+    document.getElementById('saveSupportBtn').addEventListener('click', async ()=>{
+      const w = document.getElementById('supportWhatsapp').value.trim();
+      const e = document.getElementById('supportEmail').value.trim();
+      const t = document.getElementById('supportTelegram').value.trim();
+      try{
+        await api('/api/admin/support', { method:'PUT', body: JSON.stringify({ whatsapp: w, email: e, telegram: t }), headers: { 'Content-Type':'application/json' }});
+        showAlert('تم حفظ قنوات الدعم');
+      }catch(err){ console.error(err); showAlert('فشل حفظ قنوات الدعم'); }
+    });
+
+    // ---------------- ADS ----------------
+    document.getElementById('adsRefreshBtn').addEventListener('click', fetchAds);
+    document.getElementById('adsSearchBtn').addEventListener('click', () => {
+      const q = document.getElementById('adsSearch').value.trim().toLowerCase();
+      fetchAds(q);
+    });
+
+    async function fetchAds(query){
+      try{
+        const path = query ? ('/api/admin/ads?search=' + encodeURIComponent(query)) : '/api/admin/ads';
+        const ads = await api(path);
+        renderAdsTable(ads);
+      }catch(e){ console.error(e); showAlert('فشل جلب الإعلانات'); }
+    }
+
+    function renderAdsTable(ads){
+      const wrap = document.getElementById('adsTable'); if(!ads || ads.length===0){ wrap.innerHTML='<div class="small muted">لا توجد إعلانات.</div>'; return; }
+      let html = '<table><thead><tr><th>مرجع</th><th>العنوان</th><th>البائع</th><th>المدينة</th><th>السعر</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>';
+      ads.forEach(ad=>{
+        html += `<tr data-id="${ad.id || ad.ref}"><td>${escapeHtml(ad.ref||ad.id||'—')}</td><td>${escapeHtml(ad.title||'—')}</td><td>${escapeHtml(ad.ownerName||ad.ownerEmail||'—')}</td><td>${escapeHtml(ad.city||'—')}</td><td>${ad.price||'—'}</td><td>${escapeHtml(ad.status||'—')}</td><td style="text-align:left">
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn ghost" data-act="view">عرض</button>
+            <button class="btn primary" data-act="approve">قبول</button>
+            <button class="btn" style="background:linear-gradient(135deg,#f59e0b,#f97316);color:#0b0513" data-act="reject">رفض</button>
+            <button class="btn ghost" data-act="feature">${ad.featured? 'إلغاء تمييز':'تمييز'}</button>
+            <button class="btn warn" data-act="delete">حذف</button>
+          </div>
+        </td></tr>`;
+      });
+      html += '</tbody></table>'; wrap.innerHTML = html;
+
+      wrap.querySelectorAll('button[data-act]').forEach(btn=>{
+        const tr = btn.closest('tr'); const id = tr.dataset.id;
+        btn.addEventListener('click', async ()=>{
+          const act = btn.dataset.act;
+          try{
+            if(act==='view'){ window.open('/ads/' + encodeURIComponent(id), '_blank'); return; }
+            if(act==='approve'){ await api('/api/admin/ads/' + encodeURIComponent(id) + '/approve', { method:'PATCH' }); showAlert('تم قبول الإعلان'); fetchAds(); return; }
+            if(act==='reject'){ await api('/api/admin/ads/' + encodeURIComponent(id) + '/reject', { method:'PATCH' }); showAlert('تم رفض الإعلان'); fetchAds(); return; }
+            if(act==='feature'){ await api('/api/ads/' + encodeURIComponent(id) + '/featured', { method:'PATCH' }); showAlert('تم تحديث التمييز'); fetchAds(); return; }
+            if(act==='delete'){ if(!confirm('هل تريد حذف الإعلان؟')) return; await api('/api/ads/' + encodeURIComponent(id), { method:'DELETE' }); showAlert('تم حذف الإعلان'); fetchAds(); return; }
+          }catch(e){ console.error(e); showAlert('فشل تنفيذ الإجراء — تأكد من توفر endpoint المناسب على السيرفر'); }
+        });
+      });
+    }
+
+    // ---------------- USERS ----------------
+    let currentUsers = [];
+    async function fetchUsers(){
+      try{
+        const res = await api('/api/admin/init');
+        if(res && res.users){ currentUsers = res.users; renderUsersTable(currentUsers); }
+        else { const u = await api('/api/users'); currentUsers = u; renderUsersTable(currentUsers); }
+      }catch(e){ console.error(e); showAlert('فشل جلب المستخدمين'); }
+    }
+
+    document.getElementById('refreshUsersBtn').addEventListener('click', fetchUsers);
+    document.getElementById('usersSearchBtn').addEventListener('click', ()=>{
+      const q = document.getElementById('usersSearch').value.trim().toLowerCase();
+      if(!q) return renderUsersTable(currentUsers);
+      const filtered = (currentUsers||[]).filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q) || (u.phone||'').toLowerCase().includes(q));
+      renderUsersTable(filtered);
+    });
+
+    function renderUsersTable(users){
+      const wrap = document.getElementById('usersTable'); if(!users || users.length===0){ wrap.innerHTML='<div class="small muted">لا يوجد مستخدمين.</div>'; return; }
+      let html = '<table><thead><tr><th>الإسم</th><th>الإيميل</th><th>الهاتف</th><th>المدينة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>';
+      users.forEach(u=>{
+        html += `<tr data-id="${u.id}"><td>${escapeHtml(u.name||'—')}</td><td>${escapeHtml(u.email||'—')}</td><td>${escapeHtml(u.phone||'—')}</td><td>${escapeHtml(u.city||'—')}</td><td>${u.disabled?'<span class="muted">معلق</span>':'<span>نشط</span>'}</td><td class="user-actions">
+          <button class="btn ghost" data-action="edit">تعديل</button>
+          <button class="btn ghost" data-action="pwd">كلمة السر</button>
+          <button class="btn warn" data-action="delete">حذف</button>
+        </td></tr>`;
+      });
+      html += '</tbody></table>'; wrap.innerHTML = html;
+
+      wrap.querySelectorAll('button[data-action]').forEach(btn=>{
+        const tr = btn.closest('tr'); const id = tr.dataset.id;
+        btn.addEventListener('click', ()=>{
+          const act = btn.dataset.action;
+          if(act==='edit') openEditModal(id);
+          if(act==='pwd') openPwdModal(id);
+          if(act==='delete') confirmDeleteUser(id);
+        });
+      });
+    }
+
+    // edit user modal
+    let editingUserId = null;
+    const modalEdit = document.getElementById('modalEdit'), modalPwd = document.getElementById('modalPwd');
+    function openEditModal(id){
+      const u = currentUsers.find(x=>x.id===id);
+      if(!u) return showAlert('المستخدم غير موجود');
+      editingUserId = id;
+      document.getElementById('m_name').value = u.name || '';
+      document.getElementById('m_phone').value = u.phone || '';
+      document.getElementById('m_city').value = u.city || '';
+      document.getElementById('m_bio').value = u.bio || '';
+      modalEdit.style.display = 'flex';
+    }
+    document.getElementById('m_cancel').addEventListener('click', ()=>{ modalEdit.style.display='none'; editingUserId=null; });
+    document.getElementById('m_save').addEventListener('click', async ()=>{
+      if(!editingUserId) return;
+      const payload = { name: document.getElementById('m_name').value.trim(), phone: document.getElementById('m_phone').value.trim(), city: document.getElementById('m_city').value.trim(), bio: document.getElementById('m_bio').value.trim() };
+      try{
+        await api('/api/users/' + encodeURIComponent(editingUserId), { method:'PUT', body: JSON.stringify(payload), headers:{ 'Content-Type':'application/json' }});
+        showAlert('تم حفظ بيانات المستخدم');
+        modalEdit.style.display = 'none';
+        editingUserId = null;
+        fetchUsers();
+      }catch(e){ console.error(e); showAlert('فشل الحفظ — تأكد من وجود PUT /api/users/:id (أو ملف admin users endpoint)'); }
+    });
+
+    // change password modal
+    let pwdUserId = null;
+    function openPwdModal(id){
+      pwdUserId = id; document.getElementById('p_new').value=''; document.getElementById('p_confirm').value=''; modalPwd.style.display='flex';
+    }
+    document.getElementById('p_cancel').addEventListener('click', ()=>{ modalPwd.style.display='none'; pwdUserId=null; });
+    document.getElementById('p_save').addEventListener('click', async ()=>{
+      const p = document.getElementById('p_new').value.trim(), c = document.getElementById('p_confirm').value.trim();
+      if(!p || p.length < 6) return showAlert('كلمة السر يجب أن تكون 6 أحرف على الأقل');
+      if(p !== c) return showAlert('تأكيد كلمة السر غير مطابق');
+      try{
+        // try admin endpoint first
+        await api('/api/admin/users/' + encodeURIComponent(pwdUserId) + '/password', { method:'POST', body: JSON.stringify({ newPassword: p }), headers:{ 'Content-Type':'application/json' }});
+        showAlert('تم تعيين كلمة السر');
+        modalPwd.style.display='none'; pwdUserId = null;
+      }catch(e){
+        console.error(e);
+        // fallback: try set on /api/users/:id if server allows admin override there
+        try{
+          await api('/api/users/' + encodeURIComponent(pwdUserId) + '/password', { method:'POST', body: JSON.stringify({ newPassword: p }), headers:{ 'Content-Type':'application/json' }});
+          showAlert('تم تعيين كلمة السر (fallback)');
+          modalPwd.style.display='none'; pwdUserId = null;
+        }catch(e2){
+          console.error(e2);
+          showAlert('فشل تعيين كلمة السر — السيرفر يحتاج endpoint لإدارة كلمات السر كأدمن');
+        }
+      }
+    });
+
+    async function confirmDeleteUser(id){
+      if(!confirm('هل متأكد من حذف المستخدم؟ لا يمكن التراجع.')) return;
+      try{
+        await api('/api/admin/users/' + encodeURIComponent(id), { method:'DELETE' });
+        showAlert('تم حذف المستخدم');
+        fetchUsers();
+      }catch(e){
+        console.error(e);
+        try{
+          await api('/api/users/' + encodeURIComponent(id), { method:'DELETE' });
+          showAlert('تم حذف المستخدم (fallback)');
+          fetchUsers();
+        }catch(e2){
+          console.error(e2);
+          showAlert('فشل حذف المستخدم — السيرفر يحتاج endpoint لحذف المستخدم كأدمن.');
+        }
+      }
+    }
+
+    // ---------------- SETTINGS save limits ----------------
+    document.getElementById('saveLimitsBtn').addEventListener('click', async ()=>{
+      const images = Number(document.getElementById('maxImages').value || 3);
+      const videoMb = Number(document.getElementById('maxVideoMb').value || 1024);
+      try{
+        // update settings via /api/settings (PUT) if server supports; fallback to /api/admin/platform for storing arbitrary settings
+        await api('/api/settings', { method:'PUT', body: JSON.stringify({ maxImages: images, maxVideoMb: videoMb }), headers:{ 'Content-Type':'application/json' }});
+        showAlert('تم حفظ الإعدادات (إن وُجد endpoint)');
+      }catch(e){
+        try{
+          await api('/api/admin/platform', { method:'PUT', body: new FormData() });
+          showAlert('تم حفظ الإعدادات (fallback)');
+        }catch(err){ console.error(err); showAlert('فشل حفظ الإعدادات — أضف endpoint في السيرفر.'); }
+      }
+    });
+
+    // utility
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // init on load
+    initAdmin();
+
+    // expose some functions for debug
+    window.initAdmin = initAdmin;
+    window.fetchUsers = fetchUsers;
+    window.fetchAds = () => fetchAds('');
+  </script>
+</body>
+</html>

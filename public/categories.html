@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> الأقسام</title>
+  <style>
+    :root{
+      --bg-0:#071024; --bg-1:#081426;
+      --card-bg:rgba(255,255,255,0.03);
+      --card-border:rgba(255,255,255,0.04);
+      --text:#e6eef8; --muted:#9aa8c2;
+      --accent:#2ea3ff; --accent-2:#60a5fa;
+      --success:#34d399; --shadow:0 12px 30px rgba(3,6,23,0.6);
+
+      /* NAV spacing (match homepage) */
+      --diamond-size-desktop:64px;
+      --diamond-size-mobile:52px;
+      --diamond-gap-desktop:64px;
+      --diamond-gap-mobile:30px;
+      --nav-bottom-offset:calc(18px + env(safe-area-inset-bottom,0px));
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body.categories-page-special{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(46,163,255,0.06), transparent 12%),
+        linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 100%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .page{max-width:1180px;margin:20px auto;padding:18px;}
+
+    .categories-card{
+      background:var(--card-bg);
+      border-radius:12px;
+      padding:16px;
+      margin-bottom:16px;
+      border:1px solid var(--card-border);
+      box-shadow:var(--shadow);
+    }
+
+    .section-head-modern{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .section-head-modern h2{margin:0;font-size:22px;color:var(--text)}
+    .section-head-modern p{margin:0;color:var(--muted);font-size:13px}
+
+    /* CATEGORY GRID — vertical minimal boxes overlaying image */
+    .category-cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .category-select-card{
+      position:relative; min-height:220px; border-radius:14px; overflow:hidden; cursor:pointer;
+      box-shadow:0 8px 22px rgba(3,8,23,0.45); transition:transform .16s ease, box-shadow .16s ease;
+      display:block; text-decoration:none; color:inherit;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .category-select-card:hover{ transform:translateY(-6px); box-shadow:0 18px 34px rgba(3,8,23,0.6) }
+    .category-select-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;filter:contrast(0.95) brightness(0.85)}
+    .category-select-content{ position:absolute; inset:auto 0 0 0; z-index:2; padding:16px; color:var(--text); background:linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.28)); }
+    .category-select-content h3{ margin:0 0 6px; font-size:20px; color:var(--accent); font-weight:800 } /* <-- هنا اللون الأزرق الفاتح */
+    .category-select-content p{ margin:0; color:var(--muted); font-size:13px; line-height:1.6 }
+
+    /* filters + ads list (if used) */
+    .filters-box{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
+      border-radius:12px; padding:12px; border:1px solid var(--card-border);
+      display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end; margin-bottom:12px;
+    }
+    .filter-group label{ display:block;margin-bottom:6px;font-weight:700;color:var(--text);font-size:13px }
+    .filter-group input{ width:100%; border-radius:10px; padding:10px; border:1px solid rgba(255,255,255,0.03); background:rgba(0,0,0,0.24); color:var(--text); outline:none }
+
+    .main-btn{ border:none; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; padding:12px 16px; border-radius:10px; font-weight:800; cursor:pointer }
+
+    .ads-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:8px }
+    .ad-card{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01)); border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.03); color:var(--text); box-shadow:0 8px 22px rgba(3,8,23,0.45) }
+    .ad-image{ width:100%; height:180px; object-fit:cover; display:block; background:#0b1220 }
+    .ad-content{ padding:12px }
+    .ad-category{ display:inline-block; background:rgba(46,163,255,0.08); color:var(--accent); padding:6px 10px; border-radius:999px; font-weight:800; font-size:13px; margin-bottom:8px }
+    .ad-title{ font-size:16px; margin:6px 0; color:var(--text); font-weight:800 }
+    .ad-desc{ color:var(--muted); font-size:13px; line-height:1.6; margin-bottom:8px }
+    .ad-meta{ display:flex; justify-content:space-between; align-items:center; gap:8px; color:var(--muted) }
+
+    .owner-box{ background:transparent; padding:10px; border-radius:8px; margin-top:8px; border:1px solid rgba(255,255,255,0.02); color:var(--text) }
+    .contact-actions{ display:flex; gap:8px; margin-top:8px }
+    .contact-btn{ padding:9px 10px; border-radius:8px; text-decoration:none; color:white; font-weight:800; background:linear-gradient(135deg,#111827,#334155) }
+    .whatsapp-btn{ padding:9px 10px; border-radius:8px; text-decoration:none; color:white; font-weight:800; background:linear-gradient(135deg,var(--accent),#7c3aed) }
+
+    .empty-state{ padding:18px; text-align:center; border-radius:12px; color:var(--muted); background:transparent; border:1px dashed rgba(255,255,255,0.02) }
+
+    /* NAV (floating diamonds) — same as homepage */
+    .nav-floating{
+      position:fixed; bottom:var(--nav-bottom-offset); left:50%; transform:translateX(-50%); display:flex;
+      gap:var(--diamond-gap-desktop); align-items:center; z-index:140; pointer-events:auto; padding:6px;
+    }
+    .nav-diamond{
+      --sz: var(--diamond-size-desktop);
+      width:var(--sz); height:var(--sz); transform:rotate(45deg);
+      display:inline-flex; align-items:center; justify-content:center; border-radius:10px;
+      box-shadow:0 10px 26px rgba(3,8,23,0.6); cursor:pointer; text-decoration:none; transition:transform .14s ease, box-shadow .14s ease;
+      border:1px solid rgba(255,255,255,0.04);
+      background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(6px); position:relative; padding:6px;
+    }
+    .nav-diamond.premium{ background:linear-gradient(135deg,#a78bfa,#f472b6); box-shadow:0 12px 30px rgba(164,92,255,0.22); border:1px solid rgba(255,255,255,0.06) }
+    .nav-diamond .icon{ transform:rotate(-45deg); display:inline-flex; align-items:center; justify-content:center; color:var(--text); font-size:20px; width:44px;height:44px;border-radius:8px }
+    .nav-diamond:hover{ transform:translateY(-8px) rotate(45deg); box-shadow:0 18px 34px rgba(3,8,23,0.75) }
+    .nav-diamond:active{ transform:translateY(-4px) rotate(45deg) }
+    .nav-diamond .label{ display:none; position:absolute; bottom:calc(var(--diamond-size-desktop) + 8px); left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); color:var(--text); padding:6px 8px; border-radius:8px; font-size:12px }
+
+    @media (min-width:1300px){
+      .nav-floating{ gap: calc(var(--diamond-gap-desktop) + 10px); }
+    }
+
+    @media (max-width:700px){
+      .category-cards-grid, .ads-grid{ grid-template-columns:1fr }
+      .page{ padding:12px; margin:12px auto }
+      .nav-floating{ gap:var(--diamond-gap-mobile); bottom:calc(12px + env(safe-area-inset-bottom,0px)); }
+      .nav-diamond{ --sz: var(--diamond-size-mobile); width:var(--sz); height:var(--sz) }
+      .nav-diamond .label{ bottom:calc(var(--diamond-size-mobile) + 6px) }
+    }
+  </style>
+</head>
+<body class="categories-page-special">
+  <div class="page">
+    <section class="categories-card">
+      <div class="section-head-modern">
+        <div>
+          <h2>الأقسام</h2>
+          <p>تصفح حسب الفئة</p>
+        </div>
+      </div>
+
+      <section class="category-cards-grid" role="list">
+        <a href="/categories?key=phones" class="category-select-card" data-category-key="phones" role="listitem" aria-label="الهواتف">
+          <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop" alt="هواتف">
+          <div class="category-select-content">
+            <h3>الهواتف</h3>
+            <p>هواتف جديدة ومستعملة بجميع الأنواع</p>
+          </div>
+        </a>
+
+        <a href="/categories?key=cars" class="category-select-card" data-category-key="cars" role="listitem" aria-label="السيارات">
+          <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200&auto=format&fit=crop" alt="سيارات">
+          <div class="category-select-content">
+            <h3>السيارات</h3>
+            <p>سيارات اقتصادية، عائلية، وفاخرة</p>
+          </div>
+        </a>
+
+        <a href="/categories?key=homes" class="category-select-card" data-category-key="homes" role="listitem" aria-label="العقارات">
+          <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop" alt="عقارات">
+          <div class="category-select-content">
+            <h3>العقارات</h3>
+            <p>شقق، منازل، محلات، وأراضي</p>
+          </div>
+        </a>
+
+        <a href="/categories?key=furniture" class="category-select-card" data-category-key="furniture" role="listitem" aria-label="الأثاث">
+          <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop" alt="أثاث">
+          <div class="category-select-content">
+            <h3>الأثاث</h3>
+            <p>أثاث منزلي ومكتبي عصري وتقليدي</p>
+          </div>
+        </a>
+      </section>
+    </section>
+
+    <!-- قسم النتائج — يظهر عند وجود key في الـ URL -->
+    <section id="categoryResultsSection" class="categories-card category-results-section" style="display:none;">
+      <div class="section-head-modern">
+        <div>
+          <h2 id="selectedCategoryTitle">نتائج القسم</h2>
+          <p id="selectedCategorySubtitle">الإعلانات المتوفرة</p>
+        </div>
+      </div>
+
+      <form id="categoryFilterForm" class="filters-box" method="get" action="/categories">
+        <input type="hidden" name="key" id="formKey" value="" />
+        <div class="filter-group">
+          <label for="minPrice">الثمن الأدنى</label>
+          <input type="number" id="minPrice" name="min" placeholder="0" />
+        </div>
+
+        <div class="filter-group">
+          <label for="maxPrice">الثمن الأقصى</label>
+          <input type="number" id="maxPrice" name="max" placeholder="100000" />
+        </div>
+
+        <button type="submit" class="main-btn">تطبيق الفلترة</button>
+      </form>
+
+      <div id="categoryAdsContainer" class="ads-grid"></div>
+    </section>
+  </div>
+
+  <!-- Floating navigation (diamond style) — same shape & spacing as homepage -->
+  <nav class="nav-floating" aria-label="التنقل">
+    <a class="nav-diamond" href="/" title="الرئيسية" aria-label="الرئيسية">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond" href="/categories" title="الأقسام" aria-label="الأقسام">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond premium" href="/post-ad" title="نشر إعلان" aria-label="نشر إعلان">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <a class="nav-diamond" href="/profile" title="بروفايل" aria-label="بروفايل">
+      <span class="icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="7" r="3" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+      </span>
+    </a>
+  </nav>
+
+  <script>
+    (function(){
+      // عرض نتائج القسم إذا وُجد key في URL
+      const params = new URLSearchParams(window.location.search);
+      const key = params.get('key');
+      if(key){
+        const titleMap = { phones:'الهواتف', cars:'السيارات', homes:'العقارات', furniture:'الأثاث' };
+        document.getElementById('categoryResultsSection').style.display = '';
+        document.getElementById('formKey').value = key;
+        document.getElementById('selectedCategoryTitle').textContent = titleMap[key] || key;
+      }
+
+      // إذا أدخل السيرفر JSON داخل <script id="server-ads"> نعرضه
+      const serverAdsEl = document.getElementById('server-ads');
+      function escapeText(t){ return String(t==null? '': t); }
+
+      function createAdCard(ad){
+        const card = document.createElement('article'); card.className = 'ad-card';
+        const img = document.createElement('img'); img.className='ad-image'; img.alt = escapeText(ad.title || ''); img.src = ad.image || (ad.images && ad.images[0]) || '';
+        const content = document.createElement('div'); content.className='ad-content';
+        const cat = document.createElement('div'); cat.className='ad-category'; cat.textContent = escapeText(ad.category || '');
+        const title = document.createElement('h3'); title.className='ad-title'; title.textContent = escapeText(ad.title || '');
+        const desc = document.createElement('p'); desc.className='ad-desc'; desc.textContent = escapeText(ad.description || '');
+        const meta = document.createElement('div'); meta.className='ad-meta';
+        const price = document.createElement('div'); price.className='ad-price'; price.textContent = (ad.price!=null && ad.price!=='') ? ad.price + ' د.م' : '';
+        const city = document.createElement('div'); city.className='ad-city'; city.textContent = escapeText(ad.city || '');
+        meta.appendChild(price); meta.appendChild(city);
+
+        const owner = document.createElement('div'); owner.className='owner-box';
+        const ownerName = document.createElement('h4'); ownerName.textContent = escapeText(ad.ownerName || 'صاحب الإعلان');
+        const ownerInfo = document.createElement('p'); ownerInfo.textContent = ad.ownerPhone ? ('الهاتف: ' + ad.ownerPhone) : ('الإيميل: ' + (ad.ownerEmail || '-'));
+        owner.appendChild(ownerName); owner.appendChild(ownerInfo);
+
+        const actions = document.createElement('div'); actions.className='contact-actions';
+        const contactBtn = document.createElement('a'); contactBtn.className='contact-btn'; contactBtn.href = '/ads/' + encodeURIComponent(ad.id || (ad.ref || '')); contactBtn.textContent = 'شوف التفاصيل';
+        const whatsappBtn = document.createElement('a'); whatsappBtn.className='whatsapp-btn'; whatsappBtn.href = ad.ownerPhone ? ('https://wa.me/' + encodeURIComponent((ad.ownerPhone+'').replace(/\D/g,''))) : '#'; whatsappBtn.target='_blank'; whatsappBtn.textContent='واتساب';
+        actions.appendChild(contactBtn); actions.appendChild(whatsappBtn);
+
+        content.appendChild(cat); content.appendChild(title); content.appendChild(desc); content.appendChild(meta);
+        content.appendChild(owner); content.appendChild(actions);
+
+        card.appendChild(img); card.appendChild(content);
+        return card;
+      }
+
+      function renderAds(ads){
+        const container = document.getElementById('categoryAdsContainer'); container.innerHTML = '';
+        if(!ads || ads.length===0){
+          const empty = document.createElement('div'); empty.className='empty-state'; empty.textContent = 'ما كاين حتى إعلان فهاذ القسم.'; container.appendChild(empty); return;
+        }
+        ads.forEach(a => container.appendChild(createAdCard(a)));
+      }
+
+      if(serverAdsEl){
+        try{
+          const ads = JSON.parse(serverAdsEl.textContent || '[]');
+          renderAds(ads);
+        }catch(e){ console.warn('server-ads JSON parse failed', e) }
+      }
+    })();
+  </script>
+</body>
+</html>

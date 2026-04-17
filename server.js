@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS users (
   city TEXT,
   bio TEXT,
   avatar TEXT,
+  is_admin BOOLEAN DEFAULT FALSE,
   disabled BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`);
@@ -89,6 +90,14 @@ function isAuth(req){ return parseCookies(req).auth==="1"; }
 
 function getUserId(req){ return parseCookies(req).userId; }
 
+async function isAdmin(req){
+  if(!isAuth(req)) return false;
+  const id = getUserId(req);
+  const r = await pool.query("SELECT is_admin FROM users WHERE id=$1",[id]);
+  if(!r.rows.length) return false;
+  return r.rows[0].is_admin === true;
+}
+
 /* ---------------- AUTH ---------------- */
 
 app.post("/api/auth/register", async(req,res)=>{
@@ -117,7 +126,7 @@ if(user.password!==password) return res.status(401).json({message:"خطأ"});
 
 res.cookie("auth","1",{httpOnly:true,path:"/"});
 res.cookie("userId",user.id,{httpOnly:true,path:"/"});
-res.json({message:"تم الدخول"});
+res.json({message:"تم الدخول", isAdmin:user.is_admin});
 });
 
 app.get("/api/auth/me", async(req,res)=>{
@@ -125,6 +134,31 @@ if(!isAuth(req)) return res.status(401).json({});
 const id=getUserId(req);
 const r=await pool.query("SELECT * FROM users WHERE id=$1",[id]);
 res.json(r.rows[0]);
+});
+
+/* ---------------- ADMIN ---------------- */
+
+app.get("/api/admin/init", async(req,res)=>{
+if(!(await isAdmin(req))){
+  return res.status(401).json({message:"غير مصرح"});
+}
+
+const ads = await pool.query("SELECT COUNT(*) FROM ads");
+const users = await pool.query("SELECT COUNT(*) FROM users");
+const pending = await pool.query("SELECT COUNT(*) FROM ads WHERE status='pending'");
+
+res.json({
+  total_ads: ads.rows[0].count,
+  total_users: users.rows[0].count,
+  pending_ads: pending.rows[0].count
+});
+});
+
+app.get("/admin", async(req,res)=>{
+if(!(await isAdmin(req))){
+  return res.redirect("/login");
+}
+res.sendFile(path.join(__dirname,"public","admin.html"));
 });
 
 /* ---------------- ADS ---------------- */

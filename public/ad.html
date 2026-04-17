@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تفاصيل الإعلان</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#071024;
+  color:#e6eef8;
+}
+
+.container{
+  max-width:900px;
+  margin:30px auto;
+  padding:20px;
+}
+
+.card{
+  background:rgba(255,255,255,0.04);
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
+.images img{
+  width:100%;
+  max-height:400px;
+  object-fit:cover;
+  border-radius:8px;
+  margin-bottom:10px;
+}
+
+.video{
+  width:100%;
+  border-radius:8px;
+}
+
+.owner{
+  background:#0c162c;
+  padding:12px;
+  border-radius:8px;
+  margin-top:12px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<div id="adContainer"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+
+async function loadAd(){
+  if(!id) return;
+
+  const res = await fetch('/api/ads/'+id,{credentials:'include'});
+  if(!res.ok){
+    document.getElementById('adContainer').innerHTML='<p>الإعلان غير موجود</p>';
+    return;
+  }
+
+  const ad = await res.json();
+
+  let html = `
+    <div class="card">
+      <h2>${ad.title}</h2>
+      <p><b>الثمن:</b> ${ad.price} د.م</p>
+      <p><b>المدينة:</b> ${ad.city}</p>
+      <p>${ad.description}</p>
+    </div>
+  `;
+
+  if(ad.images && ad.images.length){
+    html += `<div class="card images">`;
+    ad.images.forEach(img=>{
+      html += `<img src="${img}">`;
+    });
+    html += `</div>`;
+  }
+
+  if(ad.video){
+    html += `
+      <div class="card">
+        <video controls class="video" src="${ad.video}"></video>
+      </div>
+    `;
+  }
+
+  html += `
+    <div class="card owner">
+      <h3>معلومات البائع</h3>
+      <p>${ad.owner_name || ''}</p>
+      ${ad.owner_phone ? `<p>الهاتف: ${ad.owner_phone}</p>` : ''}
+      ${ad.owner_email ? `<p>الإيميل: ${ad.owner_email}</p>` : ''}
+    </div>
+  `;
+
+  document.getElementById('adContainer').innerHTML = html;
+}
+
+loadAd();
+</script>
+
+</body>
+</html>

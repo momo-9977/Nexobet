@@ -149,51 +149,7 @@ input:focus{
   color:#fecaca;
 }
 
-/* Diamond Nav */
-.nav-floating{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:var(--diamond-gap);
-}
 
-.nav-diamond{
-  width:var(--diamond-size);
-  height:var(--diamond-size);
-  transform:rotate(45deg);
-  background:rgba(255,255,255,0.05);
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  backdrop-filter:blur(6px);
-  text-decoration:none;
-  transition:.25s;
-}
-
-.nav-diamond .icon{
-  transform:rotate(-45deg);
-  font-size:20px;
-  color:white;
-}
-
-.nav-diamond:hover{
-  transform:translateY(-8px) rotate(45deg);
-}
-
-.publish-btn{
-  width:76px;
-  height:76px;
-  background:linear-gradient(135deg,#a78bfa,#f472b6);
-}
-
-@media(max-width:700px){
-  .row{grid-template-columns:1fr}
-  .nav-floating{gap:30px}
-  .nav-diamond{width:52px;height:52px}
-}
 </style>
 </head>
 
@@ -247,13 +203,7 @@ input:focus{
 </form>
 </div>
 
-<!-- NAV -->
-<nav class="nav-floating">
-<a href="/" class="nav-diamond"><span class="icon">🏠</span></a>
-<a href="/categories" class="nav-diamond"><span class="icon">◫</span></a>
-<a href="/post-ad" class="nav-diamond publish-btn"><span class="icon">＋</span></a>
-<a href="/profile" class="nav-diamond"><span class="icon">👤</span></a>
-</nav>
+
 
 <script>
 const form=document.getElementById('form');

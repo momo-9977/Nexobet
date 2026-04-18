@@ -16,15 +16,10 @@
   --accent:#2ea3ff;
   --accent-2:#60a5fa;
   --success:#34d399;
-
-  --diamond-size-desktop:64px;
-  --diamond-size-mobile:52px;
-  --diamond-gap-desktop:64px;
-  --diamond-gap-mobile:30px;
-  --nav-bottom-offset:calc(20px + env(safe-area-inset-bottom,0px));
 }
 
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Inter,Arial,sans-serif;
@@ -151,8 +146,6 @@ body{
 .ad-desc{color:var(--muted);font-size:14px}
 .ad-price{font-weight:800;margin-top:10px}
 
-
-</style>
 /* ===== MODERN BOTTOM NAV FIX ===== */
 
 .modern-flat-nav{
@@ -183,7 +176,7 @@ body{
   gap:4px;
 }
 
-.modern-flat-item svg{
+.modern-flat-nav svg{
   width:22px !important;
   height:22px !important;
   display:block;
@@ -192,6 +185,8 @@ body{
 .modern-flat-item.active{
   color:#16a34a;
 }
+
+</style>
 </head>
 <body>
 
@@ -225,7 +220,7 @@ body{
 <!-- NAVIGATION -->
 <nav class="modern-flat-nav">
 
-  <a href="/" class="modern-flat-item">
+  <a href="/" class="modern-flat-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
     </svg>
@@ -264,5 +259,6 @@ body{
     }
   });
 </script>
+
 </body>
 </html>

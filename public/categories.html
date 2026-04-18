@@ -36,7 +36,7 @@
   gap:4px;
 }
 
-.modern-flat-item svg{
+.modern-flat-nav svg{
   width:22px !important;
   height:22px !important;
   display:block;
@@ -45,6 +45,7 @@
 .modern-flat-item.active{
   color:#16a34a;
 }
+
 /* ===== BASE ===== */
 
 body{
@@ -215,7 +216,7 @@ body{
     <span>الرئيسية</span>
   </a>
 
-  <a href="/categories" class="modern-flat-item">
+  <a href="/categories" class="modern-flat-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
       <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
     </svg>
@@ -236,7 +237,17 @@ body{
     </svg>
     <span>بروفايل</span>
   </a>
+
 </nav>
+
+<script>
+  const currentPath = window.location.pathname;
+  document.querySelectorAll(".modern-flat-item").forEach(link=>{
+    if(link.getAttribute("href") === currentPath){
+      link.classList.add("active");
+    }
+  });
+</script>
 
 </body>
 </html>

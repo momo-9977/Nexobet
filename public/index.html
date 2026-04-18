@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Le Marché</title>
+<title>Home</title>
 
 <style>
 :root{
   --bg-0:#071024;
   --bg-1:#081426;
   --card-bg:rgba(255,255,255,0.03);
-  --card-border:rgba(255,255,255,0.04);
+  --card-border:rgba(255,255,255,0.05);
   --text:#e6eef8;
   --muted:#9aa8c2;
   --accent:#2ea3ff;
   --accent-2:#60a5fa;
-  --success:#34d399;
+  --premium:#fbbf24;
 }
 
 *{box-sizing:border-box}
@@ -24,129 +24,222 @@ body{
   margin:0;
   font-family:Inter,Arial,sans-serif;
   background:
-  radial-gradient(circle at 10% 10%, rgba(46,163,255,0.06), transparent 12%),
+  radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
   linear-gradient(180deg,var(--bg-0),var(--bg-1));
   color:var(--text);
   padding-bottom:90px;
 }
 
-.page{max-width:1180px;margin:20px auto;padding:18px}
+.page{max-width:1200px;margin:20px auto;padding:18px}
 
-/* ---------- HEADER ---------- */
+/* ================= HEADER ================= */
+
 .home-brand-bar{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:12px 16px;border-radius:14px;
-  background:rgba(255,255,255,0.03);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 18px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.04);
   border:1px solid var(--card-border);
 }
 
-.home-logo-shell{
-  width:56px;height:56px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#043b66,#0b7bd6);
-  font-weight:800;font-size:18px
+.logo-area{
+  display:flex;
+  align-items:center;
+  gap:14px;
 }
 
-.home-brand-text h1{margin:0;font-size:20px}
-.home-brand-text p{margin:0;color:var(--muted);font-size:13px}
-
-/* ---------- CARD ---------- */
-.home-card{
-  background:var(--card-bg);
+.logo-img{
+  width:54px;
+  height:54px;
   border-radius:14px;
-  padding:18px;
-  margin-top:20px;
-  border:1px solid var(--card-border);
+  background:linear-gradient(135deg,#043b66,#0b7bd6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
 }
 
-/* ---------- HERO ---------- */
-.hero-slider{
+.brand-text{
+  text-align:right;
+}
+
+.brand-text h1{
+  margin:0;
+  font-size:20px;
+}
+
+.brand-text p{
+  margin:0;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* ================= HERO SLIDER ================= */
+
+.hero{
+  margin-top:20px;
   position:relative;
-  min-height:260px;
-  border-radius:12px;
+  height:320px;
+  border-radius:18px;
   overflow:hidden;
 }
+
 .hero-slide{
-  position:absolute;inset:0;
-  opacity:0;
-  transition:opacity .4s ease;
+  position:absolute;
+  inset:0;
   background-size:cover;
   background-position:center;
+  opacity:0;
+  transition:opacity .6s ease;
 }
+
 .hero-slide.active{opacity:1}
-.hero-slide::after{
+
+.hero::after{
   content:"";
-  position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(0,0,0,.4),rgba(0,0,0,.6));
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.5));
 }
-.hero-slide-content{
-  position:relative;z-index:2;
-  padding:30px;
-}
-.hero-slide-content h2{margin:0 0 10px;font-size:28px}
-.hero-slide-content p{color:var(--muted)}
 
-.hero-arrow{
-  position:absolute;top:50%;
-  transform:translateY(-50%);
-  width:50px;height:50px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.05);
-  border:none;color:white;
-  cursor:pointer;font-size:22px
+.hero-dots{
+  position:absolute;
+  bottom:15px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:8px;
+  z-index:5;
 }
-.hero-arrow.left{left:15px}
-.hero-arrow.right{right:15px}
 
-/* ---------- SEARCH ---------- */
-.search-panel{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:12px;
-}
-.search-box input{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.05);
-  background:rgba(0,0,0,.3);
-  color:white;
-}
-.search-main-btn{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  border:none;
-  padding:12px 18px;
-  border-radius:12px;
-  font-weight:700;
-  color:white;
+.hero-dots span{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.4);
   cursor:pointer;
 }
 
-/* ---------- ADS ---------- */
+.hero-dots span.active{
+  background:white;
+}
+
+/* ================= SEARCH ================= */
+
+.search-box{
+  margin-top:25px;
+  display:flex;
+  gap:10px;
+}
+
+.search-box input{
+  flex:1;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  background:rgba(255,255,255,.05);
+  color:white;
+}
+
+.search-box button{
+  padding:14px 18px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:white;
+  font-weight:700;
+}
+
+/* ================= SECTION ================= */
+
+.section{
+  margin-top:35px;
+}
+
+.section-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.section-header h2{
+  margin:0;
+  font-size:18px;
+}
+
+.section-header a{
+  color:var(--accent);
+  text-decoration:none;
+  font-size:14px;
+}
+
+/* ================= ADS GRID ================= */
+
 .ads-grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:16px;
-  margin-top:15px;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:18px;
 }
+
 .ad-card{
-  background:rgba(255,255,255,0.03);
-  border-radius:14px;
+  background:var(--card-bg);
+  border-radius:16px;
   overflow:hidden;
-  border:1px solid rgba(255,255,255,0.04);
+  border:1px solid var(--card-border);
   transition:.3s;
 }
+
 .ad-card:hover{transform:translateY(-6px)}
+
 .ad-image{
-  width:100%;height:200px;
+  width:100%;
+  height:180px;
   object-fit:cover;
 }
-.ad-content{padding:14px}
-.ad-title{margin:8px 0;font-size:18px}
-.ad-desc{color:var(--muted);font-size:14px}
-.ad-price{font-weight:800;margin-top:10px}
 
-/* ===== MODERN BOTTOM NAV FIX ===== */
+.ad-content{padding:14px}
+
+.ad-title{font-size:15px;margin:0 0 6px}
+
+.ad-price{font-weight:800}
+
+.premium-badge{
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:var(--premium);
+  color:black;
+  padding:4px 8px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+}
+
+/* ================= CATEGORIES ================= */
+
+.categories{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+}
+
+.category{
+  background:rgba(255,255,255,.05);
+  padding:18px;
+  border-radius:16px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.category:hover{
+  background:rgba(255,255,255,.08);
+}
+
+/* ================= NAV (UNCHANGED) ================= */
 
 .modern-flat-nav{
   position:fixed;
@@ -179,45 +272,103 @@ body{
 .modern-flat-nav svg{
   width:22px !important;
   height:22px !important;
-  display:block;
 }
 
 .modern-flat-item.active{
   color:#16a34a;
 }
 
+@media(max-width:700px){
+  .hero{height:240px}
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="page">
 
+<!-- HEADER -->
 <header class="home-brand-bar">
-  <div style="display:flex;gap:12px;align-items:center">
-    <div class="home-logo-shell">LM</div>
-    <div class="home-brand-text">
+  <div class="logo-area">
+    <div class="logo-img">LM</div>
+    <div class="brand-text">
       <h1>Le Marché</h1>
       <p>Vendre et acheter facilement</p>
     </div>
   </div>
 </header>
 
-<section class="home-card">
-  <div class="hero-slider" id="heroSlider">
-    <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop')">
-      <div class="hero-slide-content">
-        <h2>مرحبا بك في Le Marché</h2>
-        <p>بيع وشراء بسهولة</p>
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop')"></div>
+  <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=1600&auto=format&fit=crop')"></div>
+
+  <div class="hero-dots"></div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-box">
+  <input placeholder="ابحث عن أي شيء...">
+  <button>بحث</button>
+</div>
+
+<!-- PREMIUM ADS -->
+<div class="section">
+  <div class="section-header">
+    <h2>إعلانات مميزة</h2>
+  </div>
+
+  <div class="ads-grid">
+    <div class="ad-card">
+      <div style="position:relative">
+        <img class="ad-image" src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
+        <div class="premium-badge">مميز</div>
+      </div>
+      <div class="ad-content">
+        <div class="ad-title">iPhone 15 Pro</div>
+        <div class="ad-price">9500 د.م</div>
       </div>
     </div>
   </div>
-  <button class="hero-arrow left">‹</button>
-  <button class="hero-arrow right">›</button>
-</section>
+</div>
+
+<!-- LATEST ADS -->
+<div class="section">
+  <div class="section-header">
+    <h2>أحدث الإعلانات</h2>
+    <a href="/categories">عرض الكل</a>
+  </div>
+
+  <div class="ads-grid">
+    <div class="ad-card">
+      <img class="ad-image" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200&auto=format&fit=crop">
+      <div class="ad-content">
+        <div class="ad-title">سيارة BMW</div>
+        <div class="ad-price">180000 د.م</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="section">
+  <div class="section-header">
+    <h2>الأقسام</h2>
+  </div>
+
+  <div class="categories">
+    <div class="category">الهواتف</div>
+    <div class="category">السيارات</div>
+    <div class="category">العقارات</div>
+    <div class="category">الأثاث</div>
+  </div>
+</div>
 
 </div>
 
-<!-- NAVIGATION -->
+<!-- NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
 
   <a href="/" class="modern-flat-item active">
@@ -252,12 +403,34 @@ body{
 </nav>
 
 <script>
-  const currentPath = window.location.pathname;
-  document.querySelectorAll(".modern-flat-item").forEach(link=>{
-    if(link.getAttribute("href") === currentPath){
-      link.classList.add("active");
-    }
-  });
+
+/* HERO AUTOPLAY */
+const slides = document.querySelectorAll('.hero-slide');
+const dotsContainer = document.querySelector('.hero-dots');
+let current = 0;
+
+slides.forEach((_,i)=>{
+  const dot=document.createElement('span');
+  if(i===0) dot.classList.add('active');
+  dot.onclick=()=>goTo(i);
+  dotsContainer.appendChild(dot);
+});
+
+const dots=document.querySelectorAll('.hero-dots span');
+
+function goTo(i){
+  slides[current].classList.remove('active');
+  dots[current].classList.remove('active');
+  current=i;
+  slides[current].classList.add('active');
+  dots[current].classList.add('active');
+}
+
+setInterval(()=>{
+  let next=(current+1)%slides.length;
+  goTo(next);
+},4000);
+
 </script>
 
 </body>

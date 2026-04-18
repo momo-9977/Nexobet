@@ -1,3 +1,5 @@
+/* ================= RESET ================= */
+
 * {
   margin: 0;
   padding: 0;
@@ -25,17 +27,21 @@
   --diamond-gap-mobile: 30px;
 }
 
+/* ================= BASE ================= */
+
 body {
   font-family: Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  padding-bottom: 140px;
+
+  /* مهم باش المينيو ما يغطيش المحتوى */
+  padding-bottom: 120px;
 }
 
 .page {
   max-width: 920px;
   margin: auto;
-  padding: 18px 16px 110px;
+  padding: 18px 16px 40px;
 }
 
 /* ================= HEADER ================= */
@@ -208,7 +214,7 @@ body {
   }
 }
 
-/* ================= DIAMOND NAVIGATION ================= */
+/* ================= DIAMOND FLOATING NAV ================= */
 
 .nav-floating {
   position: fixed;
@@ -218,7 +224,7 @@ body {
   display: flex;
   gap: var(--diamond-gap-desktop);
   align-items: center;
-  z-index: 140;
+  z-index: 999;
 }
 
 .nav-diamond {

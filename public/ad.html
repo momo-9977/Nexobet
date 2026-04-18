@@ -3,57 +3,221 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>تفاصيل الإعلان</title>
+<title>Le Marché — تفاصيل الإعلان</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#071024;
-  color:#e6eef8;
+:root{
+  --bg-0:#071024;
+  --bg-1:#081426;
+  --card-bg:rgba(255,255,255,0.04);
+  --card-border:rgba(255,255,255,0.05);
+  --text:#e6eef8;
+  --muted:#9aa8c2;
+  --accent:#2ea3ff;
+  --accent-2:#60a5fa;
+  --success:#22c55e;
+
+  --diamond-size:64px;
+  --diamond-gap:64px;
 }
 
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
+    linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  color:var(--text);
+  padding-bottom:130px;
+}
+
+/* Top Bar */
+.top-bar{
+  position:sticky;
+  top:0;
+  backdrop-filter:blur(14px);
+  background:rgba(15,23,42,.7);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  z-index:1000;
+}
+
+.back-btn{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:.2s;
+}
+.back-btn:hover{
+  background:rgba(255,255,255,0.12);
+  transform:scale(1.05);
+}
+
+.page-title{
+  font-weight:700;
+  font-size:16px;
+}
+
+/* Layout */
 .container{
-  max-width:900px;
+  max-width:950px;
   margin:30px auto;
   padding:20px;
 }
 
 .card{
-  background:rgba(255,255,255,0.04);
-  padding:20px;
-  border-radius:12px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  padding:24px;
+  border-radius:22px;
   margin-bottom:20px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 15px 40px rgba(0,0,0,.35);
 }
 
+.card h2{
+  margin-top:0;
+}
+
+.price{
+  font-size:22px;
+  font-weight:800;
+  color:var(--success);
+}
+
+/* Images */
 .images img{
   width:100%;
-  max-height:400px;
+  max-height:450px;
   object-fit:cover;
-  border-radius:8px;
-  margin-bottom:10px;
+  border-radius:18px;
+  margin-bottom:12px;
+  transition:.3s;
+}
+.images img:hover{
+  transform:scale(1.02);
 }
 
-.video{
-  width:100%;
-  border-radius:8px;
-}
-
+/* Owner */
 .owner{
-  background:#0c162c;
-  padding:12px;
-  border-radius:8px;
+  background:rgba(255,255,255,0.03);
+}
+
+.contact-actions{
+  display:flex;
+  gap:10px;
   margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.contact-btn{
+  padding:10px 16px;
+  border-radius:14px;
+  text-decoration:none;
+  font-weight:700;
+  font-size:14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  transition:.2s;
+  color:white;
+}
+
+.call{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.mail{background:linear-gradient(135deg,#2563eb,#3b82f6)}
+.whatsapp{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}
+
+.contact-btn:hover{
+  transform:translateY(-2px);
+}
+
+/* Diamond Nav */
+.nav-floating{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:var(--diamond-gap);
+}
+
+.nav-diamond{
+  width:var(--diamond-size);
+  height:var(--diamond-size);
+  transform:rotate(45deg);
+  background:rgba(255,255,255,0.05);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(6px);
+  text-decoration:none;
+  transition:.25s;
+}
+
+.nav-diamond .icon{
+  transform:rotate(-45deg);
+  font-size:20px;
+  color:white;
+}
+
+.nav-diamond:hover{
+  transform:translateY(-8px) rotate(45deg);
+}
+
+.publish-btn{
+  width:76px;
+  height:76px;
+  background:linear-gradient(135deg,#a78bfa,#f472b6);
+}
+
+@media(max-width:700px){
+  .nav-floating{gap:30px}
+  .nav-diamond{width:52px;height:52px}
 }
 </style>
 </head>
 <body>
 
-<div class="container">
-<div id="adContainer"></div>
+<div class="top-bar">
+  <div class="back-btn" onclick="history.back()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </div>
+  <div class="page-title">تفاصيل الإعلان</div>
 </div>
 
+<div class="container">
+  <div id="adContainer"></div>
+</div>
+
+<!-- Diamond Navigation -->
+<nav class="nav-floating">
+<a href="/" class="nav-diamond"><span class="icon">🏠</span></a>
+<a href="/categories" class="nav-diamond"><span class="icon">◫</span></a>
+<a href="/post-ad" class="nav-diamond publish-btn"><span class="icon">＋</span></a>
+<a href="/profile" class="nav-diamond"><span class="icon">👤</span></a>
+</nav>
+
 <script>
+function escapeHtml(s=''){
+  return String(s).replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
+  );
+}
+
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 
@@ -70,10 +234,10 @@ async function loadAd(){
 
   let html = `
     <div class="card">
-      <h2>${ad.title}</h2>
-      <p><b>الثمن:</b> ${ad.price} د.م</p>
-      <p><b>المدينة:</b> ${ad.city}</p>
-      <p>${ad.description}</p>
+      <h2>${escapeHtml(ad.title)}</h2>
+      <p class="price">${escapeHtml(ad.price)} د.م</p>
+      <p><b>المدينة:</b> ${escapeHtml(ad.city||'')}</p>
+      <p>${escapeHtml(ad.description||'')}</p>
     </div>
   `;
 
@@ -85,20 +249,16 @@ async function loadAd(){
     html += `</div>`;
   }
 
-  if(ad.video){
-    html += `
-      <div class="card">
-        <video controls class="video" src="${ad.video}"></video>
-      </div>
-    `;
-  }
-
   html += `
     <div class="card owner">
       <h3>معلومات البائع</h3>
-      <p>${ad.owner_name || ''}</p>
-      ${ad.owner_phone ? `<p>الهاتف: ${ad.owner_phone}</p>` : ''}
-      ${ad.owner_email ? `<p>الإيميل: ${ad.owner_email}</p>` : ''}
+      <p>${escapeHtml(ad.owner_name || '')}</p>
+
+      <div class="contact-actions">
+        ${ad.owner_phone ? `<a class="contact-btn call" href="tel:${ad.owner_phone}">📞 اتصال</a>` : ''}
+        ${ad.owner_email ? `<a class="contact-btn mail" href="mailto:${ad.owner_email}">📧 إيميل</a>` : ''}
+        ${ad.owner_phone ? `<a class="contact-btn whatsapp" target="_blank" href="https://wa.me/${ad.owner_phone.replace(/\D/g,'')}">💬 واتساب</a>` : ''}
+      </div>
     </div>
   `;
 
@@ -106,38 +266,6 @@ async function loadAd(){
 }
 
 loadAd();
-<nav class="modern-flat-nav">
-
-  <a href="/" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
-    <span>الرئيسية</span>
-  </a>
-
-  <a href="/categories" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
-    <span>الأقسام</span>
-  </a>
-
-  <a href="/post-ad" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
-    <span>نشر</span>
-  </a>
-
-  <a href="/profile" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
-    <span>بروفايل</span>
-  </a>
-
-</nav>
 </script>
 
 </body>

@@ -3,69 +3,125 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>بروفايل — Le Marché</title>
+<title>Le Marché — البروفايل</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#071024;
-  color:#e6eef8;
+:root{
+  --bg-0:#071024;
+  --bg-1:#081426;
+  --card-bg:rgba(255,255,255,0.04);
+  --card-border:rgba(255,255,255,0.05);
+  --text:#e6eef8;
+  --muted:#9aa8c2;
+  --accent:#2ea3ff;
+  --accent-2:#60a5fa;
+  --danger:#ef4444;
+  --success:#34d399;
+
+  --diamond-size:64px;
+  --diamond-gap:64px;
 }
 
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
+    linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  color:var(--text);
+  padding-bottom:130px;
+}
+
+/* Back Button */
+.back-btn{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.05);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(6px);
+  z-index:100;
+}
+.back-btn:hover{transform:translateY(-3px)}
+
 .container{
-  max-width:900px;
-  margin:30px auto;
+  max-width:1000px;
+  margin:80px auto 40px;
   padding:20px;
 }
 
 .card{
-  background:rgba(255,255,255,0.04);
-  padding:20px;
-  border-radius:12px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  padding:24px;
+  border-radius:20px;
   margin-bottom:20px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 20px 45px rgba(0,0,0,.4);
 }
+
+h2{margin-top:0}
 
 input{
   width:100%;
-  padding:10px;
-  margin-top:6px;
-  margin-bottom:14px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.1);
-  background:#0c162c;
+  padding:14px;
+  margin:8px 0 16px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);
   color:white;
+  font-size:14px;
+  outline:none;
+}
+
+input:focus{
+  border-color:rgba(46,163,255,.5);
+  box-shadow:0 0 0 6px rgba(46,163,255,.08);
 }
 
 button{
-  padding:10px 16px;
+  padding:12px 18px;
   border:none;
-  border-radius:8px;
+  border-radius:14px;
   cursor:pointer;
-  font-weight:bold;
+  font-weight:700;
+  transition:.2s;
 }
 
 .btn-primary{
-  background:#2ea3ff;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
   color:white;
 }
 
 .btn-danger{
-  background:#ef4444;
+  background:linear-gradient(135deg,#ef4444,#b91c1c);
   color:white;
 }
 
+.btn-primary:hover,.btn-danger:hover{
+  transform:translateY(-3px);
+}
+
 .avatar{
-  width:100px;
-  height:100px;
-  border-radius:12px;
-  background:#2ea3ff;
+  width:120px;
+  height:120px;
+  border-radius:18px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:30px;
+  font-size:40px;
   cursor:pointer;
   overflow:hidden;
+  margin-bottom:15px;
 }
 
 .avatar img{
@@ -74,94 +130,152 @@ button{
   object-fit:cover;
 }
 
-.ad{
-  background:#0c162c;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:10px;
+.ads-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:16px;
+}
+
+.ad-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:16px;
+  padding:16px;
+}
+
+.ad-card h4{
+  margin:0 0 8px;
+}
+
+.ad-actions{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.msg{
+  margin-bottom:20px;
+  font-weight:600;
+  color:var(--success);
+}
+
+/* Diamond Nav */
+.nav-floating{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:var(--diamond-gap);
+}
+
+.nav-diamond{
+  width:var(--diamond-size);
+  height:var(--diamond-size);
+  transform:rotate(45deg);
+  background:rgba(255,255,255,0.05);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(6px);
+  text-decoration:none;
+  transition:.25s;
+}
+
+.nav-diamond .icon{
+  transform:rotate(-45deg);
+  font-size:20px;
+  color:white;
+}
+
+.nav-diamond:hover{
+  transform:translateY(-8px) rotate(45deg);
+}
+
+.publish-btn{
+  width:76px;
+  height:76px;
+  background:linear-gradient(135deg,#a78bfa,#f472b6);
+}
+
+@media(max-width:700px){
+  .nav-floating{gap:30px}
+  .nav-diamond{width:52px;height:52px}
 }
 </style>
 </head>
 
 <body>
 
+<div class="back-btn" onclick="history.back()">←</div>
+
 <div class="container">
 
-<div id="msg"></div>
+<div id="msg" class="msg"></div>
 
 <div class="card">
-  <h2>معلومات الحساب</h2>
+<h2>معلومات الحساب</h2>
 
-  <div class="avatar" id="avatarBox">
-    <span id="avatarLetter">U</span>
-    <img id="avatarImg" style="display:none">
-  </div>
-  <input type="file" id="avatarInput" style="display:none" accept="image/*">
+<div class="avatar" id="avatarBox">
+<span id="avatarLetter">U</span>
+<img id="avatarImg" style="display:none">
+</div>
+<input type="file" id="avatarInput" style="display:none" accept="image/*">
 
-  <label>الاسم</label>
-  <input id="nameInput" readonly>
+<label>الاسم</label>
+<input id="nameInput" readonly>
 
-  <label>البريد</label>
-  <input id="emailInput" readonly>
+<label>البريد</label>
+<input id="emailInput" readonly>
 
-  <label>الهاتف</label>
-  <input id="phoneInput">
+<label>الهاتف</label>
+<input id="phoneInput">
 
-  <button class="btn-primary" id="saveBtn">حفظ التغييرات</button>
+<button class="btn-primary" id="saveBtn">حفظ التغييرات</button>
 </div>
 
 <div class="card">
-  <h2>تغيير كلمة السر</h2>
-
-  <label>كلمة السر الحالية</label>
-  <input type="password" id="currentPwd">
-
-  <label>كلمة السر الجديدة</label>
-  <input type="password" id="newPwd">
-
-  <label>تأكيد كلمة السر</label>
-  <input type="password" id="confirmPwd">
-
-  <button class="btn-primary" id="changePwdBtn">تغيير كلمة السر</button>
-</div>
-
-<div class="card">
-  <h2>إعلاناتي</h2>
-  <div id="adsContainer"></div>
+<h2>إعلاناتي</h2>
+<div id="adsContainer" class="ads-grid"></div>
 </div>
 
 <button class="btn-danger" id="logoutBtn">تسجيل الخروج</button>
 
 </div>
 
+<!-- NAV -->
+<nav class="nav-floating">
+  <a href="/" class="nav-diamond"><span class="icon">🏠</span></a>
+  <a href="/categories" class="nav-diamond"><span class="icon">◫</span></a>
+  <a href="/post-ad" class="nav-diamond publish-btn"><span class="icon">＋</span></a>
+  <a href="/profile" class="nav-diamond"><span class="icon">👤</span></a>
+</nav>
+
 <script>
-const qs = s => document.querySelector(s);
+const qs=s=>document.querySelector(s);
 
 function showMsg(t){
-  qs('#msg').textContent = t;
-  setTimeout(()=> qs('#msg').textContent='',3000);
+  qs('#msg').textContent=t;
+  setTimeout(()=>qs('#msg').textContent='',3000);
 }
 
 async function requireAuth(){
-  const res = await fetch('/api/auth/me',{credentials:'include'});
-  if(!res.ok){
-    location.href='/login';
-    return null;
-  }
+  const res=await fetch('/api/auth/me',{credentials:'include'});
+  if(!res.ok){location.href='/login';return null;}
   return await res.json();
 }
 
 let currentUser=null;
 
 async function loadProfile(){
-  const u = await requireAuth();
-  if(!u) return;
+  const u=await requireAuth();
+  if(!u)return;
   currentUser=u;
 
   qs('#nameInput').value=u.name||'';
   qs('#emailInput').value=u.email||'';
   qs('#phoneInput').value=u.phone||'';
-
   qs('#avatarLetter').textContent=(u.name||'U')[0];
 
   if(u.avatar){
@@ -174,146 +288,74 @@ async function loadProfile(){
 }
 
 async function loadAds(){
-  const res = await fetch('/api/my/ads',{credentials:'include'});
-  if(!res.ok) return;
+  const res=await fetch('/api/my/ads',{credentials:'include'});
+  if(!res.ok)return;
 
-  const ads = await res.json();
+  const ads=await res.json();
   const container=qs('#adsContainer');
   container.innerHTML='';
 
   if(!ads.length){
-    container.innerHTML='<p>لا توجد إعلانات</p>';
+    container.innerHTML='<p style="color:var(--muted)">لا توجد إعلانات</p>';
     return;
   }
 
   ads.forEach(ad=>{
     const div=document.createElement('div');
-    div.className='ad';
+    div.className='ad-card';
     div.innerHTML=`
-      <b>${ad.title}</b><br>
-      ${ad.price} د.م<br>
-      <button onclick="deleteAd('${ad.id}')">حذف</button>
+      <h4>${ad.title}</h4>
+      <div>${ad.price} د.م</div>
+      <div class="ad-actions">
+        <button class="btn-primary" onclick="location.href='/edit-ad?id=${ad.id}'">تعديل</button>
+        <button class="btn-danger" onclick="deleteAd('${ad.id}')">حذف</button>
+      </div>
     `;
     container.appendChild(div);
   });
 }
 
 async function deleteAd(id){
-  if(!confirm('حذف الإعلان؟')) return;
-  const res = await fetch('/api/ads/'+id,{method:'DELETE',credentials:'include'});
-  if(res.ok){
-    showMsg('تم الحذف');
-    loadAds();
-  }
+  if(!confirm('حذف الإعلان؟'))return;
+  const res=await fetch('/api/ads/'+id,{method:'DELETE',credentials:'include'});
+  if(res.ok){showMsg('تم الحذف');loadAds();}
 }
 
-qs('#saveBtn').onclick=async ()=>{
-  if(!currentUser) return;
+qs('#saveBtn').onclick=async()=>{
   const res=await fetch('/api/users/'+currentUser.id,{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     credentials:'include',
     body:JSON.stringify({phone:qs('#phoneInput').value})
   });
-
-  if(res.ok){
-    showMsg('تم الحفظ');
-  }else{
-    showMsg('فشل الحفظ');
-  }
+  if(res.ok)showMsg('تم الحفظ');
 };
 
-qs('#changePwdBtn').onclick=async ()=>{
-  if(qs('#newPwd').value!==qs('#confirmPwd').value){
-    showMsg('كلمة السر غير متطابقة');
-    return;
-  }
-
-  const res=await fetch('/api/auth/password',{
-    method:'PATCH',
-    headers:{'Content-Type':'application/json'},
-    credentials:'include',
-    body:JSON.stringify({
-      currentPassword:qs('#currentPwd').value,
-      newPassword:qs('#newPwd').value
-    })
-  });
-
-  if(res.ok){
-    showMsg('تم تغيير كلمة السر');
-    qs('#currentPwd').value='';
-    qs('#newPwd').value='';
-    qs('#confirmPwd').value='';
-  }else{
-    showMsg('فشل تغيير كلمة السر');
-  }
+qs('#logoutBtn').onclick=async()=>{
+  await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
+  location.href='/login';
 };
 
-qs('#avatarBox').onclick=()=> qs('#avatarInput').click();
+qs('#avatarBox').onclick=()=>qs('#avatarInput').click();
 
 qs('#avatarInput').addEventListener('change',async e=>{
-  if(!currentUser) return;
   const file=e.target.files[0];
-  if(!file) return;
-
+  if(!file)return;
   const fd=new FormData();
   fd.append('avatar',file);
-
   const res=await fetch('/api/users/'+currentUser.id+'/avatar',{
-    method:'PUT',
-    body:fd,
-    credentials:'include'
+    method:'PUT',body:fd,credentials:'include'
   });
-
   if(res.ok){
     const data=await res.json();
     qs('#avatarImg').src=data.avatar;
     qs('#avatarImg').style.display='block';
     qs('#avatarLetter').style.display='none';
     showMsg('تم تحديث الصورة');
-  }else{
-    showMsg('فشل رفع الصورة');
   }
 });
 
-qs('#logoutBtn').onclick=async ()=>{
-  await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
-  location.href='/login';
-};
-
 document.addEventListener('DOMContentLoaded',loadProfile);
-<nav class="modern-flat-nav">
-
-  <a href="/" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
-    <span>الرئيسية</span>
-  </a>
-
-  <a href="/categories" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
-    <span>الأقسام</span>
-  </a>
-
-  <a href="/post-ad" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
-    <span>نشر</span>
-  </a>
-
-  <a href="/profile" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
-    <span>بروفايل</span>
-  </a>
-
-</nav>
 </script>
 
 </body>

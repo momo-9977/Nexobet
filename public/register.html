@@ -1,157 +1,315 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>سمسار — إنشاء حساب</title>
-  <style>
-    :root{
-      --bg:#08101d; --card:rgba(255,255,255,0.06);
-      --muted:#94a3b8; --text:#f8fafc; --accent:#2563eb;
-      --danger:#ef4444;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#08101d,#0c1524);font-family:Arial, sans-serif;color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px}
-    .panel{width:100%;max-width:520px;background:var(--card);border-radius:16px;padding:22px;box-shadow:0 18px 40px rgba(0,0,0,0.35)}
-    h2{margin:0 0 6px;font-size:26px}
-    p.lead{margin:0 0 14px;color:var(--muted)}
-    .field{margin-bottom:12px;display:flex;flex-direction:column;gap:6px}
-    label{font-weight:700;color:#e6eef8;font-size:13px}
-    input{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);outline:none}
-    input::placeholder{color:var(--muted)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .btn{width:100%;padding:12px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
-    .btn.primary{background:linear-gradient(135deg,var(--accent),#3b82f6);color:#fff}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
-    .muted{color:var(--muted);font-size:13px}
-    .error{color:var(--danger);font-size:13px;display:none;margin-top:6px}
-    .message{display:none;padding:10px;border-radius:8px;margin-bottom:12px}
-    .message.ok{background:rgba(16,185,129,0.08);color:#86efac}
-    .message.err{background:rgba(239,68,68,0.06);color:#fecaca}
-    @media (max-width:640px){.row{grid-template-columns:1fr}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le Marché — إنشاء حساب</title>
+
+<style>
+:root{
+  --bg-0:#071024;
+  --bg-1:#081426;
+  --card-bg:rgba(255,255,255,0.04);
+  --card-border:rgba(255,255,255,0.05);
+  --text:#e6eef8;
+  --muted:#9aa8c2;
+  --accent:#2ea3ff;
+  --accent-2:#60a5fa;
+  --danger:#ef4444;
+  --success:#34d399;
+
+  --diamond-size:64px;
+  --diamond-gap:64px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
+    linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  color:var(--text);
+  padding-bottom:130px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+}
+
+/* Back Button */
+.back-btn{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.05);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(6px);
+  z-index:100;
+}
+.back-btn:hover{transform:translateY(-3px)}
+
+.panel{
+  width:100%;
+  max-width:540px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:20px;
+  padding:28px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 20px 45px rgba(0,0,0,.4);
+}
+
+h2{margin:0 0 6px;font-size:26px}
+.lead{margin:0 0 18px;color:var(--muted)}
+
+.field{margin-bottom:14px;display:flex;flex-direction:column}
+label{font-weight:700;font-size:14px;margin-bottom:6px}
+
+input{
+  padding:14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);
+  color:white;
+  font-size:14px;
+  outline:none;
+  transition:.2s;
+}
+
+input:focus{
+  border-color:rgba(46,163,255,.5);
+  box-shadow:0 0 0 6px rgba(46,163,255,.08);
+}
+
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  font-weight:800;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn.primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:white;
+}
+
+.btn.ghost{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.1);
+  color:white;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.btn:hover{
+  transform:translateY(-3px);
+}
+
+.error{
+  color:var(--danger);
+  font-size:13px;
+  display:none;
+  margin-bottom:10px;
+}
+
+.message{
+  display:none;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:14px;
+  font-weight:600;
+}
+
+.message.ok{
+  background:rgba(16,185,129,0.08);
+  color:#86efac;
+}
+
+.message.err{
+  background:rgba(239,68,68,0.08);
+  color:#fecaca;
+}
+
+/* Diamond Nav */
+.nav-floating{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:var(--diamond-gap);
+}
+
+.nav-diamond{
+  width:var(--diamond-size);
+  height:var(--diamond-size);
+  transform:rotate(45deg);
+  background:rgba(255,255,255,0.05);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(6px);
+  text-decoration:none;
+  transition:.25s;
+}
+
+.nav-diamond .icon{
+  transform:rotate(-45deg);
+  font-size:20px;
+  color:white;
+}
+
+.nav-diamond:hover{
+  transform:translateY(-8px) rotate(45deg);
+}
+
+.publish-btn{
+  width:76px;
+  height:76px;
+  background:linear-gradient(135deg,#a78bfa,#f472b6);
+}
+
+@media(max-width:700px){
+  .row{grid-template-columns:1fr}
+  .nav-floating{gap:30px}
+  .nav-diamond{width:52px;height:52px}
+}
+</style>
 </head>
+
 <body>
-  <div class="panel" role="main" aria-labelledby="title">
-    <h2 id="title">إنشاء حساب جديد</h2>
-    <p class="lead">دخل معلوماتك باش تقدر تنشر وتراسل أصحاب الإعلانات.</p>
 
-    <div id="msg" class="message" role="status" aria-live="polite"></div>
+<div class="back-btn" onclick="history.back()">←</div>
 
-    <form id="form">
-      <div class="row">
-        <div class="field">
-          <label for="fullName">الاسم الكامل</label>
-          <input id="fullName" name="name" type="text" placeholder="مثال: محمد أمين" required />
-        </div>
-        <div class="field">
-          <label for="phone">رقم الهاتف</label>
-          <input id="phone" name="phone" type="tel" placeholder="06XXXXXXXX" required />
-        </div>
-      </div>
+<div class="panel">
+<h2>إنشاء حساب جديد</h2>
+<p class="lead">دخل معلوماتك باش تقدر تنشر وتراسل أصحاب الإعلانات.</p>
 
-      <div class="field">
-        <label for="email">البريد الإلكتروني</label>
-        <input id="email" name="email" type="email" placeholder="example@email.com" required />
-      </div>
+<div id="msg" class="message"></div>
+<div id="passErr" class="error">كلمتا المرور غير متطابقتين أو قصيرة</div>
 
-      <div class="row">
-        <div class="field">
-          <label for="password">كلمة المرور</label>
-          <input id="password" name="password" type="password" placeholder="أدخل كلمة المرور" required minlength="6" />
-        </div>
-        <div class="field">
-          <label for="confirm">تأكيد كلمة المرور</label>
-          <input id="confirm" name="confirm" type="password" placeholder="أعد كتابة كلمة المرور" required minlength="6" />
-        </div>
-      </div>
+<form id="form">
 
-      <div id="passErr" class="error">كلمتا المرور غير متطابقتين أو قصيرة</div>
+<div class="row">
+<div class="field">
+<label>الاسم الكامل</label>
+<input id="fullName" required>
+</div>
 
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <button id="submitBtn" class="btn primary" type="submit">تسجيل الحساب</button>
-        <a class="btn ghost" href="/login" role="button">سجل الدخول</a>
-      </div>
+<div class="field">
+<label>رقم الهاتف</label>
+<input id="phone" required>
+</div>
+</div>
 
-      <p style="margin-top:12px" class="muted">بمواصلة التسجيل كتوافق على شروط الخدمة.</p>
-    </form>
-  </div>
+<div class="field">
+<label>البريد الإلكتروني</label>
+<input id="email" type="email" required>
+</div>
+
+<div class="row">
+<div class="field">
+<label>كلمة المرور</label>
+<input id="password" type="password" minlength="6" required>
+</div>
+
+<div class="field">
+<label>تأكيد كلمة المرور</label>
+<input id="confirm" type="password" minlength="6" required>
+</div>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:12px">
+<button id="submitBtn" class="btn primary">تسجيل الحساب</button>
+<a href="/login" class="btn ghost">سجل الدخول</a>
+</div>
+
+</form>
+</div>
+
+<!-- NAV -->
+<nav class="nav-floating">
+<a href="/" class="nav-diamond"><span class="icon">🏠</span></a>
+<a href="/categories" class="nav-diamond"><span class="icon">◫</span></a>
+<a href="/post-ad" class="nav-diamond publish-btn"><span class="icon">＋</span></a>
+<a href="/profile" class="nav-diamond"><span class="icon">👤</span></a>
+</nav>
 
 <script>
-  (function(){
-    const form = document.getElementById('form');
-    const passErr = document.getElementById('passErr');
-    const msgEl = document.getElementById('msg');
-    const submitBtn = document.getElementById('submitBtn');
+const form=document.getElementById('form');
+const passErr=document.getElementById('passErr');
+const msg=document.getElementById('msg');
+const btn=document.getElementById('submitBtn');
 
-    function showMessage(text, ok=true){
-      msgEl.style.display = 'block';
-      msgEl.className = 'message ' + (ok ? 'ok' : 'err');
-      msgEl.textContent = text;
-    }
-    function hideMessage(){ msgEl.style.display='none'; msgEl.textContent=''; }
+function showMessage(text,ok=true){
+  msg.style.display='block';
+  msg.className='message '+(ok?'ok':'err');
+  msg.textContent=text;
+}
 
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      hideMessage();
-      passErr.style.display = 'none';
+form.addEventListener('submit',async e=>{
+e.preventDefault();
+passErr.style.display='none';
+msg.style.display='none';
 
-      const name = document.getElementById('fullName').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const confirm = document.getElementById('confirm').value;
+const name=fullName.value.trim();
+const phone=phone.value.trim();
+const email=email.value.trim();
+const password=password.value;
+const confirm=confirm.value;
 
-      if(password.length < 6 || password !== confirm){
-        passErr.style.display = 'block';
-        return;
-      }
+if(password.length<6 || password!==confirm){
+passErr.style.display='block';
+return;
+}
 
-      const payload = { name, phone, email, password };
+btn.disabled=true;
+btn.textContent='جاري الإرسال...';
 
-      // منع النقر المتكرر
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'جاري الإرسال...';
+try{
+const res=await fetch('/api/auth/register',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+credentials:'include',
+body:JSON.stringify({name,phone,email,password})
+});
 
-      try{
-        let res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          credentials: 'include',
-          body: JSON.stringify(payload)
-        });
+const data=await res.json().catch(()=>({}));
 
-        // fallback: لو register مش موجود نجرب login (بعض السيرفرات عندهم login فقط)
-        if(res.status === 404){
-          console.warn('/api/auth/register not found, trying /api/auth/login');
-          res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            credentials: 'include',
-            body: JSON.stringify({ email, password })
-          });
-        }
+if(res.ok){
+showMessage('تم التسجيل بنجاح — سيتم توجيهك للرئيسية',true);
+setTimeout(()=>location.href='/',1200);
+}else{
+showMessage(data.message||'حدث خطأ',false);
+}
+}catch(err){
+showMessage('خطأ في الاتصال بالسيرفر',false);
+}
 
-        const data = await res.json().catch(()=>({}));
-
-        if(res.ok){
-          showMessage(data.message || 'تم التسجيل بنجاح — غادي توجّه للصفحة الرئيسية', true);
-          setTimeout(()=> window.location.href = '/', 1200);
-        } else {
-          showMessage(data.message || ('خطأ: ' + res.status), false);
-        }
-
-        // debug hint: افتح Network tab وتأكد من Set-Cookie فـ response headers إذا بغيت الكوكي يخدم
-        console.log('server response', res.status, data);
-      }catch(err){
-        console.error(err);
-        showMessage('وقّع مشكل فالاتصال مع السيرفر', false);
-      }finally{
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'تسجيل الحساب';
-      }
-    });
-  })();
+btn.disabled=false;
+btn.textContent='تسجيل الحساب';
+});
 </script>
+
 </body>
 </html>

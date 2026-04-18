@@ -17,8 +17,6 @@
   --accent-2:#60a5fa;
   --danger:#ef4444;
   --success:#34d399;
-
-
 }
 
 *{box-sizing:border-box}
@@ -32,24 +30,6 @@ body{
   color:var(--text);
   padding-bottom:90px;
 }
-
-/* Back Button */
-.back-btn{
-  position:fixed;
-  top:20px;
-  right:20px;
-  width:48px;
-  height:48px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.05);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  backdrop-filter:blur(6px);
-  z-index:100;
-}
-.back-btn:hover{transform:translateY(-3px)}
 
 .container{
   max-width:1000px;
@@ -67,8 +47,6 @@ body{
   box-shadow:0 20px 45px rgba(0,0,0,.4);
 }
 
-h2{margin-top:0}
-
 input{
   width:100%;
   padding:14px;
@@ -77,13 +55,6 @@ input{
   border:1px solid rgba(255,255,255,0.06);
   background:rgba(255,255,255,0.03);
   color:white;
-  font-size:14px;
-  outline:none;
-}
-
-input:focus{
-  border-color:rgba(46,163,255,.5);
-  box-shadow:0 0 0 6px rgba(46,163,255,.08);
 }
 
 button{
@@ -92,7 +63,6 @@ button{
   border-radius:14px;
   cursor:pointer;
   font-weight:700;
-  transition:.2s;
 }
 
 .btn-primary{
@@ -105,62 +75,7 @@ button{
   color:white;
 }
 
-.btn-primary:hover,.btn-danger:hover{
-  transform:translateY(-3px);
-}
-
-.avatar{
-  width:120px;
-  height:120px;
-  border-radius:18px;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:40px;
-  cursor:pointer;
-  overflow:hidden;
-  margin-bottom:15px;
-}
-
-.avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.ads-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:16px;
-}
-
-.ad-card{
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.05);
-  border-radius:16px;
-  padding:16px;
-}
-
-.ad-card h4{
-  margin:0 0 8px;
-}
-
-.ad-actions{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-
-.msg{
-  margin-bottom:20px;
-  font-weight:600;
-  color:var(--success);
-}
-
-
-</style>
-/* ===== MODERN BOTTOM NAV FIX ===== */
+/* ===== NAVIGATION FIX ===== */
 
 .modern-flat-nav{
   position:fixed;
@@ -190,7 +105,7 @@ button{
   gap:4px;
 }
 
-.modern-flat-item svg{
+.modern-flat-nav svg{
   width:22px !important;
   height:22px !important;
   display:block;
@@ -199,49 +114,32 @@ button{
 .modern-flat-item.active{
   color:#16a34a;
 }
+</style>
 </head>
 
 <body>
 
-<div class="back-btn" onclick="history.back()">←</div>
-
 <div class="container">
-
-<div id="msg" class="msg"></div>
-
 <div class="card">
 <h2>معلومات الحساب</h2>
 
-<div class="avatar" id="avatarBox">
-<span id="avatarLetter">U</span>
-<img id="avatarImg" style="display:none">
-</div>
-<input type="file" id="avatarInput" style="display:none" accept="image/*">
-
 <label>الاسم</label>
-<input id="nameInput" readonly>
+<input value="User" readonly>
 
 <label>البريد</label>
-<input id="emailInput" readonly>
+<input value="user@email.com" readonly>
 
 <label>الهاتف</label>
-<input id="phoneInput">
+<input placeholder="رقم الهاتف">
 
-<button class="btn-primary" id="saveBtn">حفظ التغييرات</button>
+<button class="btn-primary">حفظ التغييرات</button>
 </div>
 
-<div class="card">
-<h2>إعلاناتي</h2>
-<div id="adsContainer" class="ads-grid"></div>
-</div>
-
-<button class="btn-danger" id="logoutBtn">تسجيل الخروج</button>
-
+<button class="btn-danger">تسجيل الخروج</button>
 </div>
 
 <!-- NAVIGATION -->
 <nav class="modern-flat-nav">
-
   <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
@@ -251,7 +149,7 @@ button{
 
   <a href="/categories" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
+      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v-7z"/>
     </svg>
     <span>الأقسام</span>
   </a>
@@ -263,121 +161,14 @@ button{
     <span>نشر</span>
   </a>
 
-  <a href="/profile" class="modern-flat-item">
+  <a href="/profile" class="modern-flat-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
       <circle cx="12" cy="7" r="3"/>
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
     </svg>
     <span>بروفايل</span>
   </a>
-
 </nav>
-
-<script>
-const qs=s=>document.querySelector(s);
-
-function showMsg(t){
-  qs('#msg').textContent=t;
-  setTimeout(()=>qs('#msg').textContent='',3000);
-}
-
-async function requireAuth(){
-  const res=await fetch('/api/auth/me',{credentials:'include'});
-  if(!res.ok){location.href='/login';return null;}
-  return await res.json();
-}
-
-let currentUser=null;
-
-async function loadProfile(){
-  const u=await requireAuth();
-  if(!u)return;
-  currentUser=u;
-
-  qs('#nameInput').value=u.name||'';
-  qs('#emailInput').value=u.email||'';
-  qs('#phoneInput').value=u.phone||'';
-  qs('#avatarLetter').textContent=(u.name||'U')[0];
-
-  if(u.avatar){
-    qs('#avatarImg').src=u.avatar;
-    qs('#avatarImg').style.display='block';
-    qs('#avatarLetter').style.display='none';
-  }
-
-  loadAds();
-}
-
-async function loadAds(){
-  const res=await fetch('/api/my/ads',{credentials:'include'});
-  if(!res.ok)return;
-
-  const ads=await res.json();
-  const container=qs('#adsContainer');
-  container.innerHTML='';
-
-  if(!ads.length){
-    container.innerHTML='<p style="color:var(--muted)">لا توجد إعلانات</p>';
-    return;
-  }
-
-  ads.forEach(ad=>{
-    const div=document.createElement('div');
-    div.className='ad-card';
-    div.innerHTML=`
-      <h4>${ad.title}</h4>
-      <div>${ad.price} د.م</div>
-      <div class="ad-actions">
-        <button class="btn-primary" onclick="location.href='/edit-ad?id=${ad.id}'">تعديل</button>
-        <button class="btn-danger" onclick="deleteAd('${ad.id}')">حذف</button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-async function deleteAd(id){
-  if(!confirm('حذف الإعلان؟'))return;
-  const res=await fetch('/api/ads/'+id,{method:'DELETE',credentials:'include'});
-  if(res.ok){showMsg('تم الحذف');loadAds();}
-}
-
-qs('#saveBtn').onclick=async()=>{
-  const res=await fetch('/api/users/'+currentUser.id,{
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    credentials:'include',
-    body:JSON.stringify({phone:qs('#phoneInput').value})
-  });
-  if(res.ok)showMsg('تم الحفظ');
-};
-
-qs('#logoutBtn').onclick=async()=>{
-  await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
-  location.href='/login';
-};
-
-qs('#avatarBox').onclick=()=>qs('#avatarInput').click();
-
-qs('#avatarInput').addEventListener('change',async e=>{
-  const file=e.target.files[0];
-  if(!file)return;
-  const fd=new FormData();
-  fd.append('avatar',file);
-  const res=await fetch('/api/users/'+currentUser.id+'/avatar',{
-    method:'PUT',body:fd,credentials:'include'
-  });
-  if(res.ok){
-    const data=await res.json();
-    qs('#avatarImg').src=data.avatar;
-    qs('#avatarImg').style.display='block';
-    qs('#avatarLetter').style.display='none';
-    showMsg('تم تحديث الصورة');
-  }
-});
-
-document.addEventListener('DOMContentLoaded',loadProfile);
-</script>
 
 </body>
 </html>

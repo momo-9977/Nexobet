@@ -32,7 +32,7 @@ body{
   radial-gradient(circle at 10% 10%, rgba(46,163,255,0.06), transparent 12%),
   linear-gradient(180deg,var(--bg-0),var(--bg-1));
   color:var(--text);
-  padding-bottom:120px;
+  padding-bottom:90px;
 }
 
 .page{max-width:1180px;margin:20px auto;padding:18px}
@@ -151,59 +151,7 @@ body{
 .ad-desc{color:var(--muted);font-size:14px}
 .ad-price{font-weight:800;margin-top:10px}
 
-/* ---------- NAV DIAMOND ---------- */
-.nav-floating{
-  position:fixed;
-  bottom:var(--nav-bottom-offset);
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:var(--diamond-gap-desktop);
-  z-index:200;
-}
 
-.nav-diamond{
-  --sz:var(--diamond-size-desktop);
-  width:var(--sz);
-  height:var(--sz);
-  transform:rotate(45deg);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:14px;
-  background:rgba(255,255,255,0.04);
-  backdrop-filter:blur(6px);
-  border:1px solid rgba(255,255,255,0.05);
-  transition:.25s;
-  text-decoration:none;
-}
-
-.nav-diamond .icon{
-  transform:rotate(-45deg);
-  font-size:20px;
-  color:white;
-}
-
-.nav-diamond:hover{
-  transform:translateY(-8px) rotate(45deg);
-}
-
-.nav-diamond.active{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  box-shadow:0 0 20px rgba(46,163,255,.6);
-}
-
-.publish-btn{
-  --sz:76px;
-  background:linear-gradient(135deg,#a78bfa,#f472b6);
-  box-shadow:0 0 25px rgba(164,92,255,.6);
-}
-
-@media(max-width:700px){
-  .ads-grid{grid-template-columns:1fr}
-  .nav-floating{gap:var(--diamond-gap-mobile)}
-  .nav-diamond{--sz:var(--diamond-size-mobile)}
-}
 </style>
 </head>
 <body>
@@ -237,7 +185,7 @@ body{
 
 <!-- NAVIGATION -->
 <nav class="modern-flat-nav">
-  <a href="/" class="modern-flat-item">
+  <a href="/categories" class="modern-flat-item"></a>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
     </svg>
@@ -268,16 +216,12 @@ body{
 </nav>
 
 <script>
-// auto active
-(function(){
-  const path = window.location.pathname;
-  document.querySelectorAll('#mainNav a').forEach(a=>{
-    if(a.getAttribute('href')===path){
-      a.classList.add('active');
+  const currentPath = window.location.pathname;
+  document.querySelectorAll(".modern-flat-item").forEach(link=>{
+    if(link.getAttribute("href") === currentPath){
+      link.classList.add("active");
     }
   });
-})();
 </script>
-
 </body>
 </html>

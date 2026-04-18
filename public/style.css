@@ -309,3 +309,17 @@ body {
 .modern-flat-item.active{
   color:#16a34a;
 }
+/* ===== FORCE FIX NAV ICON SIZE ===== */
+.modern-flat-nav svg {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  min-height: 22px !important;
+  max-width: 22px !important;
+  max-height: 22px !important;
+  display: block !important;
+}
+.modern-flat-nav {
+  height: 70px !important;
+  overflow: hidden !important;
+}

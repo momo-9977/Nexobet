@@ -99,6 +99,7 @@ body{
   border:none;
   background:rgba(255,255,255,0.06);
   color:white;
+  outline:none;
 }
 
 .sort-select{
@@ -107,6 +108,7 @@ body{
   border:none;
   background:rgba(255,255,255,0.06);
   color:white;
+  outline:none;
 }
 
 /* ===== GRID ===== */
@@ -123,6 +125,8 @@ body{
   cursor:pointer;
   background:#111;
   transition:.3s;
+  text-decoration:none;
+  color:inherit;
 }
 
 .category-card img{
@@ -218,14 +222,14 @@ body{
 <!-- NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
 
-  <a href="/" class="modern-flat-item active">
+  <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
     </svg>
     <span>الرئيسية</span>
   </a>
 
-  <a href="/categories" class="modern-flat-item">
+  <a href="/categories" class="modern-flat-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
       <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
     </svg>
@@ -250,49 +254,114 @@ body{
 </nav>
 
 <script>
+/*
+  ✅ API ROUTES (Ready for server/admin later)
+  -------------------------------------------
+  GET /api/categories?onlyActive=1&includeCounts=1&q=...&sort=order|adsCount|name
 
-/* ===== FETCH CATEGORIES FROM EXPRESS ===== */
+  Response example per item:
+  {
+    id: "phones",
+    name: "الهواتف",
+    description: "جديدة ومستعملة",
+    image: "/uploads/phones.jpg",
+    active: true,
+    adsCount: 12
+  }
+*/
+
+const els = {
+  container: document.getElementById('categoriesContainer'),
+  emptyState: document.getElementById('emptyState'),
+  searchInput: document.getElementById('searchInput'),
+  sortSelect: document.getElementById('sortSelect'),
+};
+
+let _debTimer = null;
+
+function buildCategoriesUrl(){
+  const q = (els.searchInput.value || '').trim();
+  const sort = (els.sortSelect.value || 'order').trim();
+
+  const params = new URLSearchParams();
+  params.set('onlyActive', '1');
+  params.set('includeCounts', '1'); // باش يجي adsCount من السيرفر
+  params.set('sort', sort);
+
+  if (q) params.set('q', q);
+
+  return '/api/categories?' + params.toString();
+}
+
+function showSkeleton(){
+  els.container.innerHTML = `
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  `;
+  els.emptyState.style.display = 'none';
+}
+
+function escapeHtml(s=''){
+  return String(s).replace(/[&<>"']/g, m => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+  ));
+}
+
 async function loadCategories(){
-  const container = document.getElementById('categoriesContainer');
-  const emptyState = document.getElementById('emptyState');
+  showSkeleton();
 
   try{
-    const res = await fetch('/api/categories');
+    const url = buildCategoriesUrl();
+    const res = await fetch(url, { credentials: 'include' });
+
+    if(!res.ok) throw new Error('failed');
+
     const categories = await res.json();
 
-    container.innerHTML = '';
+    els.container.innerHTML = '';
 
-    if(!categories.length){
-      emptyState.style.display = 'block';
+    const activeCats = (Array.isArray(categories) ? categories : []).filter(c => c && c.active);
+
+    if(!activeCats.length){
+      els.emptyState.style.display = 'block';
       return;
     }
 
-    categories.forEach(cat=>{
-      if(!cat.active) return;
-
+    activeCats.forEach(cat=>{
       const card = document.createElement('a');
-      card.href = `/category.html?key=${cat.id}`;
+      card.href = `/category.html?key=${encodeURIComponent(cat.id)}`;
       card.className = 'category-card';
       card.dataset.id = cat.id;
 
+      const imgSrc = cat.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop';
+
       card.innerHTML = `
-        <img src="${cat.image}" alt="${cat.name}">
+        <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(cat.name || '')}">
         <div class="category-overlay">
-          <h3>${cat.name}</h3>
-          <p>${cat.description || ''}</p>
-          <div class="category-count">${cat.adsCount || 0} إعلان</div>
+          <h3>${escapeHtml(cat.name || '')}</h3>
+          <p>${escapeHtml(cat.description || '')}</p>
+          <div class="category-count">${Number(cat.adsCount || 0)} إعلان</div>
         </div>
       `;
 
-      container.appendChild(card);
+      els.container.appendChild(card);
     });
 
   }catch(err){
-    container.innerHTML = '';
-    emptyState.style.display = 'block';
+    els.container.innerHTML = '';
+    els.emptyState.style.display = 'block';
   }
 }
 
+// Events: search + sort
+els.searchInput.addEventListener('input', ()=>{
+  clearTimeout(_debTimer);
+  _debTimer = setTimeout(loadCategories, 250);
+});
+els.sortSelect.addEventListener('change', loadCategories);
+
+// First load
 loadCategories();
 </script>
 

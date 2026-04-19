@@ -115,6 +115,49 @@ button{
   border-radius:10px;
   display:none;
 }
+/* ================= NAV (UNCHANGED) ================= */
+
+.modern-flat-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:70px;
+  background:#ffffff;
+  border-top:1px solid #e5e7eb;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  z-index:999;
+}
+
+.modern-flat-item{
+  flex:1;
+  text-align:center;
+  text-decoration:none;
+  color:#6b7280;
+  font-size:12px;
+  font-weight:600;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+
+.modern-flat-nav svg{
+  width:22px !important;
+  height:22px !important;
+}
+
+.modern-flat-item.active{
+  color:#16a34a;
+}
+
+@media(max-width:700px){
+  .hero{height:240px}
+}
+
 </style>
 </head>
 

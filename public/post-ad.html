@@ -37,6 +37,7 @@ body{
   background:var(--card-bg);
   padding:25px;
   border-radius:18px;
+  border: 1px solid var(--card-border);
 }
 
 input,select,textarea{
@@ -64,6 +65,7 @@ input,select,textarea{
   height:90px;
   border-radius:10px;
   object-fit:cover;
+  display:block;
 }
 
 .remove-btn{
@@ -80,6 +82,7 @@ input,select,textarea{
   align-items:center;
   justify-content:center;
   cursor:pointer;
+  user-select:none;
 }
 
 .progress{
@@ -87,6 +90,7 @@ input,select,textarea{
   background:#1f2937;
   border-radius:10px;
   overflow:hidden;
+  margin-top: 10px;
 }
 
 .progress span{
@@ -103,6 +107,8 @@ button{
   border:none;
   border-radius:10px;
   cursor:pointer;
+  width:100%;
+  font-weight: 800;
 }
 
 .toast{
@@ -114,7 +120,51 @@ button{
   padding:12px 20px;
   border-radius:10px;
   display:none;
+  z-index: 9999;
 }
+/* ================= NAV (UNCHANGED) ================= */
+
+.modern-flat-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:70px;
+  background:#ffffff;
+  border-top:1px solid #e5e7eb;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  z-index:999;
+}
+
+.modern-flat-item{
+  flex:1;
+  text-align:center;
+  text-decoration:none;
+  color:#6b7280;
+  font-size:12px;
+  font-weight:600;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+
+.modern-flat-nav svg{
+  width:22px !important;
+  height:22px !important;
+}
+
+.modern-flat-item.active{
+  color:#16a34a;
+}
+
+@media(max-width:700px){
+  .hero{height:240px}
+}
+
 </style>
 </head>
 
@@ -127,30 +177,36 @@ button{
 
 <form id="postForm">
 
-<input type="hidden" id="csrf">
+<input type="hidden" id="csrf" name="csrf">
 
 <label>العنوان</label>
-<input id="title" required>
+<input id="title" name="title" required>
 
 <label>الوصف</label>
-<textarea id="description" required></textarea>
+<textarea id="description" name="description" required></textarea>
 
 <label>الثمن</label>
-<input type="number" id="price" min="0" required>
+<input type="number" id="price" name="price" min="0" required>
 
 <label>المدينة</label>
-<input list="cities" id="city" placeholder="ابحث عن المدينة..." required>
-<datalist id="cities"></datalist>
+<input id="city" name="city" placeholder="المدينة..." required>
 
 <label>التصنيف</label>
-<select id="category" required></select>
+<select id="category" name="category" required>
+  <option value="">اختر التصنيف</option>
+  <option value="phones">الهواتف</option>
+  <option value="cars">السيارات</option>
+  <option value="homes">العقارات</option>
+  <option value="furniture">الأثاث</option>
+  <option value="other">أخرى</option>
+</select>
 
 <label>الصور (حد أقصى 6)</label>
-<input type="file" id="images" multiple accept="image/*">
+<input type="file" id="images" name="images" multiple accept="image/*">
 <div class="preview-grid" id="imagePreview"></div>
 
 <label>الفيديو (حد أقصى 1GB)</label>
-<input type="file" id="video" accept="video/*">
+<input type="file" id="video" name="video" accept="video/*">
 <video id="videoPreview" controls style="display:none;width:200px"></video>
 
 <div class="progress"><span id="progressBar"></span></div>
@@ -163,104 +219,166 @@ button{
 </div>
 
 <div class="toast" id="toast">تم نشر الإعلان بنجاح ✔</div>
+<!-- NAVIGATION (UNCHANGED) -->
+<nav class="modern-flat-nav">
+
+  <a href="/" class="modern-flat-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
+    </svg>
+    <span>الرئيسية</span>
+  </a>
+
+  <a href="/categories" class="modern-flat-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
+    </svg>
+    <span>الأقسام</span>
+  </a>
+
+  <a href="/post-ad" class="modern-flat-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    <span>نشر</span>
+  </a>
+
+  <a href="/profile" class="modern-flat-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <circle cx="12" cy="7" r="3"/>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    </svg>
+    <span>بروفايل</span>
+  </a>
+
+</nav>
 
 <script>
 const MAX_IMAGES = 6;
 const MAX_VIDEO = 1024 * 1024 * 1024;
 
-async function loadInitialData(){
-  const citiesRes = await fetch('/api/cities');
-  const cities = await citiesRes.json();
-  const datalist = document.getElementById('cities');
-  cities.forEach(c=>{
-    const option=document.createElement('option');
-    option.value=c.name;
-    datalist.appendChild(option);
-  });
+const imagesInput = document.getElementById('images');
+const preview = document.getElementById('imagePreview');
 
-  const catRes = await fetch('/api/categories');
-  const cats = await catRes.json();
-  const select = document.getElementById('category');
-  select.innerHTML='<option value="">اختر التصنيف</option>';
-  cats.forEach(cat=>{
-    if(cat.active){
-      const opt=document.createElement('option');
-      opt.value=cat.id;
-      opt.textContent=cat.name;
-      select.appendChild(opt);
-    }
-  });
-}
+// نخدمو ب state باش الحذف يكون فعلي
+let selectedImages = [];
 
-loadInitialData();
+/* IMAGE PREVIEW + REMOVE (Fixed) */
+imagesInput.addEventListener('change', (e) => {
+  const files = Array.from(e.target.files || []);
 
-/* IMAGE PREVIEW + REMOVE */
-document.getElementById('images').addEventListener('change', e=>{
-  const files = Array.from(e.target.files);
-  if(files.length>MAX_IMAGES){
+  if (files.length > MAX_IMAGES) {
     alert('الحد الأقصى 6 صور');
-    e.target.value='';
+    imagesInput.value = '';
+    selectedImages = [];
+    preview.innerHTML = '';
     return;
   }
 
-  const preview=document.getElementById('imagePreview');
-  preview.innerHTML='';
-  files.forEach((file,i)=>{
-    const box=document.createElement('div');
-    box.className='image-box';
-    const img=document.createElement('img');
-    img.src=URL.createObjectURL(file);
+  selectedImages = files;
+  renderSelectedImages();
+});
 
-    const remove=document.createElement('div');
-    remove.className='remove-btn';
-    remove.textContent='×';
-    remove.onclick=()=>{
-      files.splice(i,1);
-      e.target.value='';
-      preview.innerHTML='';
-    };
+function renderSelectedImages(){
+  preview.innerHTML = '';
+
+  selectedImages.forEach((file, idx) => {
+    const box = document.createElement('div');
+    box.className = 'image-box';
+
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.onload = () => URL.revokeObjectURL(img.src);
+
+    const remove = document.createElement('div');
+    remove.className = 'remove-btn';
+    remove.textContent = '×';
+    remove.addEventListener('click', () => {
+      selectedImages.splice(idx, 1);
+      applySelectedImagesToInput();
+      renderSelectedImages();
+    });
 
     box.appendChild(img);
     box.appendChild(remove);
     preview.appendChild(box);
   });
-});
+}
+
+function applySelectedImagesToInput(){
+  // نرجعو الملفات للـ input باستعمال DataTransfer
+  const dt = new DataTransfer();
+  selectedImages.forEach(f => dt.items.add(f));
+  imagesInput.files = dt.files;
+}
 
 /* VIDEO */
 document.getElementById('video').addEventListener('change', e=>{
-  const file=e.target.files[0];
-  if(file.size>MAX_VIDEO){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  if(file.size > MAX_VIDEO){
     alert('الفيديو أكبر من 1GB');
     e.target.value='';
+    document.getElementById('videoPreview').style.display='none';
+    document.getElementById('videoPreview').src='';
     return;
   }
-  const video=document.getElementById('videoPreview');
-  video.src=URL.createObjectURL(file);
+
+  const video = document.getElementById('videoPreview');
+  video.src = URL.createObjectURL(file);
   video.style.display='block';
 });
 
-/* SUBMIT */
-document.getElementById('postForm').addEventListener('submit', e=>{
+/* SUBMIT (XHR + progress) */
+document.getElementById('postForm').addEventListener('submit', (e)=>{
   e.preventDefault();
 
-  const formData=new FormData(e.target);
-  const xhr=new XMLHttpRequest();
+  const formData = new FormData();
+  formData.append('csrf', document.getElementById('csrf').value || '');
+  formData.append('title', document.getElementById('title').value.trim());
+  formData.append('description', document.getElementById('description').value.trim());
+  formData.append('price', document.getElementById('price').value);
+  formData.append('city', document.getElementById('city').value.trim());
+  formData.append('category', document.getElementById('category').value);
+
+  // الصور (الحد الأقصى 6)
+  selectedImages.slice(0, MAX_IMAGES).forEach(f => formData.append('images', f));
+
+  // الفيديو
+  const videoFile = document.getElementById('video').files[0];
+  if(videoFile) formData.append('video', videoFile);
+
+  const xhr = new XMLHttpRequest();
   xhr.open('POST','/api/ads');
 
-  xhr.upload.onprogress=(ev)=>{
+  xhr.withCredentials = true;
+
+  xhr.upload.onprogress = (ev) => {
     if(ev.lengthComputable){
-      const percent=(ev.loaded/ev.total)*100;
-      document.getElementById('progressBar').style.width=percent+'%';
+      const percent = (ev.loaded / ev.total) * 100;
+      document.getElementById('progressBar').style.width = percent + '%';
     }
   };
 
-  xhr.onload=()=>{
-    document.getElementById('toast').style.display='block';
-    setTimeout(()=>location.reload(),2000);
+  xhr.onload = () => {
+    if (xhr.status >= 200 && xhr.status < 300){
+      document.getElementById('toast').style.display='block';
+      setTimeout(()=>location.reload(),2000);
+    } else {
+      alert('فشل نشر الإعلان');
+      document.getElementById('progressBar').style.width = '0%';
+    }
+  };
+
+  xhr.onerror = () => {
+    alert('خطأ في الاتصال');
+    document.getElementById('progressBar').style.width = '0%';
   };
 
   xhr.send(formData);
 });
+
 </script>
 
 </body>

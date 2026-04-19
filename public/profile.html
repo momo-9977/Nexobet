@@ -10,7 +10,7 @@
     --bg-0:#071024;
     --bg-1:#081426;
     --card-bg:rgba(255,255,255,0.04);
-    --card-border:rgba(255,255,255,0.06);
+    --card-border:rgba(255,255,255,0.08);
     --text:#e6eef8;
     --muted:#9aa8c2;
     --accent:#2ea3ff;
@@ -34,67 +34,6 @@
 
   .page{max-width:1180px;margin:22px auto;padding:16px}
 
-  /* Top bar */
-  .top-bar{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:14px 16px;border-radius:16px;
-    background:rgba(255,255,255,0.04);
-    border:1px solid var(--card-border);
-    box-shadow:var(--shadow);
-  }
-  .brand{
-    display:flex;align-items:center;gap:12px;min-width:0;
-  }
-  .brand-logo{
-    width:54px;height:54px;border-radius:14px;
-    background:linear-gradient(135deg,#043b66,#0b7bd6);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:900;color:#fff;
-    overflow:hidden;
-    flex-shrink:0;
-  }
-  .brand-logo img{width:100%;height:100%;object-fit:cover;display:block}
-  .brand-text{min-width:0}
-  .brand-text h1{margin:0;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .brand-text p{margin:2px 0 0;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-  .top-actions{display:flex;align-items:center;gap:10px}
-  .icon-btn{
-    width:46px;height:46px;border-radius:14px;
-    display:inline-flex;align-items:center;justify-content:center;
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.06);
-    color:var(--text);cursor:pointer;
-    box-shadow:0 10px 24px rgba(0,0,0,.25);
-    text-decoration:none;
-    transition:.18s ease;
-  }
-  .icon-btn:hover{transform:translateY(-2px)}
-  .icon-badge{
-    position:relative;
-  }
-  .badge-dot{
-    position:absolute;
-    top:10px;left:10px;
-    width:10px;height:10px;border-radius:999px;
-    background:var(--danger);
-    border:2px solid rgba(7,16,36,0.9);
-    display:none;
-  }
-  .badge-dot.show{display:block}
-
-  /* Layout */
-  .grid{
-    display:grid;
-    grid-template-columns: 320px 1fr;
-    gap:14px;
-    margin-top:14px;
-  }
-
-  @media (max-width:980px){
-    .grid{grid-template-columns:1fr}
-  }
-
   /* Cards */
   .card{
     background:var(--card-bg);
@@ -104,39 +43,64 @@
     box-shadow:0 14px 36px rgba(0,0,0,.25);
   }
 
-  .card h2{margin:0 0 10px;font-size:16px}
-  .muted{color:var(--muted)}
-
-  /* Left sidebar user */
-  .user-box{
-    display:flex;flex-direction:column;gap:12px;
+  /* Profile hero card */
+  .profile-hero{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:16px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.09);
+    box-shadow:var(--shadow);
   }
-  .avatar-wrap{
-    display:flex;align-items:center;gap:12px;
+  .hero-left{
+    display:flex;align-items:center;gap:12px;min-width:0;
   }
   .avatar{
-    width:76px;height:76px;border-radius:18px;
+    width:78px;height:78px;border-radius:18px;
     background:linear-gradient(135deg,var(--accent),var(--accent-2));
     display:flex;align-items:center;justify-content:center;
     font-size:28px;font-weight:900;color:#fff;
     overflow:hidden;cursor:pointer;
-    border:1px solid rgba(255,255,255,0.10);
+    border:1px solid rgba(255,255,255,0.14);
+    flex-shrink:0;
   }
   .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-  .avatar-meta h3{margin:0;font-size:16px}
-  .avatar-meta p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.5}
-
-  .mini-row{
-    display:flex;justify-content:space-between;gap:10px;
-    padding:10px 12px;border-radius:14px;
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.05);
+  .hero-meta{min-width:0}
+  .hero-meta h1{
+    margin:0;
+    font-size:18px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
-  .mini-row strong{font-size:14px}
-  .mini-row span{color:var(--muted);font-size:13px}
+  .hero-meta p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:13px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    border:1px solid rgba(255,255,255,0.10);
+    background:rgba(255,255,255,0.04);
+    color:var(--text);
+  }
+  .badge.verified{
+    background:rgba(52,211,153,0.14);
+    border-color:rgba(52,211,153,0.22);
+    color:#bbf7d0;
+  }
 
-  .sidebar-actions{
-    display:grid;gap:10px;
+  .hero-actions{
+    display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
   }
   .btn{
     border:none;border-radius:14px;
@@ -145,49 +109,81 @@
     transition:.18s ease;
     text-decoration:none;
     display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    white-space:nowrap;
   }
   .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
-  .btn.ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:var(--text)}
+  .btn.ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);color:var(--text)}
   .btn.danger{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
-  .btn.warn{background:linear-gradient(135deg,#f59e0b,#f97316);color:#111}
   .btn:hover{transform:translateY(-2px)}
   .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
-  /* Tabs */
-  .tabs{
-    display:flex;gap:8px;flex-wrap:wrap;
-    margin-bottom:12px;
-  }
-  .tab{
-    padding:10px 12px;border-radius:999px;
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.06);
-    color:var(--text);
-    cursor:pointer;
-    font-weight:800;
-    font-size:13px;
-    transition:.16s ease;
-  }
-  .tab.active{
-    background:rgba(46,163,255,0.14);
-    border-color:rgba(46,163,255,0.25);
-    color:#dbeafe;
-  }
+  input[type="file"]{display:none}
 
+  /* Dashboard tiles */
+  .tiles{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+  }
+  @media (max-width:980px){ .tiles{grid-template-columns:1fr} }
+
+  .tile{
+    border-radius:18px;
+    padding:14px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    cursor:pointer;
+    transition:.18s ease;
+    position:relative;
+    min-height:92px;
+  }
+  .tile:hover{transform:translateY(-2px);background:rgba(255,255,255,0.04)}
+  .tile.active{
+    background:rgba(46,163,255,0.16);
+    border-color:rgba(46,163,255,0.24);
+  }
+  .tile .t-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .tile .t-title{
+    margin:0;
+    font-size:15px;
+    font-weight:900;
+  }
+  .tile .t-desc{
+    margin:8px 0 0;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.7;
+  }
+  .tile .dot{
+    width:10px;height:10px;border-radius:999px;
+    background:var(--danger);
+    border:2px solid rgba(7,16,36,0.9);
+    display:none;
+  }
+  .tile .dot.show{display:inline-block}
+
+  /* Panels */
+  .panel-wrap{margin-top:14px}
   .panel{display:none}
   .panel.active{display:block}
+
+  .panel h2{margin:0 0 10px;font-size:16px}
+  .muted{color:var(--muted)}
 
   /* Forms */
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .form-grid .full{grid-column:1 / -1}
   @media (max-width:760px){.form-grid{grid-template-columns:1fr}}
 
-  label{display:block;margin:0 0 6px;font-size:13px;font-weight:800}
+  label{display:block;margin:0 0 6px;font-size:13px;font-weight:900}
   input, textarea, select{
     width:100%;
     padding:12px;
     border-radius:14px;
-    border:1px solid rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.10);
     background:rgba(255,255,255,0.03);
     color:var(--text);
     outline:none;
@@ -200,14 +196,14 @@
     cursor:not-allowed;
   }
   textarea{min-height:110px;resize:vertical}
-  .hint{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.6}
+  .hint{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.7}
 
   /* Lists */
   .list{display:grid;gap:10px}
   .item{
     padding:12px;border-radius:16px;
     background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
   }
   .item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
   .item-title{margin:0;font-size:14px;font-weight:900}
@@ -215,19 +211,19 @@
     display:inline-flex;align-items:center;justify-content:center;
     padding:6px 10px;border-radius:999px;
     font-size:12px;font-weight:900;
-    border:1px solid rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.10);
     background:rgba(255,255,255,0.03);
     color:var(--text);
     white-space:nowrap;
   }
-  .pill.ok{background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.18);color:#bbf7d0}
-  .pill.warn{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.18);color:#fde68a}
-  .pill.err{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.18);color:#fecaca}
+  .pill.ok{background:rgba(52,211,153,0.14);border-color:rgba(52,211,153,0.22);color:#bbf7d0}
+  .pill.warn{background:rgba(245,158,11,0.14);border-color:rgba(245,158,11,0.22);color:#fde68a}
+  .pill.err{background:rgba(239,68,68,0.14);border-color:rgba(239,68,68,0.22);color:#fecaca}
   .meta{margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}
   .item-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
   .mini-btn{
     padding:10px 12px;border-radius:12px;
-    border:1px solid rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.12);
     background:rgba(255,255,255,0.04);
     color:var(--text);
     font-weight:900;
@@ -235,8 +231,8 @@
     text-decoration:none;
   }
   .mini-btn.primary{background:rgba(46,163,255,0.16);border-color:rgba(46,163,255,0.22);color:#dbeafe}
-  .mini-btn.danger{background:rgba(239,68,68,0.14);border-color:rgba(239,68,68,0.20);color:#fecaca}
-  .mini-btn.warn{background:rgba(245,158,11,0.14);border-color:rgba(245,158,11,0.20);color:#fde68a}
+  .mini-btn.danger{background:rgba(239,68,68,0.16);border-color:rgba(239,68,68,0.22);color:#fecaca}
+  .mini-btn.warn{background:rgba(245,158,11,0.16);border-color:rgba(245,158,11,0.22);color:#fde68a}
   .mini-btn:disabled{opacity:.6;cursor:not-allowed}
 
   /* Premium cards */
@@ -245,11 +241,11 @@
   .plan{
     border-radius:18px;padding:14px;
     background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.08);
   }
   .plan h3{margin:0 0 6px;font-size:14px}
   .plan .price{font-weight:900;font-size:20px;margin:8px 0}
-  .plan ul{margin:0;padding:0 18px;color:var(--muted);font-size:13px;line-height:1.8}
+  .plan ul{margin:0;padding:0 18px;color:var(--muted);font-size:13px;line-height:1.9}
   .plan .choose{margin-top:12px;width:100%}
 
   .select-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
@@ -263,13 +259,13 @@
     color:#fff;
     padding:12px 14px;
     border-radius:14px;
-    border:1px solid rgba(255,255,255,0.10);
+    border:1px solid rgba(255,255,255,0.12);
     box-shadow:0 16px 40px rgba(0,0,0,.45);
     display:none;
     z-index:5000;
     min-width:240px;
     text-align:center;
-    font-weight:800;
+    font-weight:900;
   }
   .toast.show{display:block;animation:pop .18s ease}
   .toast.success{background:linear-gradient(135deg, rgba(52,211,153,0.35), rgba(16,185,129,0.22))}
@@ -289,7 +285,7 @@
   .modal-card{
     width:100%;max-width:520px;
     background:rgba(7,16,36,0.96);
-    border:1px solid rgba(255,255,255,0.10);
+    border:1px solid rgba(255,255,255,0.14);
     border-radius:18px;
     box-shadow:0 26px 70px rgba(0,0,0,.55);
     padding:14px;
@@ -298,14 +294,14 @@
   .modal-head h3{margin:0;font-size:15px}
   .xbtn{
     width:40px;height:40px;border-radius:14px;
-    border:1px solid rgba(255,255,255,0.10);
-    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.05);
     color:var(--text);
     cursor:pointer;
     font-weight:900;
   }
 
-  /* ===== MODERN BOTTOM NAV FIX (keep same navigation) ===== */
+  /* ===== MODERN BOTTOM NAV FIX (KEEP SAME NAV) ===== */
   .modern-flat-nav{
     position:fixed;
     bottom:0;left:0;right:0;
@@ -342,323 +338,271 @@
 <body>
 <div class="page">
 
-  <!-- TOP BAR -->
-  <header class="top-bar">
-    <div class="brand">
-      <div class="brand-logo" id="brandLogoBox" title="تغيير الشعار (لاحقاً من لوحة الأدمن)">
-        <img id="brandLogoImg" src="/uploads/logo.png" alt="logo" style="display:none" onerror="this.style.display='none'">
-        <span id="brandLogoFallback">S</span>
+  <!-- ✅ حذفنا الجزء العلوي كامل (اللوغو/الاسم/الدعم/الإشعارات) وبدلناه بكارت ديال البروفايل -->
+  <section class="profile-hero">
+    <div class="hero-left">
+      <div class="avatar" id="avatarBox" title="تغيير صورة البروفايل">
+        <span id="avatarLetter">U</span>
+        <img id="avatarImg" alt="avatar" style="display:none">
       </div>
-      <div class="brand-text">
-        <h1 id="platformName">Samsar</h1>
-        <p id="platformSubtitle">بيع وشراء بسهولة</p>
+
+      <div class="hero-meta">
+        <h1 id="userNameMini">...</h1>
+        <p id="userEmailMini">...</p>
+        <!-- ✅ موثق فقط إذا جا من السيرفر -->
+        <span id="verifiedBadge" class="badge" style="display:none">✅ موثق</span>
       </div>
     </div>
 
-    <div class="top-actions">
-      <a class="icon-btn" href="/support" title="الدعم" aria-label="الدعم">🎧</a>
-      <button class="icon-btn icon-badge" id="notifBtn" type="button" title="الإشعارات" aria-label="الإشعارات">
-        🔔
-        <span class="badge-dot" id="notifDot"></span>
-      </button>
+    <div class="hero-actions">
+      <a class="btn primary" href="/post-ad">➕ نشر إعلان</a>
+      <button class="btn ghost" id="openPasswordBtn" type="button">🔒 تغيير كلمة السر</button>
+      <button class="btn danger" id="logoutBtn" type="button">🚪 تسجيل الخروج</button>
     </div>
-  </header>
 
-  <div class="grid">
-    <!-- LEFT -->
-    <aside class="card user-box">
-      <div class="avatar-wrap">
-        <div class="avatar" id="avatarBox" title="تغيير صورة البروفايل">
-          <span id="avatarLetter">U</span>
-          <img id="avatarImg" alt="avatar" style="display:none">
+    <input id="avatarInput" type="file" accept="image/*" />
+  </section>
+
+  <!-- ✅ كروت (Dashboard) بدل Tabs -->
+  <section class="tiles" id="tiles">
+    <div class="tile active" data-tab="account">
+      <div class="t-head">
+        <h3 class="t-title">حسابي</h3>
+        <span>👤</span>
+      </div>
+      <p class="t-desc">تعديل الهاتف وصورة البروفايل (الاسم/الإيميل ممنوع تغييرهم).</p>
+    </div>
+
+    <div class="tile" data-tab="myads">
+      <div class="t-head">
+        <h3 class="t-title">إعلاناتي</h3>
+        <span>🧾</span>
+      </div>
+      <p class="t-desc">تعديل/حذف/إخفاء/تجديد إعلاناتك.</p>
+    </div>
+
+    <div class="tile" data-tab="premium">
+      <div class="t-head">
+        <h3 class="t-title">بروميوم</h3>
+        <span>⭐</span>
+      </div>
+      <p class="t-desc">تمييز إعلانك ليبان فالرئيسية (قابل للربط بالدفع/الأدمن).</p>
+    </div>
+
+    <div class="tile" data-tab="notifications">
+      <div class="t-head">
+        <h3 class="t-title">الإشعارات</h3>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span>🔔</span>
+          <span class="dot" id="notifDot"></span>
+        </span>
+      </div>
+      <p class="t-desc">إشعارات حول الإعلانات والترقيات.</p>
+    </div>
+
+    <div class="tile" data-tab="security">
+      <div class="t-head">
+        <h3 class="t-title">الأمان</h3>
+        <span>🛡️</span>
+      </div>
+      <p class="t-desc">تغيير كلمة السر وإعدادات الأمان.</p>
+    </div>
+
+    <div class="tile" data-tab="favorites">
+      <div class="t-head">
+        <h3 class="t-title">المفضلة</h3>
+        <span>❤️</span>
+      </div>
+      <p class="t-desc">إعلانات قمت بحفظها للمشاهدة لاحقاً.</p>
+    </div>
+  </section>
+
+  <!-- Panels -->
+  <section class="panel-wrap">
+
+    <!-- ACCOUNT -->
+    <section class="card panel active" id="panel-account">
+      <h2>معلومات الحساب</h2>
+
+      <div class="form-grid">
+        <div>
+          <label>الاسم (غير قابل للتغيير)</label>
+          <input id="nameInput" readonly />
         </div>
-        <div class="avatar-meta">
-          <h3 id="userNameMini">...</h3>
-          <p id="userEmailMini" class="muted">...</p>
-          <p class="muted" style="margin-top:4px">
-            حالة: <span id="userStatus" class="pill warn">غير معروف</span>
-          </p>
+        <div>
+          <label>البريد الإلكتروني (غير قابل للتغيير)</label>
+          <input id="emailInput" readonly />
+        </div>
+
+        <div class="full">
+          <label>رقم الهاتف</label>
+          <input id="phoneInput" placeholder="06XXXXXXXX" />
+          <div class="hint">يمكن تغيير الهاتف فقط. الاسم والإيميل ممنوعين.</div>
+        </div>
+
+        <div class="full">
+          <button class="btn primary" id="saveAccountBtn" type="button">حفظ التغييرات</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY ADS -->
+    <section class="card panel" id="panel-myads">
+      <div class="item-head" style="margin-bottom:10px">
+        <h2 style="margin:0">إعلاناتي</h2>
+        <a class="mini-btn primary" href="/post-ad">➕ نشر إعلان</a>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label>فلترة بالحالة</label>
+          <select id="adsStatusFilter">
+            <option value="all">الكل</option>
+            <option value="published">منشور</option>
+            <option value="hidden">مخفي</option>
+            <option value="pending">قيد المراجعة</option>
+            <option value="rejected">مرفوض</option>
+            <option value="sold">مباع</option>
+            <option value="expired">منتهي</option>
+          </select>
+        </div>
+        <div>
+          <label>بحث</label>
+          <input id="adsSearch" placeholder="ابحث بالعنوان..." />
+        </div>
+        <div class="full">
+          <button class="btn ghost" type="button" id="reloadAdsBtn">تحديث القائمة</button>
         </div>
       </div>
 
-      <input id="avatarInput" type="file" accept="image/*" style="display:none" />
+      <div class="list" id="myAdsList" style="margin-top:12px"></div>
 
-      <div class="mini-row">
-        <strong>إعلاناتي</strong>
-        <span id="statMyAds">—</span>
+      <div class="hint" style="margin-top:10px">
+        * هذه الأزرار مربوطة بـ API وتتفعل من السيرفر: إخفاء/إظهار/تجديد/مباع/حذف.
       </div>
-      <div class="mini-row">
-        <strong>مميزة</strong>
-        <span id="statFeatured">—</span>
-      </div>
-      <div class="mini-row">
-        <strong>مشاهدات</strong>
-        <span id="statViews">—</span>
+    </section>
+
+    <!-- PREMIUM -->
+    <section class="card panel" id="panel-premium">
+      <h2>بروميوم — تمييز الإعلانات</h2>
+      <p class="muted" style="margin-top:-4px;line-height:1.7">
+        يمكنك تمييز إعلانك ليظهر في “الإعلانات المميزة” بالصفحة الرئيسية.
+      </p>
+
+      <div class="premium-grid" style="margin-top:12px">
+        <div class="plan">
+          <h3>مميز 24 ساعة</h3>
+          <div class="price">19 د.م</div>
+          <ul>
+            <li>ظهور في الإعلانات المميزة</li>
+            <li>أولوية في القسم</li>
+          </ul>
+          <button class="btn primary choose" data-plan="featured_1d" type="button">اختيار</button>
+        </div>
+
+        <div class="plan">
+          <h3>مميز 7 أيام</h3>
+          <div class="price">79 د.م</div>
+          <ul>
+            <li>ظهور قوي لمدة أسبوع</li>
+            <li>أفضل قيمة</li>
+          </ul>
+          <button class="btn primary choose" data-plan="featured_7d" type="button">اختيار</button>
+        </div>
+
+        <div class="plan">
+          <h3>مميز 30 يوم</h3>
+          <div class="price">249 د.م</div>
+          <ul>
+            <li>ظهور لمدة شهر</li>
+            <li>مناسب للتجار</li>
+          </ul>
+          <button class="btn primary choose" data-plan="featured_30d" type="button">اختيار</button>
+        </div>
       </div>
 
-      <div class="sidebar-actions">
-        <button class="btn ghost" type="button" id="openPasswordBtn">🔒 تغيير كلمة السر</button>
-        <a class="btn primary" href="/post-ad">➕ نشر إعلان جديد</a>
-        <button class="btn danger" type="button" id="logoutBtn">🚪 تسجيل الخروج</button>
-      </div>
-
-      <div class="hint">
-        * الاسم والبريد الإلكتروني لا يمكن تغييرهم.<br>
-        * الهاتف وصورة البروفايل يمكن تعديلهم.
-      </div>
-    </aside>
-
-    <!-- RIGHT -->
-    <main class="card">
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-tab="account" type="button">حسابي</button>
-        <button class="tab" data-tab="myads" type="button">إعلاناتي</button>
-        <button class="tab" data-tab="premium" type="button">بروميوم</button>
-        <button class="tab" data-tab="notifications" type="button">إشعارات</button>
-        <button class="tab" data-tab="security" type="button">الأمان</button>
-        <button class="tab" data-tab="favorites" type="button">المفضلة</button>
-      </div>
-
-      <!-- ACCOUNT -->
-      <section class="panel active" id="panel-account">
-        <h2>معلومات الحساب</h2>
-
-        <div class="form-grid">
+      <div class="item" style="margin-top:14px">
+        <div class="item-head">
           <div>
-            <label>الاسم (غير قابل للتغيير)</label>
-            <input id="nameInput" readonly />
-          </div>
-          <div>
-            <label>البريد الإلكتروني (غير قابل للتغيير)</label>
-            <input id="emailInput" readonly />
-          </div>
-          <div class="full">
-            <label>رقم الهاتف</label>
-            <input id="phoneInput" placeholder="06XXXXXXXX" />
-            <div class="hint">سيظهر رقم الهاتف في إعلاناتك (إذا اخترت ذلك لاحقاً).</div>
-          </div>
-          <div class="full">
-            <button class="btn primary" id="saveAccountBtn" type="button">حفظ التغييرات</button>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:14px">
-          <h2>حالة التحقق</h2>
-          <div class="item">
-            <div class="item-head">
-              <div>
-                <p class="item-title">توثيق الحساب (اختياري لاحقاً)</p>
-                <div class="meta">
-                  <span>رفع بطاقة/وثيقة + مراجعة من الإدارة</span>
-                </div>
-              </div>
-              <span class="pill" id="verifyStatusPill">غير مفعّل</span>
+            <p class="item-title">تفعيل البروميوم على إعلان</p>
+            <div class="meta">
+              <span>يتم جلب إعلاناتك من: /api/my/ads</span>
             </div>
-            <div class="item-actions">
-              <button class="mini-btn warn" type="button" id="requestVerifyBtn">طلب التوثيق (قريباً)</button>
-            </div>
           </div>
-          <div class="hint">يمكنك تعطيل هذا القسم الآن، وربطه لاحقاً بلوحة الأدمن.</div>
-        </div>
-      </section>
-
-      <!-- MY ADS -->
-      <section class="panel" id="panel-myads">
-        <div class="item-head" style="margin-bottom:10px">
-          <h2 style="margin:0">إعلاناتي</h2>
-          <a class="mini-btn primary" href="/post-ad">➕ نشر إعلان</a>
+          <span class="pill warn">قابل للربط</span>
         </div>
 
-        <div class="form-grid">
+        <div class="select-row" style="margin-top:10px">
           <div>
-            <label>فلترة بالحالة</label>
-            <select id="adsStatusFilter">
-              <option value="all">الكل</option>
-              <option value="published">منشور</option>
-              <option value="hidden">مخفي</option>
-              <option value="pending">قيد المراجعة</option>
-              <option value="rejected">مرفوض</option>
-              <option value="sold">مباع</option>
-              <option value="expired">منتهي</option>
+            <label>اختر الإعلان</label>
+            <select id="premiumAdSelect">
+              <option value="">تحميل إعلاناتك...</option>
             </select>
           </div>
           <div>
-            <label>بحث</label>
-            <input id="adsSearch" placeholder="ابحث بالعنوان..." />
-          </div>
-          <div class="full">
-            <button class="btn ghost" type="button" id="reloadAdsBtn">تحديث القائمة</button>
+            <label>الخطة المختارة</label>
+            <input id="selectedPlan" readonly value="لم يتم اختيار خطة" />
           </div>
         </div>
 
-        <div class="list" id="myAdsList" style="margin-top:12px"></div>
-        <div class="hint" style="margin-top:10px">
-          * الأزرار (إخفاء/إظهار/تجديد/مباع/حذف) مربوطة بـ API ويمكن تفعيلها من السيرفر.
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn primary" type="button" id="buyPremiumBtn">شراء وتفعيل</button>
+          <button class="btn ghost" type="button" id="premiumHistoryBtn">سجلّ الترقيات</button>
         </div>
-      </section>
-
-      <!-- PREMIUM -->
-      <section class="panel" id="panel-premium">
-        <h2>بروميوم — تمييز الإعلانات</h2>
-        <p class="muted" style="margin-top:-4px;line-height:1.7">
-          تقدر تخلي إعلانك يبان في “الإعلانات المميزة” بالصفحة الرئيسية. (والبانر خيار أعلى إذا بغيتي).
-        </p>
-
-        <div class="premium-grid" style="margin-top:12px">
-          <div class="plan">
-            <h3>مميز 24 ساعة</h3>
-            <div class="price">19 د.م</div>
-            <ul>
-              <li>ظهور في الإعلانات المميزة</li>
-              <li>أولوية في القسم</li>
-              <li>مناسب للتجربة</li>
-            </ul>
-            <button class="btn primary choose" data-plan="featured_1d" type="button">اختيار</button>
-          </div>
-
-          <div class="plan">
-            <h3>مميز 7 أيام</h3>
-            <div class="price">79 د.م</div>
-            <ul>
-              <li>ظهور قوي لمدة أسبوع</li>
-              <li>أفضل قيمة</li>
-              <li>يناسب البائعين</li>
-            </ul>
-            <button class="btn primary choose" data-plan="featured_7d" type="button">اختيار</button>
-          </div>
-
-          <div class="plan">
-            <h3>مميز 30 يوم</h3>
-            <div class="price">249 د.م</div>
-            <ul>
-              <li>ظهور لمدة شهر</li>
-              <li>أولوية طويلة</li>
-              <li>مناسب للتجار</li>
-            </ul>
-            <button class="btn primary choose" data-plan="featured_30d" type="button">اختيار</button>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:14px">
-          <h2>تفعيل البروميوم</h2>
-          <div class="select-row">
-            <div>
-              <label>اختر الإعلان</label>
-              <select id="premiumAdSelect">
-                <option value="">تحميل إعلاناتك...</option>
-              </select>
-              <div class="hint">سنملأ هذه القائمة من API: <code>/api/my/ads</code></div>
-            </div>
-            <div>
-              <label>الخطة المختارة</label>
-              <input id="selectedPlan" readonly value="لم يتم اختيار خطة" />
-              <div class="hint">اضغط على “اختيار” من الخطط أعلاه.</div>
-            </div>
-          </div>
-
-          <div class="item" style="margin-top:12px">
-            <div class="item-head">
-              <div>
-                <p class="item-title">إضافة للبانر (Banner Boost) — اختياري</p>
-                <div class="meta">
-                  <span>يحتاج موافقة الإدارة (أو نظام دفع أعلى لاحقاً)</span>
-                </div>
-              </div>
-              <span class="pill warn">اختياري</span>
-            </div>
-            <div class="item-actions">
-              <button class="mini-btn warn" type="button" id="bannerBoostBtn">طلب الظهور في البانر</button>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-            <button class="btn primary" type="button" id="buyPremiumBtn">شراء وتفعيل</button>
-            <button class="btn ghost" type="button" id="premiumHistoryBtn">سجلّ الترقيات</button>
-          </div>
-
-          <div class="hint" style="margin-top:10px">
-            **ملاحظة مهمة**: الدفع غير مفعل هنا. الزر سيرسل طلب API لكي تربطه لاحقاً بوابة دفع / لوحة الأدمن.
-          </div>
-        </div>
-      </section>
-
-      <!-- NOTIFICATIONS -->
-      <section class="panel" id="panel-notifications">
-        <div class="item-head" style="margin-bottom:10px">
-          <h2 style="margin:0">الإشعارات</h2>
-          <button class="mini-btn" type="button" id="markAllReadBtn">تمييز الكل كمقروء</button>
-        </div>
-
-        <div class="list" id="notifList"></div>
 
         <div class="hint" style="margin-top:10px">
-          API المقترح: <code>/api/notifications</code> + <code>/api/notifications/read</code>
+          الدفع غير مفعل هنا — الأزرار ترسل طلبات API فقط.
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- SECURITY -->
-      <section class="panel" id="panel-security">
-        <h2>الأمان</h2>
+    <!-- NOTIFICATIONS -->
+    <section class="card panel" id="panel-notifications">
+      <div class="item-head" style="margin-bottom:10px">
+        <h2 style="margin:0">الإشعارات</h2>
+        <button class="mini-btn" type="button" id="markAllReadBtn">تمييز الكل كمقروء</button>
+      </div>
 
-        <div class="item">
-          <div class="item-head">
-            <div>
-              <p class="item-title">تغيير كلمة السر</p>
-              <div class="meta"><span>ستحتاج كلمة السر الحالية + الجديدة</span></div>
-            </div>
-            <span class="pill ok">جاهز</span>
+      <div class="list" id="notifList"></div>
+      <div class="hint" style="margin-top:10px">
+        API: /api/notifications و /api/notifications/read-all
+      </div>
+    </section>
+
+    <!-- SECURITY -->
+    <section class="card panel" id="panel-security">
+      <h2>الأمان</h2>
+      <div class="item">
+        <div class="item-head">
+          <div>
+            <p class="item-title">تغيير كلمة السر</p>
+            <div class="meta"><span>API: /api/auth/password</span></div>
           </div>
-          <div class="item-actions">
-            <button class="mini-btn primary" type="button" id="openPasswordBtn2">فتح</button>
-          </div>
+          <span class="pill ok">مفعّل</span>
         </div>
-
-        <div class="item" style="margin-top:10px">
-          <div class="item-head">
-            <div>
-              <p class="item-title">تسجيل الخروج من كل الأجهزة</p>
-              <div class="meta"><span>اختياري — API لاحقاً</span></div>
-            </div>
-            <span class="pill warn">اختياري</span>
-          </div>
-          <div class="item-actions">
-            <button class="mini-btn warn" type="button" id="logoutAllBtn">تنفيذ (قريباً)</button>
-          </div>
+        <div class="item-actions">
+          <button class="mini-btn primary" type="button" id="openPasswordBtn2">🔒 فتح نافذة تغيير كلمة السر</button>
         </div>
+      </div>
+    </section>
 
-        <div class="item" style="margin-top:10px">
-          <div class="item-head">
-            <div>
-              <p class="item-title">جلسات الحساب</p>
-              <div class="meta"><span>عرض آخر الأجهزة/المتصفحات — API لاحقاً</span></div>
-            </div>
-            <span class="pill warn">اختياري</span>
-          </div>
-          <div class="item-actions">
-            <button class="mini-btn" type="button" id="loadSessionsBtn">تحميل (قريباً)</button>
-          </div>
-          <div id="sessionsBox" class="hint" style="margin-top:10px"></div>
-        </div>
-      </section>
+    <!-- FAVORITES -->
+    <section class="card panel" id="panel-favorites">
+      <div class="item-head" style="margin-bottom:10px">
+        <h2 style="margin:0">المفضلة</h2>
+        <button class="mini-btn" type="button" id="reloadFavBtn">تحديث</button>
+      </div>
 
-      <!-- FAVORITES -->
-      <section class="panel" id="panel-favorites">
-        <div class="item-head" style="margin-bottom:10px">
-          <h2 style="margin:0">المفضلة</h2>
-          <button class="mini-btn" type="button" id="reloadFavBtn">تحديث</button>
-        </div>
+      <div class="list" id="favList"></div>
+      <div class="hint" style="margin-top:10px">
+        API: /api/favorites و DELETE /api/favorites/:id
+      </div>
+    </section>
 
-        <div class="list" id="favList"></div>
-
-        <div class="hint" style="margin-top:10px">
-          API المقترح: <code>/api/favorites</code> (GET/DELETE)
-        </div>
-      </section>
-    </main>
-  </div>
+  </section>
 </div>
 
-<!-- NAVIGATION (keep same) -->
+<!-- ✅ KEEP SAME NAVIGATION (ما بدّلناهاش) -->
 <nav class="modern-flat-nav">
   <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -690,12 +634,12 @@
   </a>
 </nav>
 
-<!-- TOAST -->
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-<!-- PASSWORD MODAL -->
+<!-- Password Modal -->
 <div class="modal" id="pwdModal" aria-hidden="true">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-label="تغيير كلمة السر">
+  <div class="modal-card">
     <div class="modal-head">
       <h3>تغيير كلمة السر</h3>
       <button class="xbtn" id="closePwdModal" type="button">✕</button>
@@ -704,684 +648,510 @@
     <div class="form-grid">
       <div class="full">
         <label>كلمة السر الحالية</label>
-        <input id="currentPwd" type="password" autocomplete="current-password" />
+        <input id="currentPwd" type="password" placeholder="••••••••" />
       </div>
-      <div class="full">
+      <div>
         <label>كلمة السر الجديدة</label>
-        <input id="newPwd" type="password" autocomplete="new-password" />
+        <input id="newPwd" type="password" placeholder="••••••••" />
+      </div>
+      <div>
+        <label>تأكيد كلمة السر</label>
+        <input id="confirmPwd" type="password" placeholder="••••••••" />
       </div>
       <div class="full">
-        <label>تأكيد كلمة السر الجديدة</label>
-        <input id="confirmPwd" type="password" autocomplete="new-password" />
-      </div>
-
-      <div class="full" style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn primary" id="savePwdBtn" type="button">حفظ</button>
-        <button class="btn ghost" id="cancelPwdBtn" type="button">إلغاء</button>
+        <button class="btn primary" id="changePwdBtn" type="button">حفظ كلمة السر</button>
+        <div class="hint">سيتم إرسال الطلب إلى: <code>/api/auth/password</code></div>
       </div>
     </div>
-    <div class="hint">API المقترح: <code>PATCH /api/auth/password</code></div>
   </div>
 </div>
 
 <script>
-/**
- * ====== API endpoints (Node.js server) ======
- * عدّل هذه المسارات حسب السيرفر ديالك.
- */
-const API = {
-  settings: '/api/settings',
-  me: '/api/auth/me',
-  logout: '/api/auth/logout',
+  // Helpers
+  const qs = (s) => document.querySelector(s);
+  const qsa = (s) => Array.from(document.querySelectorAll(s));
+  function apiOpts(method='GET', body=null){
+    const opts = { method, credentials:'include', headers:{} };
+    if (body && !(body instanceof FormData)) { opts.headers['Content-Type']='application/json'; opts.body = JSON.stringify(body); }
+    else if (body instanceof FormData) opts.body = body;
+    return opts;
+  }
 
-  updateMe: (id)=> `/api/users/${encodeURIComponent(id)}`,            // PUT {phone}
-  updateAvatar: (id)=> `/api/users/${encodeURIComponent(id)}/avatar`, // PUT multipart {avatar}
+  // Toast
+  const toastEl = qs('#toast');
+  function toast(msg, ok=true){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (ok ? 'success' : 'error');
+    setTimeout(()=> toastEl.classList.remove('show'), 2600);
+  }
 
-  myAds: '/api/my/ads',                     // GET
-  adDelete: (id)=> `/api/ads/${encodeURIComponent(id)}`, // DELETE
-  adUpdate: (id)=> `/api/ads/${encodeURIComponent(id)}`, // PATCH/PUT (hide/show/sold/renew)
-  // recommended action endpoints (optional):
-  adToggleHidden: (id)=> `/api/ads/${encodeURIComponent(id)}/visibility`, // PATCH {hidden:true/false}
-  adMarkSold: (id)=> `/api/ads/${encodeURIComponent(id)}/sold`,           // PATCH
-  adRenew: (id)=> `/api/ads/${encodeURIComponent(id)}/renew`,             // POST
+  // Panels switching via tiles
+  const tiles = qsa('.tile');
+  const panels = {
+    account: qs('#panel-account'),
+    myads: qs('#panel-myads'),
+    premium: qs('#panel-premium'),
+    notifications: qs('#panel-notifications'),
+    security: qs('#panel-security'),
+    favorites: qs('#panel-favorites'),
+  };
 
-  premiumBuy: '/api/premium/buy',           // POST {adId, plan}
-  premiumHistory: '/api/premium/history',   // GET
-  bannerRequest: '/api/premium/banner-request', // POST {adId}
+  function openPanel(key){
+    tiles.forEach(t => t.classList.toggle('active', t.dataset.tab === key));
+    Object.keys(panels).forEach(k => panels[k].classList.toggle('active', k === key));
+    // Scroll nicely to content
+    panels[key].scrollIntoView({ behavior:'smooth', block:'start' });
+  }
 
-  notifications: '/api/notifications',      // GET
-  notificationsReadAll: '/api/notifications/read-all', // POST
+  tiles.forEach(t => t.addEventListener('click', () => openPanel(t.dataset.tab)));
 
-  favorites: '/api/favorites',              // GET
-  favoriteRemove: (id)=> `/api/favorites/${encodeURIComponent(id)}`, // DELETE
+  // Password modal
+  const pwdModal = qs('#pwdModal');
+  function openPwdModal(){
+    pwdModal.classList.add('show');
+    pwdModal.setAttribute('aria-hidden','false');
+  }
+  function closePwdModal(){
+    pwdModal.classList.remove('show');
+    pwdModal.setAttribute('aria-hidden','true');
+  }
+  qs('#openPasswordBtn').addEventListener('click', openPwdModal);
+  qs('#openPasswordBtn2').addEventListener('click', openPwdModal);
+  qs('#closePwdModal').addEventListener('click', closePwdModal);
+  pwdModal.addEventListener('click', (e)=> { if(e.target === pwdModal) closePwdModal(); });
 
-  changePassword: '/api/auth/password',     // PATCH {currentPassword, newPassword}
-};
+  // Avatar upload
+  const avatarBox = qs('#avatarBox');
+  const avatarInput = qs('#avatarInput');
+  avatarBox.addEventListener('click', ()=> avatarInput.click());
 
-// helpers
-const qs = (s)=>document.querySelector(s);
-const qsa = (s)=>Array.from(document.querySelectorAll(s));
+  let currentUser = null;
 
-function apiOpts(method='GET', body=null){
-  const opts = { method, headers:{}, credentials:'include' };
-  if (body && !(body instanceof FormData)) { opts.headers['Content-Type']='application/json'; opts.body = JSON.stringify(body); }
-  else if (body instanceof FormData) opts.body = body;
-  return opts;
-}
+  async function requireAuth(){
+    const res = await fetch('/api/auth/me', apiOpts());
+    if(!res.ok){
+      window.location.href = '/login';
+      return null;
+    }
+    return await res.json();
+  }
 
-function toast(msg, type='success'){
-  const el = qs('#toast');
-  el.textContent = msg;
-  el.className = 'toast show ' + (type==='error' ? 'error' : 'success');
-  setTimeout(()=> el.className='toast', 2600);
-}
+  function setAvatar(user){
+    const letter = qs('#avatarLetter');
+    const img = qs('#avatarImg');
+    const n = (user.name || 'U').trim();
+    letter.textContent = n ? n[0].toUpperCase() : 'U';
 
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-function statusPill(status){
-  // map server statuses -> pill class
-  // published, hidden, pending, rejected, sold, expired
-  const s = (status||'').toLowerCase();
-  if (s==='published') return {label:'منشور', cls:'ok'};
-  if (s==='hidden') return {label:'مخفي', cls:'warn'};
-  if (s==='pending') return {label:'قيد المراجعة', cls:'warn'};
-  if (s==='rejected') return {label:'مرفوض', cls:'err'};
-  if (s==='sold') return {label:'مباع', cls:'ok'};
-  if (s==='expired') return {label:'منتهي', cls:'err'};
-  return {label: status || 'غير معروف', cls:'warn'};
-}
-
-let currentUser = null;
-let myAdsCache = [];
-let selectedPlan = null;
-
-// ===== Tabs
-qsa('.tab').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    qsa('.tab').forEach(t=>t.classList.remove('active'));
-    btn.classList.add('active');
-
-    const tab = btn.getAttribute('data-tab');
-    qsa('.panel').forEach(p=>p.classList.remove('active'));
-    qs('#panel-'+tab).classList.add('active');
-
-    // lazy loads
-    if(tab==='myads') loadMyAds();
-    if(tab==='premium') loadMyAdsIntoSelect();
-    if(tab==='notifications') loadNotifications();
-    if(tab==='favorites') loadFavorites();
-  });
-});
-
-// ===== Settings (brand)
-async function loadSettings(){
-  try{
-    const res = await fetch(API.settings, apiOpts());
-    if(!res.ok) return;
-    const s = await res.json();
-    if (s.platformName) qs('#platformName').textContent = s.platformName;
-    if (s.platformSubtitle) qs('#platformSubtitle').textContent = s.platformSubtitle;
-
-    // logo
-    if (s.logo){
-      qs('#brandLogoImg').src = s.logo;
-      qs('#brandLogoImg').style.display = 'block';
-      qs('#brandLogoFallback').style.display = 'none';
+    if(user.avatar){
+      img.src = user.avatar;
+      img.style.display = 'block';
+      letter.style.display = 'none';
     } else {
-      qs('#brandLogoFallback').textContent = (s.platformName || 'S').slice(0,1).toUpperCase();
+      img.style.display = 'none';
+      letter.style.display = 'flex';
     }
-  }catch(e){}
-}
+  }
 
-// ===== Auth / profile
-async function requireAuth(){
-  const res = await fetch(API.me, apiOpts());
-  if(!res.ok){
+  function setVerified(user){
+    // ✅ حسب كلامك: تظهر "موثق" تلقائياً بعد التسجيل فقط إذا السيرفر رجع verified true
+    const badge = qs('#verifiedBadge');
+    if (user && (user.verified === true || user.isVerified === true)) {
+      badge.style.display = 'inline-flex';
+      badge.classList.add('verified');
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  async function loadProfile(){
+    const u = await requireAuth();
+    if(!u) return;
+    currentUser = u;
+
+    qs('#userNameMini').textContent = u.name || 'مستخدم';
+    qs('#userEmailMini').textContent = u.email || '';
+    qs('#nameInput').value = u.name || '';
+    qs('#emailInput').value = u.email || '';
+    qs('#phoneInput').value = u.phone || '';
+
+    setAvatar(u);
+    setVerified(u);
+
+    // Load other data (optional)
+    await Promise.allSettled([
+      loadMyAds(),
+      loadPremiumAdsSelect(),
+      loadNotifications(),
+      loadFavorites(),
+    ]);
+  }
+
+  // Save account (phone only)
+  qs('#saveAccountBtn').addEventListener('click', async ()=>{
+    if(!currentUser) return;
+    const phone = (qs('#phoneInput').value || '').trim();
+
+    try{
+      const res = await fetch('/api/users/' + encodeURIComponent(currentUser.id), apiOpts('PUT', { phone }));
+      if(!res.ok) throw new Error('save failed');
+      toast('تم حفظ التغييرات ✅', true);
+    }catch(e){
+      console.error(e);
+      toast('فشل الحفظ ❌', false);
+    }
+  });
+
+  // Avatar upload route: PUT /api/users/:id/avatar
+  avatarInput.addEventListener('change', async (e)=>{
+    if(!currentUser) return;
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    try{
+      const fd = new FormData();
+      fd.append('avatar', file);
+
+      const res = await fetch('/api/users/' + encodeURIComponent(currentUser.id) + '/avatar', apiOpts('PUT', fd));
+      if(!res.ok) throw new Error('upload failed');
+
+      const data = await res.json().catch(()=> ({}));
+      if(data.avatar) currentUser.avatar = data.avatar;
+
+      setAvatar(currentUser);
+      toast('تم تحديث الصورة ✅', true);
+    }catch(err){
+      console.error(err);
+      toast('فشل رفع الصورة ❌', false);
+    }finally{
+      avatarInput.value = '';
+    }
+  });
+
+  // Change password
+  qs('#changePwdBtn').addEventListener('click', async ()=>{
+    const currentPassword = qs('#currentPwd').value;
+    const newPassword = qs('#newPwd').value;
+    const confirm = qs('#confirmPwd').value;
+
+    if(!newPassword || newPassword.length < 6){
+      toast('كلمة السر قصيرة (6 على الأقل)', false);
+      return;
+    }
+    if(newPassword !== confirm){
+      toast('تأكيد كلمة السر غير مطابق', false);
+      return;
+    }
+
+    try{
+      const res = await fetch('/api/auth/password', apiOpts('PATCH', { currentPassword, newPassword }));
+      if(!res.ok) throw new Error('pwd failed');
+
+      qs('#currentPwd').value = '';
+      qs('#newPwd').value = '';
+      qs('#confirmPwd').value = '';
+      closePwdModal();
+      toast('تم تغيير كلمة السر ✅', true);
+    }catch(e){
+      console.error(e);
+      toast('فشل تغيير كلمة السر ❌', false);
+    }
+  });
+
+  // Logout
+  qs('#logoutBtn').addEventListener('click', async ()=>{
+    try{ await fetch('/api/auth/logout', apiOpts('POST')); } catch(e){}
     window.location.href = '/login';
-    return null;
-  }
-  return await res.json();
-}
-
-function renderUser(u){
-  currentUser = u;
-
-  // sidebar
-  const name = u.name || 'مستخدم';
-  const email = u.email || '-';
-  qs('#userNameMini').textContent = name;
-  qs('#userEmailMini').textContent = email;
-
-  // account fields
-  qs('#nameInput').value = name;
-  qs('#emailInput').value = email;
-  qs('#phoneInput').value = u.phone || '';
-
-  // avatar
-  qs('#avatarLetter').textContent = (name || 'U').slice(0,1).toUpperCase();
-  if(u.avatar){
-    qs('#avatarImg').src = u.avatar;
-    qs('#avatarImg').style.display = 'block';
-    qs('#avatarLetter').style.display = 'none';
-  }else{
-    qs('#avatarImg').style.display = 'none';
-    qs('#avatarLetter').style.display = 'block';
-  }
-
-  // status
-  const verified = !!u.verified;
-  qs('#userStatus').textContent = verified ? 'موثق' : 'غير موثق';
-  qs('#userStatus').className = 'pill ' + (verified ? 'ok' : 'warn');
-  qs('#verifyStatusPill').textContent = verified ? 'موثق' : 'غير مفعّل';
-  qs('#verifyStatusPill').className = 'pill ' + (verified ? 'ok' : 'warn');
-}
-
-// ===== Avatar upload
-qs('#avatarBox').addEventListener('click', ()=> qs('#avatarInput').click());
-qs('#avatarInput').addEventListener('change', async (e)=>{
-  if(!currentUser) return;
-  const file = e.target.files[0];
-  if(!file) return;
-
-  // simple client limit (optional)
-  if(file.size > 10*1024*1024){ toast('الصورة كبيرة بزاف (حد 10MB)', 'error'); return; }
-
-  const fd = new FormData();
-  fd.append('avatar', file);
-
-  try{
-    const res = await fetch(API.updateAvatar(currentUser.id || currentUser._id || 'me'), apiOpts('PUT', fd));
-    if(!res.ok){
-      toast('فشل رفع الصورة', 'error');
-      return;
-    }
-    const data = await res.json().catch(()=>({}));
-    const url = data.avatar || data.url || null;
-    if(url){
-      qs('#avatarImg').src = url;
-      qs('#avatarImg').style.display = 'block';
-      qs('#avatarLetter').style.display = 'none';
-    }
-    toast('تم تحديث الصورة ✅');
-  }catch(err){
-    toast('خطأ في الاتصال', 'error');
-  }
-});
-
-// ===== Save account (phone only)
-qs('#saveAccountBtn').addEventListener('click', async ()=>{
-  if(!currentUser) return;
-  const phone = (qs('#phoneInput').value || '').trim();
-
-  try{
-    const id = currentUser.id || currentUser._id || 'me';
-    const res = await fetch(API.updateMe(id), apiOpts('PUT', { phone }));
-    if(!res.ok){ toast('فشل الحفظ', 'error'); return; }
-    toast('تم الحفظ ✅');
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-});
-
-// ===== Logout
-qs('#logoutBtn').addEventListener('click', async ()=>{
-  try{ await fetch(API.logout, apiOpts('POST')); }catch(e){}
-  window.location.href = '/login';
-});
-
-// ===== Password modal
-function openPwdModal(){ qs('#pwdModal').classList.add('show'); }
-function closePwdModal(){ qs('#pwdModal').classList.remove('show'); }
-
-qs('#openPasswordBtn').addEventListener('click', openPwdModal);
-qs('#openPasswordBtn2').addEventListener('click', openPwdModal);
-qs('#closePwdModal').addEventListener('click', closePwdModal);
-qs('#cancelPwdBtn').addEventListener('click', closePwdModal);
-
-qs('#savePwdBtn').addEventListener('click', async ()=>{
-  const currentPassword = qs('#currentPwd').value || '';
-  const newPassword = qs('#newPwd').value || '';
-  const confirm = qs('#confirmPwd').value || '';
-
-  if(newPassword.length < 6){ toast('كلمة السر قصيرة (6+)', 'error'); return; }
-  if(newPassword !== confirm){ toast('التأكيد غير مطابق', 'error'); return; }
-
-  try{
-    const res = await fetch(API.changePassword, apiOpts('PATCH', { currentPassword, newPassword }));
-    if(!res.ok){
-      const t = await res.json().catch(()=>({}));
-      toast(t.message || 'فشل تغيير كلمة السر', 'error');
-      return;
-    }
-    qs('#currentPwd').value='';
-    qs('#newPwd').value='';
-    qs('#confirmPwd').value='';
-    toast('تم تغيير كلمة السر ✅');
-    closePwdModal();
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-});
-
-// ===== Ads
-function matchesFilter(ad, statusFilter, q){
-  const s = (ad.status || ad.state || (ad.hidden ? 'hidden' : 'published')).toLowerCase();
-  const title = (ad.title||'').toLowerCase();
-  const query = (q||'').toLowerCase().trim();
-
-  if(statusFilter && statusFilter !== 'all'){
-    if(statusFilter === 'hidden' && !(s==='hidden' || ad.hidden===true)) return false;
-    else if(statusFilter !== 'hidden' && s !== statusFilter) return false;
-  }
-  if(query && !title.includes(query)) return false;
-  return true;
-}
-
-function renderMyAds(list){
-  const root = qs('#myAdsList');
-  root.innerHTML = '';
-  if(!list || !list.length){
-    root.innerHTML = `<div class="item"><div class="muted">ما كاين حتى إعلان دابا.</div></div>`;
-    return;
-  }
-
-  list.forEach(ad=>{
-    const id = ad.id || ad._id || ad.ref || '';
-    const img = (ad.images && ad.images[0]) ? ad.images[0] : (ad.image || '/uploads/default.png');
-    const city = ad.city || '';
-    const price = (ad.price!=null && ad.price!=='') ? (ad.price + ' د.م') : '';
-    const st = statusPill(ad.status || ad.state || (ad.hidden ? 'hidden' : 'published'));
-
-    const featured = !!ad.featured;
-    const featuredPill = featured ? `<span class="pill ok">مميز</span>` : '';
-
-    const el = document.createElement('div');
-    el.className = 'item';
-    el.innerHTML = `
-      <div class="item-head">
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <img src="${escapeHtml(img)}" alt="" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.08);background:#0b1220">
-          <div>
-            <p class="item-title">${escapeHtml(ad.title || 'بدون عنوان')}</p>
-            <div class="meta">
-              <span>${escapeHtml(city)}</span>
-              <span>${escapeHtml(price)}</span>
-              <span>مشاهدات: ${escapeHtml(String(ad.views ?? ad.viewCount ?? 0))}</span>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-          <span class="pill ${st.cls}">${st.label}</span>
-          ${featuredPill}
-        </div>
-      </div>
-
-      <div class="item-actions">
-        <a class="mini-btn primary" href="/edit-ad?id=${encodeURIComponent(id)}">تعديل</a>
-        <a class="mini-btn" href="/ad?id=${encodeURIComponent(id)}">عرض</a>
-
-        <button class="mini-btn warn" data-act="toggle" data-id="${escapeHtml(id)}">${(ad.hidden ? 'إظهار' : 'إخفاء')}</button>
-        <button class="mini-btn" data-act="renew" data-id="${escapeHtml(id)}">تجديد</button>
-        <button class="mini-btn" data-act="sold" data-id="${escapeHtml(id)}">مباع</button>
-        <button class="mini-btn danger" data-act="delete" data-id="${escapeHtml(id)}">حذف</button>
-      </div>
-    `;
-    root.appendChild(el);
   });
 
-  // attach actions
-  root.querySelectorAll('button[data-act]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const act = btn.getAttribute('data-act');
-      const id = btn.getAttribute('data-id');
-      if(!id) return;
+  // My Ads
+  const myAdsList = qs('#myAdsList');
+  async function loadMyAds(){
+    try{
+      const res = await fetch('/api/my/ads', apiOpts());
+      if(!res.ok) throw new Error('no ads');
+      const ads = await res.json();
+      renderMyAds(ads);
+    }catch(e){
+      console.warn(e);
+      myAdsList.innerHTML = `<div class="item"><div class="muted">تعذر تحميل الإعلانات الآن.</div></div>`;
+    }
+  }
 
-      if(act==='delete'){
-        if(!confirm('حذف الإعلان؟')) return;
-        await deleteAd(id);
-        return;
+  function adStatusPill(status){
+    const s = String(status || 'published');
+    if(s === 'published') return `<span class="pill ok">منشور</span>`;
+    if(s === 'hidden') return `<span class="pill warn">مخفي</span>`;
+    if(s === 'pending') return `<span class="pill warn">قيد المراجعة</span>`;
+    if(s === 'rejected') return `<span class="pill err">مرفوض</span>`;
+    if(s === 'sold') return `<span class="pill ok">مباع</span>`;
+    if(s === 'expired') return `<span class="pill err">منتهي</span>`;
+    return `<span class="pill">${escapeHtml(s)}</span>`;
+  }
+
+  function renderMyAds(ads){
+    const statusFilter = qs('#adsStatusFilter').value;
+    const q = (qs('#adsSearch').value || '').trim().toLowerCase();
+
+    const list = Array.isArray(ads) ? ads : [];
+    const filtered = list.filter(a=>{
+      const okStatus = (statusFilter === 'all') ? true : (String(a.status || 'published') === statusFilter);
+      const okQ = !q ? true : ((a.title||'').toLowerCase().includes(q));
+      return okStatus && okQ;
+    });
+
+    if(!filtered.length){
+      myAdsList.innerHTML = `<div class="item"><div class="muted">لا توجد إعلانات حسب الفلتر.</div></div>`;
+      return;
+    }
+
+    myAdsList.innerHTML = filtered.map(ad=>{
+      const id = ad.id || ad._id || '';
+      const title = ad.title || 'بدون عنوان';
+      const price = ad.price ? `${ad.price} د.م` : '';
+      const city = ad.city || '';
+      const status = ad.status || 'published';
+
+      return `
+        <div class="item">
+          <div class="item-head">
+            <div>
+              <p class="item-title">${escapeHtml(title)}</p>
+              <div class="meta">
+                ${price ? `<span>💰 ${escapeHtml(price)}</span>` : ''}
+                ${city ? `<span>📍 ${escapeHtml(city)}</span>` : ''}
+              </div>
+            </div>
+            ${adStatusPill(status)}
+          </div>
+
+          <div class="item-actions">
+            <a class="mini-btn primary" href="/edit-ad?id=${encodeURIComponent(id)}">✏️ تعديل</a>
+            <button class="mini-btn" type="button" onclick="toggleVisibility('${encodeURIComponent(id)}','${escapeHtml(status)}')">
+              👁️ إخفاء/إظهار
+            </button>
+            <button class="mini-btn warn" type="button" onclick="markSold('${encodeURIComponent(id)}')">✅ مباع</button>
+            <button class="mini-btn danger" type="button" onclick="deleteAd('${encodeURIComponent(id)}')">🗑️ حذف</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  qs('#reloadAdsBtn').addEventListener('click', loadMyAds);
+  qs('#adsStatusFilter').addEventListener('change', loadMyAds);
+  qs('#adsSearch').addEventListener('input', () => loadMyAds());
+
+  window.deleteAd = async (id)=>{
+    if(!confirm('حذف الإعلان؟')) return;
+    try{
+      const res = await fetch('/api/ads/' + id, apiOpts('DELETE'));
+      if(!res.ok) throw new Error('delete failed');
+      toast('تم الحذف ✅', true);
+      loadMyAds();
+      loadPremiumAdsSelect();
+    }catch(e){
+      console.error(e);
+      toast('فشل الحذف ❌', false);
+    }
+  };
+
+  window.toggleVisibility = async (id, status)=>{
+    // fallback route
+    try{
+      const next = (status === 'hidden') ? 'published' : 'hidden';
+      const res = await fetch('/api/ads/' + id + '/visibility', apiOpts('PATCH', { status: next }));
+      if(!res.ok){
+        // fallback if route not exists
+        await fetch('/api/ads/' + id, apiOpts('PATCH', { status: next }));
       }
-      if(act==='toggle'){
-        await toggleHidden(id);
-        return;
+      toast('تم تحديث الحالة ✅', true);
+      loadMyAds();
+    }catch(e){
+      console.error(e);
+      toast('فشل تحديث الحالة ❌', false);
+    }
+  };
+
+  window.markSold = async (id)=>{
+    try{
+      const res = await fetch('/api/ads/' + id + '/sold', apiOpts('PATCH', { sold:true }));
+      if(!res.ok){
+        // fallback
+        await fetch('/api/ads/' + id, apiOpts('PATCH', { status:'sold' }));
       }
-      if(act==='sold'){
-        await markSold(id);
-        return;
-      }
-      if(act==='renew'){
-        await renewAd(id);
-        return;
-      }
+      toast('تم تعيينه كمباع ✅', true);
+      loadMyAds();
+    }catch(e){
+      console.error(e);
+      toast('فشل العملية ❌', false);
+    }
+  };
+
+  // Premium
+  let chosenPlan = null;
+  qsa('.choose').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      chosenPlan = btn.dataset.plan || null;
+      qs('#selectedPlan').value = chosenPlan || 'لم يتم اختيار خطة';
+      toast('تم اختيار الخطة ✅', true);
     });
   });
-}
 
-async function loadMyAds(){
-  try{
-    const res = await fetch(API.myAds, apiOpts());
-    if(!res.ok) throw new Error('failed');
-    const list = await res.json();
-    myAdsCache = Array.isArray(list) ? list : [];
-  }catch(e){
-    // fallback: keep cache if exists
-    myAdsCache = myAdsCache || [];
-  }
-
-  // stats
-  qs('#statMyAds').textContent = myAdsCache.length;
-  qs('#statFeatured').textContent = myAdsCache.filter(a=>!!a.featured).length;
-  const views = myAdsCache.reduce((sum,a)=> sum + Number(a.views ?? a.viewCount ?? 0), 0);
-  qs('#statViews').textContent = views;
-
-  // apply filter + search
-  const st = qs('#adsStatusFilter').value;
-  const q = qs('#adsSearch').value;
-  const filtered = myAdsCache.filter(ad=>matchesFilter(ad, st, q));
-  renderMyAds(filtered);
-}
-
-qs('#reloadAdsBtn').addEventListener('click', loadMyAds);
-qs('#adsStatusFilter').addEventListener('change', loadMyAds);
-qs('#adsSearch').addEventListener('input', ()=>{
-  // lightweight, no refetch
-  const st = qs('#adsStatusFilter').value;
-  const q = qs('#adsSearch').value;
-  renderMyAds(myAdsCache.filter(ad=>matchesFilter(ad, st, q)));
-});
-
-async function deleteAd(id){
-  try{
-    const res = await fetch(API.adDelete(id), apiOpts('DELETE'));
-    if(!res.ok){ toast('فشل الحذف', 'error'); return; }
-    toast('تم الحذف ✅');
-    await loadMyAds();
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-}
-async function toggleHidden(id){
-  // prefer /visibility if exists, else PATCH /api/ads/:id
-  try{
-    const ad = myAdsCache.find(a => (a.id||a._id||a.ref)==id);
-    const nextHidden = !(ad && (ad.hidden===true || (ad.status||'')==='hidden'));
-
-    let res = await fetch(API.adToggleHidden(id), apiOpts('PATCH', { hidden: nextHidden }));
-    if(!res.ok){
-      // fallback
-      res = await fetch(API.adUpdate(id), apiOpts('PATCH', { hidden: nextHidden }));
+  async function loadPremiumAdsSelect(){
+    const select = qs('#premiumAdSelect');
+    try{
+      const res = await fetch('/api/my/ads', apiOpts());
+      if(!res.ok) throw new Error('no ads');
+      const ads = await res.json();
+      const list = Array.isArray(ads) ? ads : [];
+      select.innerHTML = `<option value="">اختر إعلان</option>` + list.map(a=>{
+        const id = a.id || a._id || '';
+        return `<option value="${escapeHtml(id)}">${escapeHtml(a.title || 'إعلان')}</option>`;
+      }).join('');
+    }catch(e){
+      select.innerHTML = `<option value="">تعذر تحميل الإعلانات</option>`;
     }
-    if(!res.ok){ toast('فشل تغيير الحالة', 'error'); return; }
-    toast(nextHidden ? 'تم إخفاء الإعلان' : 'تم إظهار الإعلان');
-    await loadMyAds();
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-}
-async function markSold(id){
-  try{
-    let res = await fetch(API.adMarkSold(id), apiOpts('PATCH'));
-    if(!res.ok){
-      res = await fetch(API.adUpdate(id), apiOpts('PATCH', { status:'sold' }));
-    }
-    if(!res.ok){ toast('فشل التعليم كمباع', 'error'); return; }
-    toast('تم التعليم كمباع ✅');
-    await loadMyAds();
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-}
-async function renewAd(id){
-  try{
-    let res = await fetch(API.adRenew(id), apiOpts('POST'));
-    if(!res.ok){
-      res = await fetch(API.adUpdate(id), apiOpts('PATCH', { renew:true }));
-    }
-    if(!res.ok){ toast('فشل التجديد', 'error'); return; }
-    toast('تم التجديد ✅');
-    await loadMyAds();
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-}
-
-// ===== Premium
-qsa('.choose').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    selectedPlan = btn.getAttribute('data-plan');
-    qs('#selectedPlan').value = selectedPlan;
-    toast('تم اختيار الخطة ✅');
-  });
-});
-
-async function loadMyAdsIntoSelect(){
-  await loadMyAds(); // ensure cache
-  const sel = qs('#premiumAdSelect');
-  const myAds = myAdsCache || [];
-
-  sel.innerHTML = `<option value="">اختر الإعلان</option>` + myAds.map(a=>{
-    const id = a.id || a._id || a.ref || '';
-    return `<option value="${escapeHtml(id)}">${escapeHtml(a.title || ('إعلان ' + id))}</option>`;
-  }).join('');
-}
-
-qs('#bannerBoostBtn').addEventListener('click', async ()=>{
-  const adId = qs('#premiumAdSelect').value;
-  if(!adId){ toast('اختار إعلان أولاً', 'error'); return; }
-
-  try{
-    const res = await fetch(API.bannerRequest, apiOpts('POST', { adId }));
-    if(!res.ok){
-      toast('فشل إرسال الطلب (API)', 'error');
-      return;
-    }
-    toast('تم إرسال طلب البانر ✅');
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-});
-
-qs('#buyPremiumBtn').addEventListener('click', async ()=>{
-  const adId = qs('#premiumAdSelect').value;
-  if(!adId){ toast('اختار إعلان أولاً', 'error'); return; }
-  if(!selectedPlan){ toast('اختار خطة أولاً', 'error'); return; }
-
-  // send API (payment will be implemented later)
-  try{
-    const res = await fetch(API.premiumBuy, apiOpts('POST', { adId, plan: selectedPlan }));
-    if(!res.ok){
-      const t = await res.json().catch(()=>({}));
-      toast(t.message || 'فشل تفعيل البروميوم (API)', 'error');
-      return;
-    }
-    toast('تم إرسال طلب التفعيل ✅');
-    await loadMyAds();
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-});
-
-qs('#premiumHistoryBtn').addEventListener('click', async ()=>{
-  try{
-    const res = await fetch(API.premiumHistory, apiOpts());
-    if(!res.ok){ toast('سجل الترقيات غير متاح الآن', 'error'); return; }
-    const list = await res.json();
-    console.log('premium history', list);
-    toast('تم تحميل السجل (شوف Console)');
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-});
-
-// ===== Notifications
-qs('#notifBtn').addEventListener('click', ()=>{
-  // open notifications tab
-  qsa('.tab').forEach(t=>t.classList.remove('active'));
-  qsa('.panel').forEach(p=>p.classList.remove('active'));
-  qs('.tab[data-tab="notifications"]').classList.add('active');
-  qs('#panel-notifications').classList.add('active');
-  loadNotifications();
-});
-
-async function loadNotifications(){
-  const root = qs('#notifList');
-  root.innerHTML = `<div class="item"><div class="muted">جارٍ التحميل...</div></div>`;
-  try{
-    const res = await fetch(API.notifications, apiOpts());
-    if(!res.ok) throw new Error('failed');
-    const list = await res.json();
-    renderNotifications(Array.isArray(list) ? list : []);
-  }catch(e){
-    // fallback empty
-    renderNotifications([]);
-  }
-}
-
-function renderNotifications(list){
-  const root = qs('#notifList');
-  root.innerHTML = '';
-  const unread = (list||[]).some(n=>!n.read);
-  qs('#notifDot').classList.toggle('show', unread);
-
-  if(!list || !list.length){
-    root.innerHTML = `<div class="item"><div class="muted">لا توجد إشعارات.</div></div>`;
-    return;
   }
 
-  list.forEach(n=>{
-    const el = document.createElement('div');
-    el.className = 'item';
-    const pill = n.read ? `<span class="pill ok">مقروء</span>` : `<span class="pill warn">جديد</span>`;
-    el.innerHTML = `
-      <div class="item-head">
-        <div>
-          <p class="item-title">${escapeHtml(n.title || 'إشعار')}</p>
-          <div class="meta">
-            <span>${escapeHtml(n.message || '')}</span>
-          </div>
-        </div>
-        ${pill}
-      </div>
-    `;
-    root.appendChild(el);
-  });
-}
+  qs('#buyPremiumBtn').addEventListener('click', async ()=>{
+    const adId = qs('#premiumAdSelect').value;
+    if(!adId) return toast('اختر إعلان أولاً', false);
+    if(!chosenPlan) return toast('اختر خطة أولاً', false);
 
-qs('#markAllReadBtn').addEventListener('click', async ()=>{
-  try{
-    const res = await fetch(API.notificationsReadAll, apiOpts('POST'));
-    if(!res.ok){ toast('فشل العملية', 'error'); return; }
-    toast('تم ✅');
-    await loadNotifications();
-  }catch(e){
-    toast('خطأ في الاتصال', 'error');
-  }
-});
-
-// ===== Favorites
-async function loadFavorites(){
-  const root = qs('#favList');
-  root.innerHTML = `<div class="item"><div class="muted">جارٍ التحميل...</div></div>`;
-  try{
-    const res = await fetch(API.favorites, apiOpts());
-    if(!res.ok) throw new Error('failed');
-    const list = await res.json();
-    renderFavorites(Array.isArray(list) ? list : []);
-  }catch(e){
-    renderFavorites([]);
-  }
-}
-
-function renderFavorites(list){
-  const root = qs('#favList');
-  root.innerHTML = '';
-  if(!list || !list.length){
-    root.innerHTML = `<div class="item"><div class="muted">ما كاين حتى إعلان محفوظ.</div></div>`;
-    return;
-  }
-
-  list.forEach(f=>{
-    const ad = f.ad || f;
-    const id = ad.id || ad._id || f.id || '';
-    const img = (ad.images && ad.images[0]) ? ad.images[0] : (ad.image || '/uploads/default.png');
-
-    const el = document.createElement('div');
-    el.className = 'item';
-    el.innerHTML = `
-      <div class="item-head">
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <img src="${escapeHtml(img)}" alt="" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.08);background:#0b1220">
-          <div>
-            <p class="item-title">${escapeHtml(ad.title || 'بدون عنوان')}</p>
-            <div class="meta">
-              <span>${escapeHtml(ad.city || '')}</span>
-              <span>${ad.price? escapeHtml(ad.price+' د.م') : ''}</span>
-            </div>
-          </div>
-        </div>
-        <span class="pill">محفوظ</span>
-      </div>
-      <div class="item-actions">
-        <a class="mini-btn primary" href="/ad?id=${encodeURIComponent(id)}">عرض</a>
-        <button class="mini-btn danger" type="button" data-favid="${escapeHtml(id)}">حذف من المفضلة</button>
-      </div>
-    `;
-    root.appendChild(el);
-
-    el.querySelector('button[data-favid]').addEventListener('click', async ()=>{
-      if(!confirm('حذف من المفضلة؟')) return;
-      try{
-        const res = await fetch(API.favoriteRemove(id), apiOpts('DELETE'));
-        if(!res.ok){ toast('فشل الحذف', 'error'); return; }
-        toast('تم ✅');
-        await loadFavorites();
-      }catch(e){
-        toast('خطأ في الاتصال', 'error');
-      }
-    });
-  });
-}
-
-qs('#reloadFavBtn').addEventListener('click', loadFavorites);
-
-// ===== Optional buttons
-qs('#requestVerifyBtn').addEventListener('click', ()=> toast('ميزة التوثيق قريبة ✅', 'success'));
-qs('#logoutAllBtn').addEventListener('click', ()=> toast('قريباً ✅', 'success'));
-qs('#loadSessionsBtn').addEventListener('click', ()=> {
-  qs('#sessionsBox').textContent = 'قريباً: /api/sessions (عرض الأجهزة والجلسات).';
-  toast('قريباً ✅');
-});
-
-// ===== Nav active helper
-(function(){
-  const currentPath = window.location.pathname;
-  document.querySelectorAll(".modern-flat-item").forEach(link=>{
-    if(link.getAttribute("href") === currentPath){
-      link.classList.add("active");
+    try{
+      const res = await fetch('/api/premium/buy', apiOpts('POST', { adId, plan: chosenPlan }));
+      if(!res.ok) throw new Error('buy failed');
+      toast('تم إرسال طلب البروميوم ✅', true);
+      loadMyAds();
+    }catch(e){
+      console.error(e);
+      toast('فشل طلب البروميوم ❌', false);
     }
   });
-})();
 
-// ===== Init
-(async function init(){
-  await loadSettings();
-  const u = await requireAuth();
-  if(!u) return;
-  renderUser(u);
+  qs('#premiumHistoryBtn').addEventListener('click', async ()=>{
+    try{
+      const res = await fetch('/api/premium/history', apiOpts());
+      if(!res.ok) throw new Error('no history');
+      toast('تم جلب السجل (نفّذ العرض لاحقاً)', true);
+    }catch(e){
+      toast('تعذر جلب السجل الآن', false);
+    }
+  });
 
-  // load initial stats/ads silently
-  await loadMyAds();
-
-  // notifications dot (silent)
-  try{
-    const res = await fetch(API.notifications, apiOpts());
-    if(res.ok){
+  // Notifications
+  const notifList = qs('#notifList');
+  async function loadNotifications(){
+    try{
+      const res = await fetch('/api/notifications', apiOpts());
+      if(!res.ok) throw new Error('no notifs');
       const list = await res.json();
-      const unread = (Array.isArray(list) ? list : []).some(n=>!n.read);
-      qs('#notifDot').classList.toggle('show', unread);
+      renderNotifications(list);
+    }catch(e){
+      notifList.innerHTML = `<div class="item"><div class="muted">لا توجد إشعارات حالياً.</div></div>`;
+      qs('#notifDot').classList.remove('show');
     }
-  }catch(e){}
-})();
+  }
+
+  function renderNotifications(list){
+    const arr = Array.isArray(list) ? list : [];
+    const unread = arr.some(n => n && n.read === false);
+    qs('#notifDot').classList.toggle('show', unread);
+
+    if(!arr.length){
+      notifList.innerHTML = `<div class="item"><div class="muted">لا توجد إشعارات حالياً.</div></div>`;
+      return;
+    }
+
+    notifList.innerHTML = arr.map(n=>{
+      const title = n.title || 'إشعار';
+      const body = n.body || '';
+      const when = n.createdAt ? new Date(n.createdAt).toLocaleString('ar-MA') : '';
+      const pill = (n.read === false) ? `<span class="pill warn">جديد</span>` : `<span class="pill">مقروء</span>`;
+      return `
+        <div class="item">
+          <div class="item-head">
+            <p class="item-title">${escapeHtml(title)}</p>
+            ${pill}
+          </div>
+          ${body ? `<div class="meta"><span>${escapeHtml(body)}</span></div>` : ''}
+          ${when ? `<div class="meta"><span>${escapeHtml(when)}</span></div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  qs('#markAllReadBtn').addEventListener('click', async ()=>{
+    try{
+      const res = await fetch('/api/notifications/read-all', apiOpts('POST'));
+      if(!res.ok) throw new Error('fail');
+      toast('تم تعليم الكل كمقروء ✅', true);
+      loadNotifications();
+    }catch(e){
+      toast('فشل العملية ❌', false);
+    }
+  });
+
+  // Favorites
+  const favList = qs('#favList');
+  async function loadFavorites(){
+    try{
+      const res = await fetch('/api/favorites', apiOpts());
+      if(!res.ok) throw new Error('no fav');
+      const favs = await res.json();
+      renderFavorites(favs);
+    }catch(e){
+      favList.innerHTML = `<div class="item"><div class="muted">لا توجد مفضلة حالياً.</div></div>`;
+    }
+  }
+
+  function renderFavorites(favs){
+    const arr = Array.isArray(favs) ? favs : [];
+    if(!arr.length){
+      favList.innerHTML = `<div class="item"><div class="muted">لا توجد مفضلة حالياً.</div></div>`;
+      return;
+    }
+
+    favList.innerHTML = arr.map(f=>{
+      const id = f.id || f._id || '';
+      const adId = f.adId || (f.ad && (f.ad.id || f.ad._id)) || '';
+      const title = (f.ad && f.ad.title) || f.title || 'إعلان';
+      return `
+        <div class="item">
+          <div class="item-head">
+            <p class="item-title">${escapeHtml(title)}</p>
+            <span class="pill">مفضلة</span>
+          </div>
+          <div class="item-actions">
+            <a class="mini-btn primary" href="/ad?id=${encodeURIComponent(adId)}">👁️ عرض</a>
+            <button class="mini-btn danger" type="button" onclick="removeFav('${encodeURIComponent(id)}')">🗑️ إزالة</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  qs('#reloadFavBtn').addEventListener('click', loadFavorites);
+
+  window.removeFav = async (id)=>{
+    try{
+      const res = await fetch('/api/favorites/' + id, apiOpts('DELETE'));
+      if(!res.ok) throw new Error('fail');
+      toast('تمت الإزالة ✅', true);
+      loadFavorites();
+    }catch(e){
+      toast('فشل الإزالة ❌', false);
+    }
+  };
+
+  function escapeHtml(s=''){
+    return String(s).replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  // Init
+  document.addEventListener('DOMContentLoaded', loadProfile);
 </script>
 </body>
 </html>

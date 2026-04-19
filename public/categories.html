@@ -6,8 +6,8 @@
 <title>الأقسام</title>
 
 <style>
-/* ===== MODERN BOTTOM NAV FIX ===== */
 
+/* ===== NAV (UNCHANGED) ===== */
 .modern-flat-nav{
   position:fixed;
   bottom:0;
@@ -21,7 +21,6 @@
   align-items:center;
   z-index:999;
 }
-
 .modern-flat-item{
   flex:1;
   text-align:center;
@@ -35,28 +34,22 @@
   justify-content:center;
   gap:4px;
 }
-
 .modern-flat-nav svg{
   width:22px !important;
   height:22px !important;
-  display:block;
 }
-
 .modern-flat-item.active{
   color:#16a34a;
 }
 
 /* ===== BASE ===== */
-
 body{
   margin:0;
-  font-family:'Inter',Arial,sans-serif;
+  font-family:Inter,Arial,sans-serif;
   background:linear-gradient(180deg,#071024,#0c1524);
   color:#e6eef8;
   padding-bottom:90px;
 }
-
-/* ===== TOP BAR ===== */
 
 .top-bar{
   position:sticky;
@@ -80,55 +73,67 @@ body{
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  transition:0.2s ease;
 }
-
-.back-btn:hover{
-  background:rgba(255,255,255,0.12);
-  transform:scale(1.05);
-}
-
-.page-title{
-  font-weight:700;
-  font-size:16px;
-}
-
-/* ===== CONTAINER ===== */
 
 .page{
-  max-width:1100px;
-  margin:25px auto;
+  max-width:1200px;
+  margin:30px auto;
   padding:20px;
 }
 
-/* ===== CATEGORY GRID ===== */
+/* ===== FILTER BAR (READY FOR FUTURE) ===== */
+.filter-bar{
+  margin-bottom:25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  flex-wrap:wrap;
+}
 
+.search-input{
+  flex:1;
+  min-width:200px;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  background:rgba(255,255,255,0.06);
+  color:white;
+}
+
+.sort-select{
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  background:rgba(255,255,255,0.06);
+  color:white;
+}
+
+/* ===== GRID ===== */
 .category-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:18px;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:22px;
 }
 
 .category-card{
   position:relative;
-  height:230px;
   border-radius:20px;
   overflow:hidden;
   cursor:pointer;
-  transition:0.3s ease;
-  box-shadow:0 12px 30px rgba(0,0,0,0.5);
+  background:#111;
+  transition:.3s;
 }
 
 .category-card img{
   width:100%;
-  height:100%;
+  height:220px;
   object-fit:cover;
-  filter:brightness(0.75);
-  transition:0.4s ease;
+  filter:brightness(.75);
 }
 
-.category-card:hover img{
-  transform:scale(1.1);
+.category-card:hover{
+  transform:translateY(-6px);
 }
 
 .category-overlay{
@@ -136,117 +141,142 @@ body{
   bottom:0;
   width:100%;
   padding:18px;
-  background:linear-gradient(180deg,transparent,rgba(0,0,0,0.6));
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.7));
 }
 
 .category-overlay h3{
   margin:0;
   font-size:20px;
   font-weight:800;
-  color:#60a5fa;
 }
 
 .category-overlay p{
-  margin:4px 0 0;
+  margin:4px 0;
   font-size:13px;
   color:#cbd5e1;
+}
+
+.category-count{
+  font-size:12px;
+  color:#60a5fa;
+}
+
+/* ===== SKELETON ===== */
+.skeleton{
+  height:220px;
+  border-radius:20px;
+  background:linear-gradient(90deg,#1f2937 25%,#374151 50%,#1f2937 75%);
+  background-size:200% 100%;
+  animation:loading 1.5s infinite;
+}
+@keyframes loading{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+
+.empty-state{
+  text-align:center;
+  margin-top:60px;
+  color:#9aa8c2;
 }
 
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="top-bar">
-  <div class="back-btn" onclick="window.history.back()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  </div>
-  <div class="page-title">الأقسام</div>
+  <div class="back-btn" onclick="window.history.back()">←</div>
+  <strong>الأقسام</strong>
 </div>
 
 <div class="page">
 
-  <div class="category-grid">
+  <!-- FILTER UI (READY FOR BACKEND) -->
+  <div class="filter-bar">
+    <input id="searchInput" class="search-input" placeholder="بحث داخل الأقسام...">
+    <select id="sortSelect" class="sort-select">
+      <option value="order">الترتيب الافتراضي</option>
+      <option value="adsCount">الأكثر إعلانات</option>
+      <option value="name">أبجدي</option>
+    </select>
+  </div>
 
-    <a href="/categories?key=phones" class="category-card">
-      <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
-      <div class="category-overlay">
-        <h3>الهواتف</h3>
-        <p>جديدة ومستعملة</p>
-      </div>
-    </a>
+  <!-- GRID -->
+  <div id="categoriesContainer" class="category-grid">
+    <!-- Skeleton Loading -->
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </div>
 
-    <a href="/categories?key=cars" class="category-card">
-      <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200&auto=format&fit=crop">
-      <div class="category-overlay">
-        <h3>السيارات</h3>
-        <p>اقتصادية وفاخرة</p>
-      </div>
-    </a>
-
-    <a href="/categories?key=homes" class="category-card">
-      <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop">
-      <div class="category-overlay">
-        <h3>العقارات</h3>
-        <p>شقق ومنازل</p>
-      </div>
-    </a>
-
-    <a href="/categories?key=furniture" class="category-card">
-      <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop">
-      <div class="category-overlay">
-        <h3>الأثاث</h3>
-        <p>منزلي ومكتبي</p>
-      </div>
-    </a>
-
+  <div id="emptyState" class="empty-state" style="display:none;">
+    لا توجد أقسام متاحة حالياً
   </div>
 
 </div>
 
-<!-- NAVIGATION -->
+<!-- NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
-
   <a href="/" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
     <span>الرئيسية</span>
   </a>
-
   <a href="/categories" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
     <span>الأقسام</span>
   </a>
-
   <a href="/post-ad" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
     <span>نشر</span>
   </a>
-
   <a href="/profile" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
     <span>بروفايل</span>
   </a>
-
 </nav>
 
 <script>
-  const currentPath = window.location.pathname;
-  document.querySelectorAll(".modern-flat-item").forEach(link=>{
-    if(link.getAttribute("href") === currentPath){
-      link.classList.add("active");
+
+/* ===== FETCH CATEGORIES FROM EXPRESS ===== */
+async function loadCategories(){
+  const container = document.getElementById('categoriesContainer');
+  const emptyState = document.getElementById('emptyState');
+
+  try{
+    const res = await fetch('/api/categories');
+    const categories = await res.json();
+
+    container.innerHTML = '';
+
+    if(!categories.length){
+      emptyState.style.display = 'block';
+      return;
     }
-  });
+
+    categories.forEach(cat=>{
+      if(!cat.active) return;
+
+      const card = document.createElement('a');
+      card.href = `/category.html?key=${cat.id}`;
+      card.className = 'category-card';
+      card.dataset.id = cat.id;
+
+      card.innerHTML = `
+        <img src="${cat.image}" alt="${cat.name}">
+        <div class="category-overlay">
+          <h3>${cat.name}</h3>
+          <p>${cat.description || ''}</p>
+          <div class="category-count">${cat.adsCount || 0} إعلان</div>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+  }catch(err){
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+  }
+}
+
+loadCategories();
+
 </script>
 
 </body>

@@ -54,6 +54,27 @@ body{
   font-size:16px;
 }
 
+/* ✅ زر الرئيسية */
+.home-btn{
+  margin-inline-start:auto;
+  padding:10px 14px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
+  color:#e6eef8;
+  text-decoration:none;
+  font-weight:700;
+  font-size:13px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition:0.2s ease;
+}
+.home-btn:hover{
+  background:rgba(255,255,255,0.12);
+  transform:translateY(-1px);
+}
+
 /* ===== CARD ===== */
 
 .page{
@@ -104,7 +125,7 @@ textarea{
   min-height:120px;
 }
 
-input:focus,textarea:focus{
+input:focus,textarea:focus,select:focus{
   outline:none;
   border-color:#2ea3ff;
   box-shadow:0 0 0 2px rgba(46,163,255,0.2);
@@ -134,18 +155,25 @@ input:focus,textarea:focus{
 .btn.ghost{
   background:rgba(255,255,255,0.08);
   color:white;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .btn:hover{
   transform:translateY(-2px);
 }
 
-
+.msg{
+  margin:0 0 14px;
+  font-weight:700;
+  color:#bbf7d0;
+}
+.msg.err{color:#fecaca}
 
 @media(max-width:768px){
-  .row{
-    grid-template-columns:1fr;
-  }
+  .row{ grid-template-columns:1fr; }
 }
 
 </style>
@@ -159,12 +187,21 @@ input:focus,textarea:focus{
       <path d="M15 18l-6-6 6-6"/>
     </svg>
   </div>
+
   <div class="page-title">تعديل الإعلان</div>
+
+  <!-- ✅ زر رجوع للرئيسية -->
+  <a class="home-btn" href="/">
+    <span>🏠</span>
+    <span>الرئيسية</span>
+  </a>
 </div>
 
 <div class="page">
 
   <div class="card">
+    <div id="msg" class="msg" style="display:none"></div>
+
     <form id="editAdForm">
 
       <div class="row">
@@ -175,7 +212,7 @@ input:focus,textarea:focus{
 
         <div>
           <label>الثمن</label>
-          <input id="price" type="number">
+          <input id="price" type="number" min="0">
         </div>
 
         <div>
@@ -201,7 +238,7 @@ input:focus,textarea:focus{
       </div>
 
       <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn primary">حفظ التغييرات</button>
+        <button class="btn primary" type="submit" id="saveBtn">حفظ التغييرات</button>
         <button type="button" id="deleteBtn" class="btn warn">حذف الإعلان</button>
         <a href="/profile" class="btn ghost">إلغاء</a>
       </div>
@@ -211,7 +248,137 @@ input:focus,textarea:focus{
 
 </div>
 
-<!-- NAVIGATION -->
+<script>
+/**
+ * ✅ API ROUTES (Node.js + Postgres ready)
+ *
+ * GET    /api/ads/:id
+ * PUT    /api/ads/:id
+ * DELETE /api/ads/:id
+ *
+ * Expected JSON (example):
+ * {
+ *   id, title, price, city, category, description
+ * }
+ */
+
+const qs = (s) => document.querySelector(s);
+const msgEl = qs('#msg');
+
+function showMsg(text, ok=true){
+  msgEl.style.display = 'block';
+  msgEl.className = 'msg' + (ok ? '' : ' err');
+  msgEl.textContent = text;
+  setTimeout(() => { msgEl.style.display='none'; }, 3000);
+}
+
+function apiOpts(method='GET', body=null){
+  const opts = { method, credentials:'include', headers:{} };
+  if(body){
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  return opts;
+}
+
+const params = new URLSearchParams(window.location.search);
+const adId = params.get('id');
+
+async function loadAd(){
+  if(!adId){
+    showMsg('معرّف الإعلان غير موجود في الرابط', false);
+    return;
+  }
+
+  try{
+    const res = await fetch('/api/ads/' + encodeURIComponent(adId), apiOpts());
+    if(res.status === 401){
+      location.href = '/login';
+      return;
+    }
+    if(!res.ok){
+      showMsg('الإعلان غير موجود', false);
+      return;
+    }
+
+    const ad = await res.json();
+
+    qs('#title').value = ad.title || '';
+    qs('#price').value = ad.price ?? '';
+    qs('#city').value = ad.city || '';
+    qs('#category').value = ad.category || 'other';
+    qs('#description').value = ad.description || '';
+  }catch(e){
+    console.error(e);
+    showMsg('خطأ في الاتصال بالسيرفر', false);
+  }
+}
+
+qs('#editAdForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(!adId) return;
+
+  const payload = {
+    title: qs('#title').value.trim(),
+    price: Number(qs('#price').value || 0),
+    city: qs('#city').value.trim(),
+    category: qs('#category').value,
+    description: qs('#description').value.trim()
+  };
+
+  try{
+    qs('#saveBtn').disabled = true;
+
+    const res = await fetch('/api/ads/' + encodeURIComponent(adId), apiOpts('PUT', payload));
+    if(res.status === 401){
+      location.href = '/login';
+      return;
+    }
+    const data = await res.json().catch(()=> ({}));
+
+    if(!res.ok){
+      showMsg(data.message || 'فشل حفظ التغييرات', false);
+      return;
+    }
+
+    showMsg('تم حفظ التغييرات ✅', true);
+    // optional redirect:
+    // location.href = '/ad?id=' + encodeURIComponent(adId);
+  }catch(err){
+    console.error(err);
+    showMsg('خطأ في الاتصال بالسيرفر', false);
+  }finally{
+    qs('#saveBtn').disabled = false;
+  }
+});
+
+qs('#deleteBtn').addEventListener('click', async ()=>{
+  if(!adId) return;
+  if(!confirm('حذف الإعلان نهائياً؟')) return;
+
+  try{
+    const res = await fetch('/api/ads/' + encodeURIComponent(adId), apiOpts('DELETE'));
+    if(res.status === 401){
+      location.href = '/login';
+      return;
+    }
+
+    if(!res.ok){
+      const data = await res.json().catch(()=> ({}));
+      showMsg(data.message || 'فشل حذف الإعلان', false);
+      return;
+    }
+
+    showMsg('تم حذف الإعلان ✅', true);
+    setTimeout(()=> location.href = '/profile', 600);
+  }catch(e){
+    console.error(e);
+    showMsg('خطأ في الاتصال بالسيرفر', false);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', loadAd);
+</script>
 
 </body>
 </html>

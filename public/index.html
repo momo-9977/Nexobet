@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Samsar</title>
+<title>الرئيسية</title>
 
 <style>
 :root{
@@ -32,7 +32,7 @@ body{
 
 .page{max-width:1200px;margin:20px auto;padding:18px}
 
-/* HEADER */
+/* ================= HEADER ================= */
 
 .home-brand-bar{
   display:flex;
@@ -44,26 +44,10 @@ body{
   border:1px solid var(--card-border);
 }
 
-.brand-text{
-  text-align:left;
-}
-
-.brand-text h1{
-  margin:0;
-  font-size:22px;
-}
-
-.brand-text p{
-  margin:0;
-  font-size:13px;
-  color:var(--muted);
-}
-
-/* NEW WRAPPER */
 .logo-area{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:14px;
 }
 
 .logo-img{
@@ -77,33 +61,23 @@ body{
   font-weight:800;
 }
 
-/* NEW SUPPORT ICON */
-.support-btn{
-  width:46px;
-  height:46px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.06);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:.3s;
-  text-decoration:none;
+.brand-text{
+  text-align:right;
 }
 
-.support-btn:hover{
-  background:rgba(255,255,255,0.12);
-  transform:translateY(-3px);
+.brand-text h1{
+  margin:0;
+  font-size:20px;
 }
 
-.support-btn svg{
-  width:22px;
-  height:22px;
-  stroke:white;
+.brand-text p{
+  margin:0;
+  font-size:13px;
+  color:var(--muted);
 }
 
-/* ===== باقي الكود كما هو تماما ===== */
+/* ================= HERO SLIDER ================= */
 
-/* HERO */
 .hero{
   margin-top:20px;
   position:relative;
@@ -152,7 +126,7 @@ body{
   background:white;
 }
 
-/* SEARCH */
+/* ================= SEARCH ================= */
 
 .search-box{
   margin-top:25px;
@@ -178,29 +152,7 @@ body{
   font-weight:700;
 }
 
-/* INLINE CATEGORIES */
-
-.inline-categories{
-  margin-top:25px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:15px;
-}
-
-.inline-categories a{
-  padding:12px 20px;
-  background:rgba(255,255,255,.06);
-  border-radius:14px;
-  text-decoration:none;
-  color:white;
-  transition:.3s;
-}
-
-.inline-categories a:hover{
-  background:rgba(255,255,255,.12);
-}
-
-/* SECTIONS */
+/* ================= SECTION ================= */
 
 .section{
   margin-top:35px;
@@ -218,7 +170,13 @@ body{
   font-size:18px;
 }
 
-/* ADS */
+.section-header a{
+  color:var(--accent);
+  text-decoration:none;
+  font-size:14px;
+}
+
+/* ================= ADS GRID ================= */
 
 .ads-grid{
   display:grid;
@@ -260,7 +218,28 @@ body{
   font-weight:700;
 }
 
-/* NAV (UNCHANGED) */
+/* ================= CATEGORIES ================= */
+
+.categories{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+}
+
+.category{
+  background:rgba(255,255,255,.05);
+  padding:18px;
+  border-radius:16px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.category:hover{
+  background:rgba(255,255,255,.08);
+}
+
+/* ================= NAV (UNCHANGED) ================= */
 
 .modern-flat-nav{
   position:fixed;
@@ -298,6 +277,11 @@ body{
 .modern-flat-item.active{
   color:#16a34a;
 }
+
+@media(max-width:700px){
+  .hero{height:240px}
+}
+
 </style>
 </head>
 
@@ -305,22 +289,149 @@ body{
 
 <div class="page">
 
+<!-- HEADER -->
 <header class="home-brand-bar">
-  <div class="brand-text">
-    <h1>Samsar</h1>
-    <p>بيع وشراء بسهولة</p>
-  </div>
-
   <div class="logo-area">
-    <div class="logo-img">S</div>
-
-    <!-- NEW SUPPORT ICON -->
-    <a href="/support" class="support-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-        <path d="M4 12a8 8 0 0116 0"/>
-        <path d="M4 12v4a2 2 0 002 2h2"/>
-        <path d="M20 12v4a2 2 0 01-2 2h-2"/>
-      </svg>
-    </a>
+    <div class="logo-img">LM</div>
+    <div class="brand-text">
+      <h1>Le Marché</h1>
+      <p>Vendre et acheter facilement</p>
+    </div>
   </div>
 </header>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop')"></div>
+  <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=1600&auto=format&fit=crop')"></div>
+
+  <div class="hero-dots"></div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-box">
+  <input placeholder="ابحث عن أي شيء...">
+  <button>بحث</button>
+</div>
+
+<!-- PREMIUM ADS -->
+<div class="section">
+  <div class="section-header">
+    <h2>إعلانات مميزة</h2>
+  </div>
+
+  <div class="ads-grid">
+    <div class="ad-card">
+      <div style="position:relative">
+        <img class="ad-image" src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
+        <div class="premium-badge">مميز</div>
+      </div>
+      <div class="ad-content">
+        <div class="ad-title">iPhone 15 Pro</div>
+        <div class="ad-price">9500 د.م</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LATEST ADS -->
+<div class="section">
+  <div class="section-header">
+    <h2>أحدث الإعلانات</h2>
+    <a href="/categories">عرض الكل</a>
+  </div>
+
+  <div class="ads-grid">
+    <div class="ad-card">
+      <img class="ad-image" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200&auto=format&fit=crop">
+      <div class="ad-content">
+        <div class="ad-title">سيارة BMW</div>
+        <div class="ad-price">180000 د.م</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="section">
+  <div class="section-header">
+    <h2>الأقسام</h2>
+  </div>
+
+  <div class="categories">
+    <div class="category">الهواتف</div>
+    <div class="category">السيارات</div>
+    <div class="category">العقارات</div>
+    <div class="category">الأثاث</div>
+  </div>
+</div>
+
+</div>
+
+<!-- NAVIGATION (UNCHANGED) -->
+<nav class="modern-flat-nav">
+
+  <a href="/" class="modern-flat-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
+    </svg>
+    <span>الرئيسية</span>
+  </a>
+
+  <a href="/categories" class="modern-flat-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
+    </svg>
+    <span>الأقسام</span>
+  </a>
+
+  <a href="/post-ad" class="modern-flat-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    <span>نشر</span>
+  </a>
+
+  <a href="/profile" class="modern-flat-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <circle cx="12" cy="7" r="3"/>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    </svg>
+    <span>بروفايل</span>
+  </a>
+
+</nav>
+
+<script>
+
+/* HERO AUTOPLAY */
+const slides = document.querySelectorAll('.hero-slide');
+const dotsContainer = document.querySelector('.hero-dots');
+let current = 0;
+
+slides.forEach((_,i)=>{
+  const dot=document.createElement('span');
+  if(i===0) dot.classList.add('active');
+  dot.onclick=()=>goTo(i);
+  dotsContainer.appendChild(dot);
+});
+
+const dots=document.querySelectorAll('.hero-dots span');
+
+function goTo(i){
+  slides[current].classList.remove('active');
+  dots[current].classList.remove('active');
+  current=i;
+  slides[current].classList.add('active');
+  dots[current].classList.add('active');
+}
+
+setInterval(()=>{
+  let next=(current+1)%slides.length;
+  goTo(next);
+},4000);
+
+</script>
+
+</body>
+</html>

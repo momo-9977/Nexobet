@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Le Marché — تفاصيل الإعلان</title>
+<title>Samsar — تفاصيل الإعلان</title>
 
 <style>
 :root{
@@ -16,9 +16,8 @@
   --accent:#2ea3ff;
   --accent-2:#60a5fa;
   --success:#22c55e;
-
-  --diamond-size:64px;
-  --diamond-gap:64px;
+  --danger:#ef4444;
+  --shadow:0 15px 40px rgba(0,0,0,.35);
 }
 
 *{box-sizing:border-box}
@@ -30,7 +29,7 @@ body{
     radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
     linear-gradient(180deg,var(--bg-0),var(--bg-1));
   color:var(--text);
-  padding-bottom:130px;
+  padding-bottom:30px;
 }
 
 /* Top Bar */
@@ -43,8 +42,15 @@ body{
   padding:14px 18px;
   display:flex;
   align-items:center;
+  justify-content:space-between;
   gap:14px;
   z-index:1000;
+}
+
+.top-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
 }
 
 .back-btn{
@@ -57,6 +63,7 @@ body{
   justify-content:center;
   cursor:pointer;
   transition:.2s;
+  border:none;
 }
 .back-btn:hover{
   background:rgba(255,255,255,0.12);
@@ -66,6 +73,25 @@ body{
 .page-title{
   font-weight:700;
   font-size:16px;
+}
+
+.home-btn{
+  padding:10px 14px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
+  color:var(--text);
+  text-decoration:none;
+  font-weight:800;
+  font-size:13px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  transition:.2s;
+}
+.home-btn:hover{
+  background:rgba(255,255,255,0.12);
+  transform:translateY(-1px);
 }
 
 /* Layout */
@@ -82,12 +108,10 @@ body{
   border-radius:22px;
   margin-bottom:20px;
   backdrop-filter:blur(12px);
-  box-shadow:0 15px 40px rgba(0,0,0,.35);
+  box-shadow:var(--shadow);
 }
 
-.card h2{
-  margin-top:0;
-}
+.card h2{margin-top:0}
 
 .price{
   font-size:22px;
@@ -95,7 +119,7 @@ body{
   color:var(--success);
 }
 
-/* Images */
+/* Media */
 .images img{
   width:100%;
   max-height:450px;
@@ -104,14 +128,16 @@ body{
   margin-bottom:12px;
   transition:.3s;
 }
-.images img:hover{
-  transform:scale(1.02);
+.images img:hover{transform:scale(1.02)}
+
+.video{
+  width:100%;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.06);
 }
 
 /* Owner */
-.owner{
-  background:rgba(255,255,255,0.03);
-}
+.owner{background:rgba(255,255,255,0.03)}
 
 .contact-actions{
   display:flex;
@@ -124,7 +150,7 @@ body{
   padding:10px 16px;
   border-radius:14px;
   text-decoration:none;
-  font-weight:700;
+  font-weight:800;
   font-size:14px;
   display:inline-flex;
   align-items:center;
@@ -132,89 +158,211 @@ body{
   gap:6px;
   transition:.2s;
   color:white;
+  border:0;
+  cursor:pointer;
 }
 
 .call{background:linear-gradient(135deg,#16a34a,#22c55e)}
 .mail{background:linear-gradient(135deg,#2563eb,#3b82f6)}
 .whatsapp{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}
+.fav{background:linear-gradient(135deg,#a78bfa,#f472b6)}
+.report{background:linear-gradient(135deg,#ef4444,#b91c1c)}
 
-.contact-btn:hover{
-  transform:translateY(-2px);
+.contact-btn:hover{transform:translateY(-2px)}
+
+/* States */
+.state{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:18px;
+  padding:18px;
+  color:var(--muted);
 }
-
-
+.state strong{color:var(--text)}
 </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <div class="back-btn" onclick="history.back()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
+  <div class="top-left">
+    <button class="back-btn" type="button" onclick="history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <div class="page-title">تفاصيل الإعلان</div>
   </div>
-  <div class="page-title">تفاصيل الإعلان</div>
+
+  <!-- ✅ زر العودة للرئيسية -->
+  <a class="home-btn" href="/">
+    🏠 <span>الرئيسية</span>
+  </a>
 </div>
 
 <div class="container">
-  <div id="adContainer"></div>
+  <div id="adContainer">
+    <div class="state"><strong>تحميل...</strong></div>
+  </div>
 </div>
 
-<!-- NAVIGATION -->
-
-
 <script>
+/** ===== Helpers ===== */
 function escapeHtml(s=''){
   return String(s).replace(/[&<>"']/g, m =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
   );
 }
+function apiOpts(method='GET', body=null){
+  const opts = { method, credentials:'include', headers:{} };
+  if(body && !(body instanceof FormData)){
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  } else if(body instanceof FormData){
+    opts.body = body;
+  }
+  return opts;
+}
 
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 
-async function loadAd(){
-  if(!id) return;
+let currentAd = null;
+let isFav = false;
 
-  const res = await fetch('/api/ads/'+id,{credentials:'include'});
-  if(!res.ok){
-    document.getElementById('adContainer').innerHTML='<p>الإعلان غير موجود</p>';
+async function loadAd(){
+  const container = document.getElementById('adContainer');
+
+  if(!id){
+    container.innerHTML = `<div class="state"><strong>خطأ:</strong> معرّف الإعلان غير موجود.</div>`;
     return;
   }
 
-  const ad = await res.json();
+  try{
+    const res = await fetch('/api/ads/' + encodeURIComponent(id), apiOpts());
+    if(!res.ok){
+      container.innerHTML = `<div class="state"><strong>الإعلان غير موجود</strong></div>`;
+      return;
+    }
 
-  let html = `
-    <div class="card">
-      <h2>${escapeHtml(ad.title)}</h2>
-      <p class="price">${escapeHtml(ad.price)} د.م</p>
-      <p><b>المدينة:</b> ${escapeHtml(ad.city||'')}</p>
-      <p>${escapeHtml(ad.description||'')}</p>
-    </div>
-  `;
+    const ad = await res.json();
+    currentAd = ad;
 
-  if(ad.images && ad.images.length){
-    html += `<div class="card images">`;
+    // (اختياري) تحقق واش فالمفضلة
+    try{
+      const favRes = await fetch('/api/ads/' + encodeURIComponent(id) + '/favorite', apiOpts());
+      if(favRes.ok){
+        const favData = await favRes.json();
+        isFav = !!favData.favorite;
+      }
+    }catch(e){}
+
+    renderAd(ad);
+  }catch(err){
+    console.error(err);
+    container.innerHTML = `<div class="state"><strong>خطأ:</strong> تعذر الاتصال بالسيرفر.</div>`;
+  }
+}
+
+function renderAd(ad){
+  const container = document.getElementById('adContainer');
+
+  const title = escapeHtml(ad.title || '');
+  const price = escapeHtml(String(ad.price ?? ''));
+  const city = escapeHtml(ad.city || '');
+  const desc = escapeHtml(ad.description || '');
+
+  let mediaHtml = '';
+  if(ad.images && Array.isArray(ad.images) && ad.images.length){
+    mediaHtml += `<div class="card images">`;
     ad.images.forEach(img=>{
-      html += `<img src="${img}">`;
+      mediaHtml += `<img src="${img}" alt="image">`;
     });
-    html += `</div>`;
+    mediaHtml += `</div>`;
   }
 
-  html += `
-    <div class="card owner">
-      <h3>معلومات البائع</h3>
-      <p>${escapeHtml(ad.owner_name || '')}</p>
+  if(ad.video){
+    mediaHtml += `
+      <div class="card">
+        <video class="video" controls src="${ad.video}"></video>
+      </div>
+    `;
+  }
+
+  const ownerName = escapeHtml(ad.owner_name || ad.ownerName || '');
+  const ownerPhone = (ad.owner_phone || ad.ownerPhone || '').toString();
+  const ownerEmail = (ad.owner_email || ad.ownerEmail || '').toString();
+  const waPhone = ownerPhone ? ownerPhone.replace(/\D/g,'') : '';
+
+  const favLabel = isFav ? '💖 إزالة من المفضلة' : '🤍 إضافة للمفضلة';
+
+  container.innerHTML = `
+    <div class="card">
+      <h2>${title}</h2>
+      <p class="price">${price} د.م</p>
+      <p><b>المدينة:</b> ${city}</p>
+      <p>${desc}</p>
 
       <div class="contact-actions">
-        ${ad.owner_phone ? `<a class="contact-btn call" href="tel:${ad.owner_phone}">📞 اتصال</a>` : ''}
-        ${ad.owner_email ? `<a class="contact-btn mail" href="mailto:${ad.owner_email}">📧 إيميل</a>` : ''}
-        ${ad.owner_phone ? `<a class="contact-btn whatsapp" target="_blank" href="https://wa.me/${ad.owner_phone.replace(/\D/g,'')}">💬 واتساب</a>` : ''}
+        <button class="contact-btn fav" type="button" id="favBtn">${favLabel}</button>
+        <button class="contact-btn report" type="button" id="reportBtn">🚩 إبلاغ</button>
+      </div>
+    </div>
+
+    ${mediaHtml}
+
+    <div class="card owner">
+      <h3 style="margin-top:0">معلومات البائع</h3>
+      <p>${ownerName}</p>
+
+      <div class="contact-actions">
+        ${ownerPhone ? `<a class="contact-btn call" href="tel:${escapeHtml(ownerPhone)}">📞 اتصال</a>` : ''}
+        ${ownerEmail ? `<a class="contact-btn mail" href="mailto:${escapeHtml(ownerEmail)}">📧 إيميل</a>` : ''}
+        ${waPhone ? `<a class="contact-btn whatsapp" target="_blank" href="https://wa.me/${waPhone}">💬 واتساب</a>` : ''}
       </div>
     </div>
   `;
 
-  document.getElementById('adContainer').innerHTML = html;
+  document.getElementById('favBtn').addEventListener('click', toggleFavorite);
+  document.getElementById('reportBtn').addEventListener('click', reportAd);
+}
+
+async function toggleFavorite(){
+  if(!currentAd) return;
+
+  const adId = currentAd.id || currentAd._id || id;
+
+  try{
+    if(!isFav){
+      const res = await fetch('/api/favorites', apiOpts('POST', { adId }));
+      if(!res.ok) throw new Error('fav failed');
+      isFav = true;
+    }else{
+      const res = await fetch('/api/favorites/' + encodeURIComponent(adId), apiOpts('DELETE'));
+      if(!res.ok) throw new Error('unfav failed');
+      isFav = false;
+    }
+    renderAd(currentAd);
+  }catch(e){
+    console.error(e);
+    alert('تعذر تحديث المفضلة الآن');
+  }
+}
+
+async function reportAd(){
+  if(!currentAd) return;
+  const adId = currentAd.id || currentAd._id || id;
+
+  const reason = prompt('شنو السبب؟ (مثال: احتيال / محتوى ممنوع / رقم خاطئ)');
+  if(!reason) return;
+
+  try{
+    const res = await fetch('/api/reports', apiOpts('POST', { adId, reason }));
+    if(!res.ok) throw new Error('report failed');
+    alert('تم إرسال البلاغ ✅');
+  }catch(e){
+    console.error(e);
+    alert('تعذر إرسال البلاغ الآن');
+  }
 }
 
 loadAd();

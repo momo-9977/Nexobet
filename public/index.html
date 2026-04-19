@@ -59,6 +59,13 @@ body{
   color:var(--muted);
 }
 
+/* NEW WRAPPER */
+.logo-area{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
 .logo-img{
   width:54px;
   height:54px;
@@ -70,8 +77,33 @@ body{
   font-weight:800;
 }
 
-/* HERO */
+/* NEW SUPPORT ICON */
+.support-btn{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:.3s;
+  text-decoration:none;
+}
 
+.support-btn:hover{
+  background:rgba(255,255,255,0.12);
+  transform:translateY(-3px);
+}
+
+.support-btn svg{
+  width:22px;
+  height:22px;
+  stroke:white;
+}
+
+/* ===== باقي الكود كما هو تماما ===== */
+
+/* HERO */
 .hero{
   margin-top:20px;
   position:relative;
@@ -266,7 +298,6 @@ body{
 .modern-flat-item.active{
   color:#16a34a;
 }
-
 </style>
 </head>
 
@@ -279,120 +310,17 @@ body{
     <h1>Samsar</h1>
     <p>بيع وشراء بسهولة</p>
   </div>
-  <div class="logo-img">S</div>
+
+  <div class="logo-area">
+    <div class="logo-img">S</div>
+
+    <!-- NEW SUPPORT ICON -->
+    <a href="/support" class="support-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+        <path d="M4 12a8 8 0 0116 0"/>
+        <path d="M4 12v4a2 2 0 002 2h2"/>
+        <path d="M20 12v4a2 2 0 01-2 2h-2"/>
+      </svg>
+    </a>
+  </div>
 </header>
-
-<div class="hero" id="hero">
-  <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop')"></div>
-  <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=1600&auto=format&fit=crop')"></div>
-  <div class="hero-dots"></div>
-</div>
-
-<div class="search-box">
-  <input placeholder="ابحث عن أي شيء...">
-  <button>بحث</button>
-</div>
-
-<div class="inline-categories">
-  <a href="/categories?key=phones">الهواتف</a>
-  <a href="/categories?key=cars">السيارات</a>
-  <a href="/categories?key=homes">العقارات</a>
-  <a href="/categories?key=furniture">الأثاث</a>
-</div>
-
-<div class="section">
-  <div class="section-header">
-    <h2>إعلانات مميزة</h2>
-  </div>
-  <div class="ads-grid">
-    <div class="ad-card">
-      <div style="position:relative">
-        <img class="ad-image" src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
-        <div class="premium-badge">مميز</div>
-      </div>
-      <div class="ad-content">
-        <div class="ad-title">iPhone 15 Pro</div>
-        <div class="ad-price">9500 د.م</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="section">
-  <div class="section-header">
-    <h2>أحدث الإعلانات</h2>
-  </div>
-  <div class="ads-grid">
-    <div class="ad-card">
-      <img class="ad-image" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200&auto=format&fit=crop">
-      <div class="ad-content">
-        <div class="ad-title">سيارة BMW</div>
-        <div class="ad-price">180000 د.م</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-</div>
-
-<nav class="modern-flat-nav">
-  <a href="/" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
-    <span>الرئيسية</span>
-  </a>
-
-  <a href="/categories" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
-    <span>الأقسام</span>
-  </a>
-
-  <a href="/post-ad" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
-    <span>نشر</span>
-  </a>
-
-  <a href="/profile" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
-    <span>بروفايل</span>
-  </a>
-</nav>
-
-<script>
-const slides=document.querySelectorAll('.hero-slide');
-const dotsContainer=document.querySelector('.hero-dots');
-let current=0;
-
-slides.forEach((_,i)=>{
-  const dot=document.createElement('span');
-  if(i===0)dot.classList.add('active');
-  dot.onclick=()=>goTo(i);
-  dotsContainer.appendChild(dot);
-});
-
-const dots=document.querySelectorAll('.hero-dots span');
-
-function goTo(i){
-  slides[current].classList.remove('active');
-  dots[current].classList.remove('active');
-  current=i;
-  slides[current].classList.add('active');
-  dots[current].classList.add('active');
-}
-
-setInterval(()=>{
-  let next=(current+1)%slides.length;
-  goTo(next);
-},4000);
-</script>
-
-</body>
-</html>

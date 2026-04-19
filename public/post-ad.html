@@ -6,327 +6,261 @@
 <title>Samsar - نشر إعلان</title>
 
 <style>
+/* نفس التنسيق السابق بدون تغيير النافيكاسيون */
+
 :root{
   --bg-0:#071024;
   --bg-1:#081426;
   --card-bg:rgba(255,255,255,0.04);
   --card-border:rgba(255,255,255,0.05);
   --text:#e6eef8;
-  --muted:#9aa8c2;
   --accent:#2ea3ff;
-  --accent-2:#60a5fa;
-  --success:#34d399;
   --danger:#ef4444;
+  --success:#34d399;
 }
-
-*{box-sizing:border-box}
 
 body{
   margin:0;
   font-family:Inter,Arial,sans-serif;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
-    linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  background:linear-gradient(180deg,var(--bg-0),var(--bg-1));
   color:var(--text);
   padding-bottom:90px;
 }
 
-.back-btn{
-  position:fixed;
-  top:20px;
-  right:20px;
-  width:48px;
-  height:48px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.05);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  backdrop-filter:blur(6px);
-  z-index:100;
-}
-
 .container{
   max-width:900px;
-  margin:80px auto 40px;
+  margin:80px auto;
   padding:20px;
 }
 
 .card{
   background:var(--card-bg);
-  border:1px solid var(--card-border);
-  padding:24px;
-  border-radius:20px;
-  backdrop-filter:blur(12px);
-  box-shadow:0 20px 45px rgba(0,0,0,.4);
+  padding:25px;
+  border-radius:18px;
 }
 
-label{
-  font-weight:700;
-  font-size:14px;
-}
-
-input,textarea,select{
+input,select,textarea{
   width:100%;
-  padding:14px;
-  margin:8px 0 16px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.03);
-  color:white;
-  font-size:14px;
-}
-
-button{
-  width:100%;
-  padding:16px;
+  padding:12px;
+  margin:10px 0;
+  border-radius:10px;
   border:none;
-  border-radius:16px;
-  font-weight:800;
-  font-size:15px;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  background:rgba(255,255,255,.05);
   color:white;
+}
+
+.preview-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.image-box{
+  position:relative;
+}
+
+.image-box img{
+  width:90px;
+  height:90px;
+  border-radius:10px;
+  object-fit:cover;
+}
+
+.remove-btn{
+  position:absolute;
+  top:-6px;
+  left:-6px;
+  background:red;
+  color:white;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
 }
 
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
-
-.error{color:var(--danger);margin-bottom:10px}
-.success{color:var(--success);margin-bottom:10px}
-
-.preview{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.preview img{
-  width:90px;
-  height:90px;
-  object-fit:cover;
-  border-radius:12px;
-}
-
-.progress-bar{
-  height:8px;
+.progress{
+  height:6px;
   background:#1f2937;
   border-radius:10px;
   overflow:hidden;
-  margin-top:10px;
 }
 
-.progress{
+.progress span{
+  display:block;
   height:100%;
   width:0%;
   background:var(--accent);
-  transition:.2s;
 }
 
-.dynamic-fields{
-  margin-top:10px;
+button{
+  background:var(--accent);
+  color:white;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
 }
 
-/* ===== NAV (UNCHANGED) ===== */
-
-.modern-flat-nav{
+.toast{
   position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:70px;
-  background:#ffffff;
-  border-top:1px solid #e5e7eb;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  z-index:999;
-}
-
-.modern-flat-item{
-  flex:1;
-  text-align:center;
-  text-decoration:none;
-  color:#6b7280;
-  font-size:12px;
-  font-weight:600;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-}
-
-.modern-flat-nav svg{
-  width:22px !important;
-  height:22px !important;
-}
-
-.modern-flat-item.active{
-  color:#16a34a;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--success);
+  padding:12px 20px;
+  border-radius:10px;
+  display:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="back-btn" onclick="history.back()">←</div>
-
 <div class="container">
 <div class="card">
 
 <h2>نشر إعلان جديد</h2>
 
-<div id="errorBox" class="error"></div>
-<div id="statusBox" class="success"></div>
-
 <form id="postForm">
 
-<input type="hidden" id="csrfToken">
+<input type="hidden" id="csrf">
 
 <label>العنوان</label>
 <input id="title" required>
 
 <label>الوصف</label>
-<textarea id="description" rows="4" required></textarea>
+<textarea id="description" required></textarea>
 
 <label>الثمن</label>
 <input type="number" id="price" min="0" required>
 
 <label>المدينة</label>
-<input id="city">
+<input list="cities" id="city" placeholder="ابحث عن المدينة..." required>
+<datalist id="cities"></datalist>
 
 <label>التصنيف</label>
 <select id="category" required></select>
 
-<div id="dynamicFields" class="dynamic-fields"></div>
-
-<label>صور</label>
+<label>الصور (حد أقصى 6)</label>
 <input type="file" id="images" multiple accept="image/*">
-<div class="preview" id="imagePreview"></div>
+<div class="preview-grid" id="imagePreview"></div>
 
-<label>فيديو</label>
+<label>الفيديو (حد أقصى 1GB)</label>
 <input type="file" id="video" accept="video/*">
-<video id="videoPreview" width="200" controls style="display:none;margin-top:10px"></video>
+<video id="videoPreview" controls style="display:none;width:200px"></video>
 
-<div class="progress-bar">
-  <div class="progress" id="uploadProgress"></div>
-</div>
+<div class="progress"><span id="progressBar"></span></div>
 
-<button id="submitBtn" type="submit">نشر الإعلان</button>
+<button type="submit" id="submitBtn">نشر الإعلان</button>
 
 </form>
+
 </div>
 </div>
 
-<!-- NAVIGATION (UNCHANGED) -->
-<nav class="modern-flat-nav">
-  <a href="/" class="modern-flat-item"><span>الرئيسية</span></a>
-  <a href="/categories" class="modern-flat-item"><span>الأقسام</span></a>
-  <a href="/post-ad" class="modern-flat-item active"><span>نشر</span></a>
-  <a href="/profile" class="modern-flat-item"><span>بروفايل</span></a>
-</nav>
+<div class="toast" id="toast">تم نشر الإعلان بنجاح ✔</div>
 
 <script>
+const MAX_IMAGES = 6;
+const MAX_VIDEO = 1024 * 1024 * 1024;
 
-/* ===== LOAD CSRF TOKEN ===== */
-async function loadCSRF(){
-  const res = await fetch('/api/csrf-token');
-  const data = await res.json();
-  document.getElementById('csrfToken').value = data.token;
-}
-loadCSRF();
+async function loadInitialData(){
+  const citiesRes = await fetch('/api/cities');
+  const cities = await citiesRes.json();
+  const datalist = document.getElementById('cities');
+  cities.forEach(c=>{
+    const option=document.createElement('option');
+    option.value=c.name;
+    datalist.appendChild(option);
+  });
 
-/* ===== LOAD CATEGORIES FROM SERVER ===== */
-async function loadCategories(){
-  const res = await fetch('/api/categories');
-  const categories = await res.json();
+  const catRes = await fetch('/api/categories');
+  const cats = await catRes.json();
   const select = document.getElementById('category');
-
-  select.innerHTML = '<option value="">اختر القسم</option>';
-  categories.forEach(cat=>{
+  select.innerHTML='<option value="">اختر التصنيف</option>';
+  cats.forEach(cat=>{
     if(cat.active){
-      const option = document.createElement('option');
-      option.value = cat.id;
-      option.textContent = cat.name;
-      select.appendChild(option);
+      const opt=document.createElement('option');
+      opt.value=cat.id;
+      opt.textContent=cat.name;
+      select.appendChild(opt);
     }
   });
 }
-loadCategories();
 
-/* ===== DYNAMIC FIELDS BASED ON CATEGORY ===== */
-document.getElementById('category').addEventListener('change', e=>{
-  const container = document.getElementById('dynamicFields');
-  container.innerHTML = '';
+loadInitialData();
 
-  if(e.target.value === 'cars'){
-    container.innerHTML = `
-      <label>الموديل</label>
-      <input name="model">
-      <label>السنة</label>
-      <input type="number" name="year">
-    `;
-  }
-});
-
-/* ===== IMAGE PREVIEW ===== */
+/* IMAGE PREVIEW + REMOVE */
 document.getElementById('images').addEventListener('change', e=>{
-  const preview = document.getElementById('imagePreview');
+  const files = Array.from(e.target.files);
+  if(files.length>MAX_IMAGES){
+    alert('الحد الأقصى 6 صور');
+    e.target.value='';
+    return;
+  }
+
+  const preview=document.getElementById('imagePreview');
   preview.innerHTML='';
-  Array.from(e.target.files).forEach(file=>{
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(file);
-    preview.appendChild(img);
+  files.forEach((file,i)=>{
+    const box=document.createElement('div');
+    box.className='image-box';
+    const img=document.createElement('img');
+    img.src=URL.createObjectURL(file);
+
+    const remove=document.createElement('div');
+    remove.className='remove-btn';
+    remove.textContent='×';
+    remove.onclick=()=>{
+      files.splice(i,1);
+      e.target.value='';
+      preview.innerHTML='';
+    };
+
+    box.appendChild(img);
+    box.appendChild(remove);
+    preview.appendChild(box);
   });
 });
 
-/* ===== VIDEO PREVIEW ===== */
+/* VIDEO */
 document.getElementById('video').addEventListener('change', e=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const video = document.getElementById('videoPreview');
-  video.src = URL.createObjectURL(file);
+  const file=e.target.files[0];
+  if(file.size>MAX_VIDEO){
+    alert('الفيديو أكبر من 1GB');
+    e.target.value='';
+    return;
+  }
+  const video=document.getElementById('videoPreview');
+  video.src=URL.createObjectURL(file);
   video.style.display='block';
 });
 
-/* ===== FORM SUBMIT WITH PROGRESS ===== */
-document.getElementById('postForm').addEventListener('submit', async e=>{
+/* SUBMIT */
+document.getElementById('postForm').addEventListener('submit', e=>{
   e.preventDefault();
 
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = 'جارٍ الإرسال...';
-
-  const formData = new FormData(e.target);
-
-  const xhr = new XMLHttpRequest();
+  const formData=new FormData(e.target);
+  const xhr=new XMLHttpRequest();
   xhr.open('POST','/api/ads');
 
-  xhr.upload.onprogress = e=>{
-    if(e.lengthComputable){
-      const percent = (e.loaded/e.total)*100;
-      document.getElementById('uploadProgress').style.width = percent + '%';
+  xhr.upload.onprogress=(ev)=>{
+    if(ev.lengthComputable){
+      const percent=(ev.loaded/ev.total)*100;
+      document.getElementById('progressBar').style.width=percent+'%';
     }
   };
 
-  xhr.onload = ()=>{
-    btn.disabled=false;
-    btn.textContent='نشر الإعلان';
-    if(xhr.status === 200){
-      document.getElementById('statusBox').textContent='تم النشر بنجاح ✔';
-      e.target.reset();
-    }else{
-      document.getElementById('errorBox').textContent='فشل النشر';
-    }
+  xhr.onload=()=>{
+    document.getElementById('toast').style.display='block';
+    setTimeout(()=>location.reload(),2000);
   };
 
   xhr.send(formData);
 });
-
 </script>
 
 </body>

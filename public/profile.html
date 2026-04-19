@@ -34,7 +34,6 @@
 
   .page{max-width:1180px;margin:22px auto;padding:16px}
 
-  /* Cards */
   .card{
     background:var(--card-bg);
     border:1px solid var(--card-border);
@@ -43,11 +42,10 @@
     box-shadow:0 14px 36px rgba(0,0,0,.25);
   }
 
-  /* Profile hero card */
-  .profile-hero{
+  /* ===== Profile header (simple like apps) ===== */
+  .profile-header{
     display:flex;
     align-items:center;
-    justify-content:space-between;
     gap:14px;
     padding:16px;
     border-radius:18px;
@@ -55,9 +53,7 @@
     border:1px solid rgba(255,255,255,0.09);
     box-shadow:var(--shadow);
   }
-  .hero-left{
-    display:flex;align-items:center;gap:12px;min-width:0;
-  }
+
   .avatar{
     width:78px;height:78px;border-radius:18px;
     background:linear-gradient(135deg,var(--accent),var(--accent-2));
@@ -68,23 +64,26 @@
     flex-shrink:0;
   }
   .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-  .hero-meta{min-width:0}
-  .hero-meta h1{
+  input[type="file"]{display:none}
+
+  .u-meta{min-width:0}
+  .u-meta h1{
     margin:0;
     font-size:18px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
-  .hero-meta p{
+  .u-meta p{
     margin:6px 0 0;
     color:var(--muted);
     font-size:13px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
+
   .badge{
     display:inline-flex;
     align-items:center;
     gap:6px;
-    margin-top:8px;
+    margin-top:10px;
     padding:6px 10px;
     border-radius:999px;
     font-size:12px;
@@ -92,6 +91,7 @@
     border:1px solid rgba(255,255,255,0.10);
     background:rgba(255,255,255,0.04);
     color:var(--text);
+    width:max-content;
   }
   .badge.verified{
     background:rgba(52,211,153,0.14);
@@ -99,34 +99,15 @@
     color:#bbf7d0;
   }
 
-  .hero-actions{
-    display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
-  }
-  .btn{
-    border:none;border-radius:14px;
-    padding:12px 12px;
-    font-weight:900;cursor:pointer;
-    transition:.18s ease;
-    text-decoration:none;
-    display:inline-flex;align-items:center;justify-content:center;gap:10px;
-    white-space:nowrap;
-  }
-  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
-  .btn.ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);color:var(--text)}
-  .btn.danger{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
-  .btn:hover{transform:translateY(-2px)}
-  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-
-  input[type="file"]{display:none}
-
-  /* Dashboard tiles */
+  /* ===== App-like icons grid ===== */
   .tiles{
     margin-top:14px;
     display:grid;
     grid-template-columns:repeat(3,1fr);
     gap:12px;
   }
-  @media (max-width:980px){ .tiles{grid-template-columns:1fr} }
+  @media (max-width:980px){ .tiles{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:560px){ .tiles{grid-template-columns:1fr} }
 
   .tile{
     border-radius:18px;
@@ -135,35 +116,42 @@
     border:1px solid rgba(255,255,255,0.08);
     cursor:pointer;
     transition:.18s ease;
-    position:relative;
-    min-height:92px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-height:86px;
+    user-select:none;
   }
   .tile:hover{transform:translateY(-2px);background:rgba(255,255,255,0.04)}
   .tile.active{
     background:rgba(46,163,255,0.16);
     border-color:rgba(46,163,255,0.24);
   }
-  .tile .t-head{
-    display:flex;align-items:center;justify-content:space-between;gap:10px;
+
+  .tile-icon{
+    width:52px;height:52px;border-radius:16px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.10);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+    flex-shrink:0;
   }
-  .tile .t-title{
-    margin:0;
-    font-size:15px;
-    font-weight:900;
-  }
-  .tile .t-desc{
-    margin:8px 0 0;
+  .tile-text{min-width:0}
+  .tile-title{margin:0;font-size:15px;font-weight:900}
+  .tile-desc{
+    margin:6px 0 0;
     color:var(--muted);
     font-size:13px;
-    line-height:1.7;
+    line-height:1.6;
   }
-  .tile .dot{
+  .dot{
     width:10px;height:10px;border-radius:999px;
     background:var(--danger);
     border:2px solid rgba(7,16,36,0.9);
     display:none;
+    margin-inline-start:auto;
   }
-  .tile .dot.show{display:inline-block}
+  .dot.show{display:inline-block}
 
   /* Panels */
   .panel-wrap{margin-top:14px}
@@ -196,7 +184,6 @@
     cursor:not-allowed;
   }
   textarea{min-height:110px;resize:vertical}
-  .hint{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.7}
 
   /* Lists */
   .list{display:grid;gap:10px}
@@ -221,6 +208,7 @@
   .pill.err{background:rgba(239,68,68,0.14);border-color:rgba(239,68,68,0.22);color:#fecaca}
   .meta{margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}
   .item-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+
   .mini-btn{
     padding:10px 12px;border-radius:12px;
     border:1px solid rgba(255,255,255,0.12);
@@ -250,6 +238,30 @@
 
   .select-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
   @media (max-width:860px){.select-row{grid-template-columns:1fr}}
+
+  /* Bottom actions (moved here) */
+  .bottom-actions{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+  }
+  @media (max-width:860px){ .bottom-actions{grid-template-columns:1fr} }
+
+  .btn{
+    border:none;border-radius:14px;
+    padding:14px 12px;
+    font-weight:900;cursor:pointer;
+    transition:.18s ease;
+    text-decoration:none;
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    white-space:nowrap;
+  }
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+  .btn.ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);color:var(--text)}
+  .btn.danger{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
   /* Toast */
   .toast{
@@ -338,82 +350,69 @@
 <body>
 <div class="page">
 
-  <!-- ✅ حذفنا الجزء العلوي كامل (اللوغو/الاسم/الدعم/الإشعارات) وبدلناه بكارت ديال البروفايل -->
-  <section class="profile-hero">
-    <div class="hero-left">
-      <div class="avatar" id="avatarBox" title="تغيير صورة البروفايل">
-        <span id="avatarLetter">U</span>
-        <img id="avatarImg" alt="avatar" style="display:none">
-      </div>
-
-      <div class="hero-meta">
-        <h1 id="userNameMini">...</h1>
-        <p id="userEmailMini">...</p>
-        <!-- ✅ موثق فقط إذا جا من السيرفر -->
-        <span id="verifiedBadge" class="badge" style="display:none">✅ موثق</span>
-      </div>
+  <!-- Profile header only -->
+  <section class="profile-header">
+    <div class="avatar" id="avatarBox" title="تغيير صورة البروفايل">
+      <span id="avatarLetter">U</span>
+      <img id="avatarImg" alt="avatar" style="display:none">
     </div>
-
-    <div class="hero-actions">
-      <a class="btn primary" href="/post-ad">➕ نشر إعلان</a>
-      <button class="btn ghost" id="openPasswordBtn" type="button">🔒 تغيير كلمة السر</button>
-      <button class="btn danger" id="logoutBtn" type="button">🚪 تسجيل الخروج</button>
+    <div class="u-meta">
+      <h1 id="userNameMini">...</h1>
+      <p id="userEmailMini">...</p>
+      <span id="verifiedBadge" class="badge verified" style="display:none">✅ موثق</span>
     </div>
-
     <input id="avatarInput" type="file" accept="image/*" />
   </section>
 
-  <!-- ✅ كروت (Dashboard) بدل Tabs -->
+  <!-- App icons -->
   <section class="tiles" id="tiles">
     <div class="tile active" data-tab="account">
-      <div class="t-head">
-        <h3 class="t-title">حسابي</h3>
-        <span>👤</span>
+      <div class="tile-icon">👤</div>
+      <div class="tile-text">
+        <h3 class="tile-title">حسابي</h3>
+        <p class="tile-desc">تعديل الهاتف وصورة البروفايل</p>
       </div>
-      <p class="t-desc">تعديل الهاتف وصورة البروفايل (الاسم/الإيميل ممنوع تغييرهم).</p>
     </div>
 
     <div class="tile" data-tab="myads">
-      <div class="t-head">
-        <h3 class="t-title">إعلاناتي</h3>
-        <span>🧾</span>
+      <div class="tile-icon">🧾</div>
+      <div class="tile-text">
+        <h3 class="tile-title">إعلاناتي</h3>
+        <p class="tile-desc">تعديل وحذف وإدارة الإعلانات</p>
       </div>
-      <p class="t-desc">تعديل/حذف/إخفاء/تجديد إعلاناتك.</p>
     </div>
 
     <div class="tile" data-tab="premium">
-      <div class="t-head">
-        <h3 class="t-title">بروميوم</h3>
-        <span>⭐</span>
+      <div class="tile-icon">⭐</div>
+      <div class="tile-text">
+        <h3 class="tile-title">بروميوم</h3>
+        <p class="tile-desc">تمييز إعلانك في الرئيسية</p>
       </div>
-      <p class="t-desc">تمييز إعلانك ليبان فالرئيسية (قابل للربط بالدفع/الأدمن).</p>
     </div>
 
     <div class="tile" data-tab="notifications">
-      <div class="t-head">
-        <h3 class="t-title">الإشعارات</h3>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span>🔔</span>
-          <span class="dot" id="notifDot"></span>
-        </span>
+      <div class="tile-icon">🔔</div>
+      <div class="tile-text">
+        <h3 class="tile-title">الإشعارات</h3>
+        <p class="tile-desc">تحديثات حول الإعلانات</p>
       </div>
-      <p class="t-desc">إشعارات حول الإعلانات والترقيات.</p>
+      <span class="dot" id="notifDot"></span>
     </div>
 
     <div class="tile" data-tab="security">
-      <div class="t-head">
-        <h3 class="t-title">الأمان</h3>
-        <span>🛡️</span>
+      <div class="tile-icon">🛡️</div>
+      <div class="tile-text">
+        <h3 class="tile-title">الأمان</h3>
+        <p class="tile-desc">جلسات وتسجيلات الدخول</p>
       </div>
-      <p class="t-desc">تغيير كلمة السر وإعدادات الأمان.</p>
     </div>
 
     <div class="tile" data-tab="favorites">
-      <div class="t-head">
-        <h3 class="t-title">المفضلة</h3>
-        <span>❤️</span>
+      <div class="tile-icon">❤️</div>
+      <div class="tile-text">
+        <h3 class="tile-title">المفضلة</h3>
+        <p class="tile-desc">إعلانات محفوظة للمشاهدة</p>
       </div>
-      <p class="t-desc">إعلانات قمت بحفظها للمشاهدة لاحقاً.</p>
     </div>
   </section>
 
@@ -437,7 +436,6 @@
         <div class="full">
           <label>رقم الهاتف</label>
           <input id="phoneInput" placeholder="06XXXXXXXX" />
-          <div class="hint">يمكن تغيير الهاتف فقط. الاسم والإيميل ممنوعين.</div>
         </div>
 
         <div class="full">
@@ -476,28 +474,24 @@
       </div>
 
       <div class="list" id="myAdsList" style="margin-top:12px"></div>
-
-      <div class="hint" style="margin-top:10px">
-        * هذه الأزرار مربوطة بـ API وتتفعل من السيرفر: إخفاء/إظهار/تجديد/مباع/حذف.
-      </div>
     </section>
 
     <!-- PREMIUM -->
     <section class="card panel" id="panel-premium">
-      <h2>بروميوم — تمييز الإعلانات</h2>
-      <p class="muted" style="margin-top:-4px;line-height:1.7">
-        يمكنك تمييز إعلانك ليظهر في “الإعلانات المميزة” بالصفحة الرئيسية.
+      <h2>بروميوم</h2>
+      <p class="muted" style="margin:0 0 12px;line-height:1.7">
+        اختر مدة التمييز، وسيتم التواصل مباشرة عبر واتساب الدعم.
       </p>
 
-      <div class="premium-grid" style="margin-top:12px">
+      <div class="premium-grid">
         <div class="plan">
           <h3>مميز 24 ساعة</h3>
           <div class="price">19 د.م</div>
           <ul>
             <li>ظهور في الإعلانات المميزة</li>
-            <li>أولوية في القسم</li>
+            <li>أولوية أعلى</li>
           </ul>
-          <button class="btn primary choose" data-plan="featured_1d" type="button">اختيار</button>
+          <button class="btn primary choose" data-plan="featured_1d" type="button">اختيار عبر واتساب</button>
         </div>
 
         <div class="plan">
@@ -507,7 +501,7 @@
             <li>ظهور قوي لمدة أسبوع</li>
             <li>أفضل قيمة</li>
           </ul>
-          <button class="btn primary choose" data-plan="featured_7d" type="button">اختيار</button>
+          <button class="btn primary choose" data-plan="featured_7d" type="button">اختيار عبر واتساب</button>
         </div>
 
         <div class="plan">
@@ -517,24 +511,18 @@
             <li>ظهور لمدة شهر</li>
             <li>مناسب للتجار</li>
           </ul>
-          <button class="btn primary choose" data-plan="featured_30d" type="button">اختيار</button>
+          <button class="btn primary choose" data-plan="featured_30d" type="button">اختيار عبر واتساب</button>
         </div>
       </div>
 
       <div class="item" style="margin-top:14px">
         <div class="item-head">
-          <div>
-            <p class="item-title">تفعيل البروميوم على إعلان</p>
-            <div class="meta">
-              <span>يتم جلب إعلاناتك من: /api/my/ads</span>
-            </div>
-          </div>
-          <span class="pill warn">قابل للربط</span>
+          <p class="item-title">اختيار الإعلان</p>
+          <span class="pill warn">اختياري</span>
         </div>
-
         <div class="select-row" style="margin-top:10px">
           <div>
-            <label>اختر الإعلان</label>
+            <label>اختر إعلان</label>
             <select id="premiumAdSelect">
               <option value="">تحميل إعلاناتك...</option>
             </select>
@@ -543,15 +531,6 @@
             <label>الخطة المختارة</label>
             <input id="selectedPlan" readonly value="لم يتم اختيار خطة" />
           </div>
-        </div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-          <button class="btn primary" type="button" id="buyPremiumBtn">شراء وتفعيل</button>
-          <button class="btn ghost" type="button" id="premiumHistoryBtn">سجلّ الترقيات</button>
-        </div>
-
-        <div class="hint" style="margin-top:10px">
-          الدفع غير مفعل هنا — الأزرار ترسل طلبات API فقط.
         </div>
       </div>
     </section>
@@ -564,24 +543,35 @@
       </div>
 
       <div class="list" id="notifList"></div>
-      <div class="hint" style="margin-top:10px">
-        API: /api/notifications و /api/notifications/read-all
-      </div>
     </section>
 
-    <!-- SECURITY -->
+    <!-- SECURITY (بدون تكرار تغيير كلمة السر) -->
     <section class="card panel" id="panel-security">
       <h2>الأمان</h2>
+
       <div class="item">
         <div class="item-head">
           <div>
-            <p class="item-title">تغيير كلمة السر</p>
-            <div class="meta"><span>API: /api/auth/password</span></div>
+            <p class="item-title">الجلسات النشطة</p>
+            <div class="meta"><span class="muted">عرض الأجهزة/الخروج من جهاز (لاحقاً)</span></div>
           </div>
-          <span class="pill ok">مفعّل</span>
+          <span class="pill warn">قريباً</span>
         </div>
         <div class="item-actions">
-          <button class="mini-btn primary" type="button" id="openPasswordBtn2">🔒 فتح نافذة تغيير كلمة السر</button>
+          <button class="mini-btn" type="button" disabled>إدارة الجلسات</button>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <div>
+            <p class="item-title">سجل تسجيل الدخول</p>
+            <div class="meta"><span class="muted">آخر العمليات الأمنية (لاحقاً)</span></div>
+          </div>
+          <span class="pill warn">قريباً</span>
+        </div>
+        <div class="item-actions">
+          <button class="mini-btn" type="button" disabled>عرض السجل</button>
         </div>
       </div>
     </section>
@@ -594,15 +584,22 @@
       </div>
 
       <div class="list" id="favList"></div>
-      <div class="hint" style="margin-top:10px">
-        API: /api/favorites و DELETE /api/favorites/:id
-      </div>
     </section>
 
   </section>
+
+  <!-- Bottom actions (moved here) -->
+  <section class="card" style="margin-top:14px">
+    <div class="bottom-actions">
+      <a class="btn primary" href="/post-ad">➕ نشر إعلان</a>
+      <button class="btn ghost" id="openPasswordBtn" type="button">🔒 تغيير كلمة السر</button>
+      <button class="btn danger" id="logoutBtn" type="button">🚪 تسجيل الخروج</button>
+    </div>
+  </section>
+
 </div>
 
-<!-- ✅ KEEP SAME NAVIGATION (ما بدّلناهاش) -->
+<!-- KEEP SAME NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
   <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -660,13 +657,15 @@
       </div>
       <div class="full">
         <button class="btn primary" id="changePwdBtn" type="button">حفظ كلمة السر</button>
-        <div class="hint">سيتم إرسال الطلب إلى: <code>/api/auth/password</code></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+  // ===== Config (change later from admin/settings) =====
+  const SUPPORT_WHATSAPP = "212600000000"; // ← بدّلها لرقمك الحقيقي
+
   // Helpers
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => Array.from(document.querySelectorAll(s));
@@ -677,6 +676,12 @@
     return opts;
   }
 
+  function escapeHtml(s=''){
+    return String(s).replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
   // Toast
   const toastEl = qs('#toast');
   function toast(msg, ok=true){
@@ -685,7 +690,7 @@
     setTimeout(()=> toastEl.classList.remove('show'), 2600);
   }
 
-  // Panels switching via tiles
+  // Panels switching
   const tiles = qsa('.tile');
   const panels = {
     account: qs('#panel-account'),
@@ -699,7 +704,6 @@
   function openPanel(key){
     tiles.forEach(t => t.classList.toggle('active', t.dataset.tab === key));
     Object.keys(panels).forEach(k => panels[k].classList.toggle('active', k === key));
-    // Scroll nicely to content
     panels[key].scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
@@ -716,7 +720,6 @@
     pwdModal.setAttribute('aria-hidden','true');
   }
   qs('#openPasswordBtn').addEventListener('click', openPwdModal);
-  qs('#openPasswordBtn2').addEventListener('click', openPwdModal);
   qs('#closePwdModal').addEventListener('click', closePwdModal);
   pwdModal.addEventListener('click', (e)=> { if(e.target === pwdModal) closePwdModal(); });
 
@@ -753,11 +756,9 @@
   }
 
   function setVerified(user){
-    // ✅ حسب كلامك: تظهر "موثق" تلقائياً بعد التسجيل فقط إذا السيرفر رجع verified true
     const badge = qs('#verifiedBadge');
     if (user && (user.verified === true || user.isVerified === true)) {
       badge.style.display = 'inline-flex';
-      badge.classList.add('verified');
     } else {
       badge.style.display = 'none';
     }
@@ -777,7 +778,6 @@
     setAvatar(u);
     setVerified(u);
 
-    // Load other data (optional)
     await Promise.allSettled([
       loadMyAds(),
       loadPremiumAdsSelect(),
@@ -801,7 +801,7 @@
     }
   });
 
-  // Avatar upload route: PUT /api/users/:id/avatar
+  // Avatar upload
   avatarInput.addEventListener('change', async (e)=>{
     if(!currentUser) return;
     const file = e.target.files && e.target.files[0];
@@ -863,8 +863,9 @@
     window.location.href = '/login';
   });
 
-  // My Ads
+  // ===== My Ads =====
   const myAdsList = qs('#myAdsList');
+
   async function loadMyAds(){
     try{
       const res = await fetch('/api/my/ads', apiOpts());
@@ -926,9 +927,7 @@
 
           <div class="item-actions">
             <a class="mini-btn primary" href="/edit-ad?id=${encodeURIComponent(id)}">✏️ تعديل</a>
-            <button class="mini-btn" type="button" onclick="toggleVisibility('${encodeURIComponent(id)}','${escapeHtml(status)}')">
-              👁️ إخفاء/إظهار
-            </button>
+            <button class="mini-btn" type="button" onclick="toggleVisibility('${encodeURIComponent(id)}','${escapeHtml(status)}')">👁️ إخفاء/إظهار</button>
             <button class="mini-btn warn" type="button" onclick="markSold('${encodeURIComponent(id)}')">✅ مباع</button>
             <button class="mini-btn danger" type="button" onclick="deleteAd('${encodeURIComponent(id)}')">🗑️ حذف</button>
           </div>
@@ -956,12 +955,10 @@
   };
 
   window.toggleVisibility = async (id, status)=>{
-    // fallback route
     try{
       const next = (status === 'hidden') ? 'published' : 'hidden';
       const res = await fetch('/api/ads/' + id + '/visibility', apiOpts('PATCH', { status: next }));
       if(!res.ok){
-        // fallback if route not exists
         await fetch('/api/ads/' + id, apiOpts('PATCH', { status: next }));
       }
       toast('تم تحديث الحالة ✅', true);
@@ -976,7 +973,6 @@
     try{
       const res = await fetch('/api/ads/' + id + '/sold', apiOpts('PATCH', { sold:true }));
       if(!res.ok){
-        // fallback
         await fetch('/api/ads/' + id, apiOpts('PATCH', { status:'sold' }));
       }
       toast('تم تعيينه كمباع ✅', true);
@@ -987,13 +983,32 @@
     }
   };
 
-  // Premium
+  // ===== Premium (WhatsApp direct) =====
   let chosenPlan = null;
+
+  function planLabel(plan){
+    if(plan === 'featured_1d') return 'مميز 24 ساعة';
+    if(plan === 'featured_7d') return 'مميز 7 أيام';
+    if(plan === 'featured_30d') return 'مميز 30 يوم';
+    return plan;
+  }
+
+  function openWhatsAppForPremium(plan){
+    const adId = qs('#premiumAdSelect').value || '';
+    const msg =
+`السلام عليكم، بغيت نفعّل بروميوم.
+الخطة: ${planLabel(plan)}
+معرّف الإعلان: ${adId || 'لم يتم اختيار إعلان بعد'}
+الحساب: ${qs('#userEmailMini').textContent || ''}`;
+    const url = `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  }
+
   qsa('.choose').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       chosenPlan = btn.dataset.plan || null;
-      qs('#selectedPlan').value = chosenPlan || 'لم يتم اختيار خطة';
-      toast('تم اختيار الخطة ✅', true);
+      qs('#selectedPlan').value = chosenPlan ? planLabel(chosenPlan) : 'لم يتم اختيار خطة';
+      openWhatsAppForPremium(chosenPlan);
     });
   });
 
@@ -1004,7 +1019,7 @@
       if(!res.ok) throw new Error('no ads');
       const ads = await res.json();
       const list = Array.isArray(ads) ? ads : [];
-      select.innerHTML = `<option value="">اختر إعلان</option>` + list.map(a=>{
+      select.innerHTML = `<option value="">بدون اختيار</option>` + list.map(a=>{
         const id = a.id || a._id || '';
         return `<option value="${escapeHtml(id)}">${escapeHtml(a.title || 'إعلان')}</option>`;
       }).join('');
@@ -1013,34 +1028,9 @@
     }
   }
 
-  qs('#buyPremiumBtn').addEventListener('click', async ()=>{
-    const adId = qs('#premiumAdSelect').value;
-    if(!adId) return toast('اختر إعلان أولاً', false);
-    if(!chosenPlan) return toast('اختر خطة أولاً', false);
-
-    try{
-      const res = await fetch('/api/premium/buy', apiOpts('POST', { adId, plan: chosenPlan }));
-      if(!res.ok) throw new Error('buy failed');
-      toast('تم إرسال طلب البروميوم ✅', true);
-      loadMyAds();
-    }catch(e){
-      console.error(e);
-      toast('فشل طلب البروميوم ❌', false);
-    }
-  });
-
-  qs('#premiumHistoryBtn').addEventListener('click', async ()=>{
-    try{
-      const res = await fetch('/api/premium/history', apiOpts());
-      if(!res.ok) throw new Error('no history');
-      toast('تم جلب السجل (نفّذ العرض لاحقاً)', true);
-    }catch(e){
-      toast('تعذر جلب السجل الآن', false);
-    }
-  });
-
-  // Notifications
+  // ===== Notifications =====
   const notifList = qs('#notifList');
+
   async function loadNotifications(){
     try{
       const res = await fetch('/api/notifications', apiOpts());
@@ -1092,7 +1082,7 @@
     }
   });
 
-  // Favorites
+  // ===== Favorites =====
   const favList = qs('#favList');
   async function loadFavorites(){
     try{
@@ -1143,12 +1133,6 @@
       toast('فشل الإزالة ❌', false);
     }
   };
-
-  function escapeHtml(s=''){
-    return String(s).replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
-  }
 
   // Init
   document.addEventListener('DOMContentLoaded', loadProfile);

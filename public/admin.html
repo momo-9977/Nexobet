@@ -3,668 +3,2216 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>لوحة الأدمن — سمسار</title>
+  <title>Samsar Admin</title>
+
   <style>
     :root{
-      /* Premium palette: purple -> gold */
-      --bg:#0b0513;
-      --bg2:#0f0622;
-      --card-bg:rgba(255,255,255,0.04);
-      --card-border:rgba(255,255,255,0.06);
-      --muted:#c7cbe0;
-      --text:#f4f8ff;
-      --accent:#8b5cf6;    /* purple */
-      --accent-2:#f6c24a;  /* gold */
-      --danger:#ef4444;
-      --shadow:0 16px 48px rgba(2,6,20,0.7);
-      --glass: rgba(255,255,255,0.02);
+      --bg:#070f1f;
+      --bg2:#09142a;
+      --card:rgba(255,255,255,.05);
+      --card2:rgba(255,255,255,.04);
+      --line:rgba(255,255,255,.08);
+      --text:#e6eef8;
+      --muted:#9aa8c2;
+      --accent:#2ea3ff;
+      --accent2:#60a5fa;
+      --good:#34d399;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow:0 18px 55px rgba(0,0,0,.45);
+      --radius:18px;
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
-      margin:0;font-family:Inter,Arial,sans-serif;
-      background: linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
-      color:var(--text); -webkit-font-smoothing:antialiased;
+      margin:0;
+      font-family:Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(46,163,255,0.14), transparent 18%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+      color:var(--text);
+      min-height:100vh;
     }
 
-    .app{max-width:1240px;margin:20px auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
-    h1{margin:0;font-size:20px}
-    .top-row{display:flex;gap:10px;align-items:center}
-    nav.tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab-btn{
-      background:transparent;border:1px solid var(--card-border);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer;
-      transition:all .12s ease;backdrop-filter:blur(6px)
-    }
-    .tab-btn:hover{ transform:translateY(-3px) }
-    .tab-btn.active{
-      background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      color:#0b0513;border-color:transparent; box-shadow:0 10px 30px rgba(139,92,246,0.12);
+    .app{
+      display:grid;
+      grid-template-columns: 310px 1fr;
+      min-height:100vh;
     }
 
-    .card{background:var(--card-bg);padding:14px;border-radius:12px;border:1px solid var(--card-border);box-shadow:var(--shadow);margin-bottom:14px}
-    .row{display:flex;gap:12px}
-    .col{flex:1}
-    .small{font-size:13px;color:var(--muted)}
+    /* Sidebar */
+    .sidebar{
+      border-left:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      backdrop-filter: blur(10px);
+      padding:16px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background:rgba(255,255,255,.04);
+      box-shadow:var(--shadow);
+      margin-bottom:12px;
+    }
+    .brand-left{
+      display:flex;align-items:center;gap:10px;min-width:0;
+    }
+    .logo{
+      width:46px;height:46px;border-radius:14px;
+      background:linear-gradient(135deg,#043b66,#0b7bd6);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+      flex-shrink:0;
+    }
+    .brand-title{min-width:0}
+    .brand-title h1{
+      margin:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .brand-title p{
+      margin:4px 0 0;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .pill{
+      padding:6px 10px;border-radius:999px;font-weight:900;font-size:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      white-space:nowrap;
+    }
+
+    .nav{
+      display:grid;
+      gap:8px;
+      margin-top:12px;
+    }
+    .nav button{
+      text-align:right;
+      width:100%;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:var(--text);
+      border-radius:14px;
+      padding:12px 12px;
+      font-weight:900;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      transition:.18s ease;
+    }
+    .nav button:hover{transform:translateY(-1px);background:rgba(255,255,255,.045)}
+    .nav button.active{
+      background:rgba(46,163,255,.14);
+      border-color:rgba(46,163,255,.28);
+      color:#dbeafe;
+    }
+    .nav .meta{
+      font-size:12px;color:var(--muted);font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      padding:5px 8px;border-radius:999px;
+    }
+
+    .sidebar-footer{
+      margin-top:14px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.7;
+    }
+    .sidebar-footer code{color:#dbeafe}
+
+    /* Main */
+    .main{
+      padding:18px;
+      overflow:auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .topbar h2{
+      margin:0;
+      font-size:18px;
+    }
+    .top-actions{
+      display:flex;gap:10px;flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      color:var(--text);
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      transition:.18s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; color:white}
+    .btn.good{background:linear-gradient(135deg,#34d399,#16a34a); border:none; color:#062014}
+    .btn.warn{background:linear-gradient(135deg,#f59e0b,#f97316); border:none; color:#201301}
+    .btn.bad{background:linear-gradient(135deg,#ef4444,#b91c1c); border:none; color:white}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media(max-width:1100px){ .app{grid-template-columns:1fr} .sidebar{height:auto; position:relative} .grid{grid-template-columns:1fr} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+    .card h3{
+      margin:0 0 10px;
+      font-size:15px;
+    }
     .muted{color:var(--muted)}
-    .actions{margin-top:8px}
-    .btn{padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:800}
-    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0b0513}
-    .btn.ghost{background:transparent;border:1px solid var(--card-border);color:var(--text)}
-    .btn.warn{background:linear-gradient(135deg,var(--danger),#f97316);color:#fff}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);color:var(--muted);font-weight:700}
+    .hint{color:var(--muted);font-size:12px;line-height:1.7;margin-top:8px}
+    .hint code{color:#dbeafe}
 
-    table{width:100%;border-collapse:collapse;margin-top:8px;background:transparent}
-    th,td{padding:10px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px}
-    th{color:var(--muted);font-weight:800}
-    td{color:var(--text)}
-
-    .user-actions{display:flex;gap:8px;justify-content:flex-end}
-    .search-row{display:flex;gap:8px;align-items:center}
-    input[type="text"], input[type="email"], input[type="number"], textarea, select {
-      width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text);outline:none;font-size:14px
+    /* Forms */
+    label{display:block; font-weight:900; font-size:13px; margin:0 0 6px}
+    input, select, textarea{
+      width:100%;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      outline:none;
+      font-size:14px;
     }
-    textarea{min-height:100px;resize:vertical}
-    input::placeholder, textarea::placeholder{color:var(--muted)}
+    textarea{min-height:110px; resize:vertical}
+    input::placeholder, textarea::placeholder{color:#93a3bf}
 
-    input:focus, textarea:focus, select:focus { box-shadow:0 8px 30px rgba(139,92,246,0.08); border-color: rgba(246,194,74,0.6) }
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .full{grid-column:1/-1}
+    @media(max-width:900px){ .form-grid{grid-template-columns:1fr} }
 
-    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:3000;padding:18px}
-    .modal{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;min-width:360px;max-width:920px}
-    .muted-note{font-size:13px;color:var(--muted);margin-bottom:8px}
+    /* Tables */
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+    }
+    .table th, .table td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      font-size:13px;
+      text-align:right;
+      vertical-align:top;
+    }
+    .table th{color:#dbeafe; font-weight:900; background:rgba(46,163,255,.08)}
+    .table tr:last-child td{border-bottom:none}
+    .nowrap{white-space:nowrap}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .mini{
+      padding:8px 10px;border-radius:12px;font-weight:900;font-size:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      cursor:pointer;
+    }
+    .mini.primary{background:rgba(46,163,255,.16); border-color:rgba(46,163,255,.22); color:#dbeafe}
+    .mini.good{background:rgba(52,211,153,.16); border-color:rgba(52,211,153,.22); color:#bbf7d0}
+    .mini.warn{background:rgba(245,158,11,.16); border-color:rgba(245,158,11,.22); color:#fde68a}
+    .mini.bad{background:rgba(239,68,68,.16); border-color:rgba(239,68,68,.22); color:#fecaca}
 
-    .banner-preview img{height:56px;border-radius:10px;margin-inline-start:8px;object-fit:cover;border:1px solid rgba(255,255,255,0.04)}
-    .banner-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .tag{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+    }
+    .tag.good{background:rgba(52,211,153,.14); border-color:rgba(52,211,153,.20); color:#bbf7d0}
+    .tag.warn{background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.20); color:#fde68a}
+    .tag.bad{background:rgba(239,68,68,.14); border-color:rgba(239,68,68,.20); color:#fecaca}
 
-    .small-pill{background:rgba(255,255,255,0.02);padding:6px 8px;border-radius:8px;font-size:13px;color:var(--text)}
-    .controls-row{display:flex;gap:8px;align-items:center}
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:18px;
+      z-index:99999;
+      min-width:260px;
+      max-width:92vw;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.78);
+      box-shadow:0 18px 50px rgba(0,0,0,.55);
+      display:none;
+      font-weight:900;
+      text-align:center;
+    }
+    .toast.show{display:block; animation:pop .16s ease}
+    .toast.good{background:linear-gradient(135deg, rgba(52,211,153,.35), rgba(16,185,129,.22))}
+    .toast.bad{background:linear-gradient(135deg, rgba(239,68,68,.35), rgba(220,38,38,.22))}
+    @keyframes pop{
+      from{opacity:0; transform:translateX(-50%) translateY(6px)}
+      to{opacity:1; transform:translateX(-50%) translateY(0)}
+    }
 
-    @media (max-width:900px){ .row{flex-direction:column} .top-row{flex-direction:column;align-items:flex-start} }
+    /* Modal */
+    .modal{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.62);
+      display:none;
+      align-items:center; justify-content:center;
+      z-index:999999;
+      padding:16px;
+    }
+    .modal.show{display:flex}
+    .modal-card{
+      width:100%;
+      max-width:720px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(7,16,36,.96);
+      box-shadow:0 26px 80px rgba(0,0,0,.65);
+      padding:14px;
+    }
+    .modal-head{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+    }
+    .xbtn{
+      width:42px;height:42px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:900;
+    }
   </style>
 </head>
+
 <body>
   <div class="app">
-    <header>
-      <div>
-        <h1>لوحة الأدمن — سمسار</h1>
-        <div class="small muted">تحكّم في كل أجزاء المنصة من هنا</div>
-      </div>
 
-      <div class="top-row">
-        <nav class="tabs" id="mainTabs">
-          <button class="tab-btn active" data-tab="dashboard">لوحة التحكم</button>
-          <button class="tab-btn" data-tab="banners">البانرات</button>
-          <button class="tab-btn" data-tab="platform">المنصة</button>
-          <button class="tab-btn" data-tab="categories">الأقسام</button>
-          <button class="tab-btn" data-tab="support">قنوات الدعم</button>
-          <button class="tab-btn" data-tab="ads">الإعلانات</button>
-          <button class="tab-btn" data-tab="users">المستخدمون</button>
-          <button class="tab-btn" data-tab="settings">إعدادات عامة</button>
-        </nav>
-      </div>
-    </header>
-
-    <main>
-      <!-- DASHBOARD -->
-      <section id="dashboard" class="card tab">
-        <h2>الملخص</h2>
-        <div class="row">
-          <div class="col card">
-            <div class="small muted">إحصائيات سريعة</div>
-            <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
-              <div class="pill">إجمالي الإعلانات: <strong id="statAds">—</strong></div>
-              <div class="pill">قيد الانتظار: <strong id="statPending">—</strong></div>
-              <div class="pill">الموافق عليها: <strong id="statApproved">—</strong></div>
-              <div class="pill">المشاهدات: <strong id="statViews">—</strong></div>
-            </div>
-            <div style="margin-top:12px" class="small muted">ملاحظات: بعض الوظائف تحتاج endpoints في السيرفر لتعمل (مثل حذف مستخدم كأدمن أو تعيين كلمة سر مباشرة).</div>
-          </div>
-
-          <div class="col card">
-            <div class="small muted">بانرات حالية</div>
-            <div id="bannerList" class="banner-preview banner-row" style="margin-top:8px"></div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-left">
+          <div class="logo">S</div>
+          <div class="brand-title">
+            <h1>Samsar Admin</h1>
+            <p>لوحة التحكم الشاملة</p>
           </div>
         </div>
-      </section>
+        <span class="pill" id="envPill">DEV</span>
+      </div>
 
-      <!-- BANNERS -->
-      <section id="banners" class="card tab" style="display:none">
-        <h2>إدارة البانرات</h2>
-        <form id="bannerForm" class="card">
-          <div class="row">
-            <div style="flex:0 0 360px">
-              <label>اختَر صور بانر (عدّة ملفات)</label>
-              <input type="file" id="bannerFiles" multiple accept="image/*" />
-              <div class="muted-note">يمكن إضافة صور جديدة؛ تظهر الصور الحالية أدناه ويمكن حذف أي صورة.</div>
+      <div class="nav" id="nav">
+        <button class="active" data-view="dashboard"><span>1) Dashboard</span><span class="meta">Stats</span></button>
+        <button data-view="settings"><span>2) Settings</span><span class="meta">Global</span></button>
+        <button data-view="home"><span>3) Home Page</span><span class="meta">Banner</span></button>
+        <button data-view="categories"><span>4) Categories</span><span class="meta">CRUD</span></button>
+        <button data-view="ads"><span>5) Ads</span><span class="meta">Moderation</span></button>
+        <button data-view="premium"><span>6) Premium</span><span class="meta">Featured</span></button>
+        <button data-view="users"><span>7) Users</span><span class="meta">Roles</span></button>
+        <button data-view="verification"><span>8) Verification</span><span class="meta">Optional</span></button>
+        <button data-view="notifications"><span>9) Notifications</span><span class="meta">Push</span></button>
+        <button data-view="reports"><span>10) Reports</span><span class="meta">Abuse</span></button>
+        <button data-view="support"><span>11) Support</span><span class="meta">FAQ</span></button>
+        <button data-view="media"><span>12) Media Library</span><span class="meta">Uploads</span></button>
+        <button data-view="security"><span>13) Security & Logs</span><span class="meta">Audit</span></button>
+      </div>
+
+      <div class="sidebar-footer">
+        <div><b>API Base:</b> <code id="apiBaseTxt">/api/admin</code></div>
+        <div style="margin-top:8px">
+          هاد اللوحة كتخدم بـ <code>fetch</code> وكتسنى Node.js + Postgres.
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <h2 id="viewTitle">Dashboard</h2>
+        <div class="top-actions">
+          <button class="btn" id="btnPing">🔌 Ping API</button>
+          <button class="btn primary" id="btnRefresh">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Views -->
+      <section id="views">
+
+        <!-- 1) Dashboard -->
+        <div class="view" data-view="dashboard">
+          <div class="grid">
+            <div class="card">
+              <h3>إحصائيات عامة</h3>
+              <table class="table">
+                <tbody>
+                  <tr><td>Users (Today)</td><td class="nowrap" id="statUsersToday">—</td></tr>
+                  <tr><td>New Ads (Today)</td><td class="nowrap" id="statAdsToday">—</td></tr>
+                  <tr><td>Pending Ads</td><td class="nowrap" id="statPending">—</td></tr>
+                  <tr><td>Open Reports</td><td class="nowrap" id="statReports">—</td></tr>
+                  <tr><td>Premium Sales (Month)</td><td class="nowrap" id="statPremiumMonth">—</td></tr>
+                </tbody>
+              </table>
+              <div class="hint">API: <code>GET /api/admin/stats</code></div>
             </div>
-            <div style="flex:1">
-              <label>عنوان البانر</label>
-              <input type="text" id="bannerTitle" placeholder="عنوان البانر" />
-              <label style="margin-top:8px">وصف البانر</label>
-              <input type="text" id="bannerDesc" placeholder="وصف قصير" />
-              <div style="margin-top:10px" class="controls-row">
-                <button class="btn primary" type="button" id="uploadBannersBtn">رفع / إضافة</button>
-                <button class="btn ghost" type="button" id="resetBannersBtn">إفراغ البانرات</button>
+
+            <div class="card">
+              <h3>آخر العمليات</h3>
+              <table class="table" id="lastOpsTable">
+                <thead>
+                  <tr><th>Type</th><th>User</th><th>Target</th><th class="nowrap">Time</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="4" class="muted">—</td></tr>
+                </tbody>
+              </table>
+              <div class="hint">API: <code>GET /api/admin/logs?limit=10</code></div>
+            </div>
+          </div>
+
+          <div class="grid" style="margin-top:12px">
+            <div class="card">
+              <h3>آخر الإعلانات</h3>
+              <table class="table" id="lastAdsTable">
+                <thead>
+                  <tr><th>Title</th><th>Status</th><th class="nowrap">Actions</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="3" class="muted">—</td></tr>
+                </tbody>
+              </table>
+              <div class="hint">API: <code>GET /api/admin/ads?sort=new&limit=10</code></div>
+            </div>
+
+            <div class="card">
+              <h3>آخر المستخدمين</h3>
+              <table class="table" id="lastUsersTable">
+                <thead>
+                  <tr><th>Name</th><th>Role</th><th class="nowrap">Actions</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="3" class="muted">—</td></tr>
+                </tbody>
+              </table>
+              <div class="hint">API: <code>GET /api/admin/users?sort=new&limit=10</code></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2) Settings -->
+        <div class="view" data-view="settings" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>إعدادات عامة</h3>
+              <div class="form-grid">
+                <div>
+                  <label>اسم المنصة</label>
+                  <input id="setPlatformName" placeholder="Samsar" />
+                </div>
+                <div>
+                  <label>سطر ثانوي (Subtitle)</label>
+                  <input id="setSubtitle" placeholder="بيع وشراء بسهولة" />
+                </div>
+
+                <div>
+                  <label>واتساب الدعم</label>
+                  <input id="setSupportWhatsapp" placeholder="2126xxxxxxx" />
+                </div>
+                <div>
+                  <label>إيميل الدعم</label>
+                  <input id="setSupportEmail" placeholder="support@samsar.com" />
+                </div>
+
+                <div class="full">
+                  <label>Logo (رابط أو Upload لاحقاً)</label>
+                  <input id="setLogoUrl" placeholder="/uploads/logo.png" />
+                </div>
+
+                <div class="full actions">
+                  <button class="btn primary" id="saveSettingsBtn">💾 حفظ الإعدادات</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>GET/PUT /api/admin/settings</code></div>
+            </div>
+
+            <div class="card">
+              <h3>حدود الرفع (Uploads Limits)</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Max Images</label>
+                  <input id="setMaxImages" type="number" min="1" value="6" />
+                </div>
+                <div>
+                  <label>Max Image Size (MB)</label>
+                  <input id="setMaxImageMb" type="number" min="1" value="10" />
+                </div>
+                <div>
+                  <label>Max Video (MB)</label>
+                  <input id="setMaxVideoMb" type="number" min="1" value="1024" />
+                </div>
+                <div>
+                  <label>Allow Register</label>
+                  <select id="setAllowRegister">
+                    <option value="true">مفعّل</option>
+                    <option value="false">موقوف</option>
+                  </select>
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="saveLimitsBtn">💾 حفظ الحدود</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>PUT /api/admin/settings/uploads</code></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3) Home Page -->
+        <div class="view" data-view="home" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>Banner / Slider</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Autoplay</label>
+                  <select id="homeAutoplay">
+                    <option value="true">مفعّل</option>
+                    <option value="false">موقوف</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Interval (ms)</label>
+                  <input id="homeInterval" type="number" min="1000" value="4000" />
+                </div>
+                <div>
+                  <label>Show Dots</label>
+                  <select id="homeDots">
+                    <option value="true">نعم</option>
+                    <option value="false">لا</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Max Slides</label>
+                  <input id="homeMaxSlides" type="number" min="1" value="10" />
+                </div>
+
+                <div class="full actions">
+                  <button class="btn primary" id="saveHomeBannerSettings">💾 حفظ إعدادات البانر</button>
+                </div>
+              </div>
+
+              <div class="hint">API: <code>GET/PUT /api/admin/home/banner-settings</code></div>
+            </div>
+
+            <div class="card">
+              <h3>إدارة Slides</h3>
+              <div class="form-grid">
+                <div class="full">
+                  <label>إضافة Slide (imageUrl + link)</label>
+                  <input id="slideImageUrl" placeholder="https://..." />
+                </div>
+                <div class="full">
+                  <input id="slideLinkUrl" placeholder="الرابط (اختياري) مثال: /ad?id=123" />
+                </div>
+                <div class="full actions">
+                  <button class="btn good" id="addSlideBtn">➕ إضافة</button>
+                  <button class="btn" id="reloadSlidesBtn">🔄 تحديث</button>
+                </div>
+              </div>
+
+              <table class="table" id="slidesTable" style="margin-top:10px">
+                <thead>
+                  <tr><th>Image</th><th>Link</th><th class="nowrap">Actions</th></tr>
+                </thead>
+                <tbody><tr><td colspan="3" class="muted">—</td></tr></tbody>
+              </table>
+
+              <div class="hint">
+                API: <code>GET/POST/PUT/DELETE /api/admin/home/slides</code><br>
+                ترتيب Drag&Drop تقدر تديرو لاحقاً (endpoint: <code>PUT /api/admin/home/slides/reorder</code>)
               </div>
             </div>
           </div>
-        </form>
 
-        <div id="bannersTable" style="margin-top:12px"></div>
-      </section>
+          <div class="grid" style="margin-top:12px">
+            <div class="card">
+              <h3>Sections (الرئيسية)</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Show Featured Ads</label>
+                  <select id="homeShowFeatured">
+                    <option value="true">نعم</option>
+                    <option value="false">لا</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Featured Limit</label>
+                  <input id="homeFeaturedLimit" type="number" min="1" value="8" />
+                </div>
+                <div>
+                  <label>Show Latest Ads</label>
+                  <select id="homeShowLatest">
+                    <option value="true">نعم</option>
+                    <option value="false">لا</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Latest Limit</label>
+                  <input id="homeLatestLimit" type="number" min="1" value="12" />
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="saveHomeSectionsBtn">💾 حفظ</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>PUT /api/admin/home/sections</code></div>
+            </div>
 
-      <!-- PLATFORM -->
-      <section id="platform" class="card tab" style="display:none">
-        <h2>إعدادات المنصة</h2>
-        <div class="row">
-          <div class="col">
-            <label>اسم المنصة</label>
-            <input type="text" id="platformName" />
-            <label style="margin-top:8px">السطر الفرعي</label>
-            <input type="text" id="platformSubtitle" />
-            <label style="margin-top:8px">لوجو</label>
-            <input type="file" id="platformLogo" accept="image/*" />
-            <div class="controls-row" style="margin-top:8px">
-              <button class="btn primary" id="savePlatformBtn">حفظ إعدادات المنصة</button>
+            <div class="card">
+              <h3>الأقسام السريعة تحت البحث</h3>
+              <div class="form-grid">
+                <div class="full">
+                  <label>Keys (مرتبة)</label>
+                  <input id="homeQuickCats" placeholder="phones,cars,homes,furniture" />
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="saveQuickCatsBtn">💾 حفظ</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>PUT /api/admin/home/quick-categories</code></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4) Categories -->
+        <div class="view" data-view="categories" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>إضافة / تعديل قسم</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Category ID (key)</label>
+                  <input id="catId" placeholder="phones" />
+                </div>
+                <div>
+                  <label>Name</label>
+                  <input id="catName" placeholder="الهواتف" />
+                </div>
+                <div class="full">
+                  <label>Description</label>
+                  <input id="catDesc" placeholder="جديدة ومستعملة..." />
+                </div>
+                <div class="full">
+                  <label>Image URL</label>
+                  <input id="catImage" placeholder="https://..." />
+                </div>
+                <div>
+                  <label>Order</label>
+                  <input id="catOrder" type="number" value="1" />
+                </div>
+                <div>
+                  <label>Active</label>
+                  <select id="catActive">
+                    <option value="true">نعم</option>
+                    <option value="false">لا</option>
+                  </select>
+                </div>
+                <div class="full actions">
+                  <button class="btn good" id="createCatBtn">➕ Create</button>
+                  <button class="btn primary" id="updateCatBtn">✏️ Update</button>
+                  <button class="btn" id="reloadCatsBtn">🔄 Reload</button>
+                </div>
+              </div>
+
+              <div class="hint">API: <code>GET/POST/PUT/DELETE /api/admin/categories</code></div>
+            </div>
+
+            <div class="card">
+              <h3>قائمة الأقسام</h3>
+              <table class="table" id="catsTable">
+                <thead>
+                  <tr><th>Key</th><th>Name</th><th>Active</th><th class="nowrap">Actions</th></tr>
+                </thead>
+                <tbody><tr><td colspan="4" class="muted">—</td></tr></tbody>
+              </table>
+              <div class="hint">نصيحة: خليه يدير cache لعدد الإعلانات فكل قسم (adsCount).</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5) Ads -->
+        <div class="view" data-view="ads" style="display:none">
+          <div class="card">
+            <h3>بحث/فلترة الإعلانات</h3>
+            <div class="form-grid">
+              <div>
+                <label>Search</label>
+                <input id="adsQ" placeholder="عنوان / مدينة / user..." />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="adsStatus">
+                  <option value="">الكل</option>
+                  <option value="published">published</option>
+                  <option value="pending">pending</option>
+                  <option value="rejected">rejected</option>
+                  <option value="hidden">hidden</option>
+                  <option value="sold">sold</option>
+                  <option value="expired">expired</option>
+                </select>
+              </div>
+              <div>
+                <label>Category</label>
+                <input id="adsCategory" placeholder="phones" />
+              </div>
+              <div>
+                <label>City</label>
+                <input id="adsCity" placeholder="Casablanca" />
+              </div>
+              <div>
+                <label>Featured</label>
+                <select id="adsFeatured">
+                  <option value="">الكل</option>
+                  <option value="true">featured only</option>
+                  <option value="false">not featured</option>
+                </select>
+              </div>
+              <div>
+                <label>Limit</label>
+                <input id="adsLimit" type="number" value="20" />
+              </div>
+
+              <div class="full actions">
+                <button class="btn primary" id="searchAdsBtn">🔎 Search</button>
+                <button class="btn" id="reloadAdsBtn">🔄 Reload</button>
+              </div>
+            </div>
+
+            <div class="hint">
+              API: <code>GET /api/admin/ads?q=&status=&category=&city=&featured=&limit=</code>
             </div>
           </div>
 
-          <div class="col">
-            <label>معاينة بانر/صور</label>
-            <div id="platformBannerPreview" class="banner-preview banner-row" style="margin-top:8px"></div>
+          <div class="card" style="margin-top:12px">
+            <h3>نتائج الإعلانات</h3>
+            <table class="table" id="adsTable">
+              <thead>
+                <tr>
+                  <th>Title</th><th>Status</th><th>Owner</th><th class="nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="4" class="muted">—</td></tr></tbody>
+            </table>
+
+            <div class="hint">
+              Actions (Admin):
+              <code>PATCH /api/admin/ads/:id/status</code>,
+              <code>DELETE /api/admin/ads/:id</code>,
+              <code>PATCH /api/admin/ads/:id/feature</code>,
+              ✅ <code>PATCH /api/admin/ads/:id/owner</code> (تغيير صاحب الإعلان)
+            </div>
           </div>
         </div>
-      </section>
 
-      <!-- CATEGORIES -->
-      <section id="categories" class="card tab" style="display:none">
-        <h2>الأقسام</h2>
-        <div class="small muted">عدل اسم القسم، الوصف، أو الصورة. التغييرات تُرسل إلى السيرفر.</div>
-        <div id="categoriesList" style="margin-top:12px"></div>
-      </section>
+        <!-- 6) Premium -->
+        <div class="view" data-view="premium" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>Plans</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Plan Key</label>
+                  <input id="planKey" placeholder="featured_7d" />
+                </div>
+                <div>
+                  <label>Price (MAD)</label>
+                  <input id="planPrice" type="number" value="79" />
+                </div>
+                <div>
+                  <label>Duration (days)</label>
+                  <input id="planDays" type="number" value="7" />
+                </div>
+                <div>
+                  <label>Active</label>
+                  <select id="planActive">
+                    <option value="true">نعم</option>
+                    <option value="false">لا</option>
+                  </select>
+                </div>
+                <div class="full">
+                  <label>Benefits</label>
+                  <textarea id="planBenefits" placeholder="ظهور في الإعلانات المميزة..."></textarea>
+                </div>
+                <div class="full actions">
+                  <button class="btn good" id="createPlanBtn">➕ Create</button>
+                  <button class="btn primary" id="updatePlanBtn">✏️ Update</button>
+                  <button class="btn" id="reloadPlansBtn">🔄 Reload</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>GET/POST/PUT/DELETE /api/admin/premium/plans</code></div>
+            </div>
 
-      <!-- SUPPORT -->
-      <section id="support" class="card tab" style="display:none">
-        <h2>قنوات الدعم</h2>
-        <div class="row">
-          <div class="col">
-            <label>واتساب</label>
-            <input type="text" id="supportWhatsapp" placeholder="مثال: +2126..." />
-          </div>
-          <div class="col">
-            <label>إيميل الدعم</label>
-            <input type="text" id="supportEmail" placeholder="support@..." />
-          </div>
-          <div class="col">
-            <label>تيليجرام</label>
-            <input type="text" id="supportTelegram" placeholder="@channel" />
+            <div class="card">
+              <h3>Premium Orders</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Status</label>
+                  <select id="premiumOrderStatus">
+                    <option value="">الكل</option>
+                    <option value="pending">pending</option>
+                    <option value="paid">paid</option>
+                    <option value="failed">failed</option>
+                    <option value="canceled">canceled</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Limit</label>
+                  <input id="premiumOrderLimit" type="number" value="20" />
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="reloadPremiumOrdersBtn">🔄 Reload</button>
+                </div>
+              </div>
+
+              <table class="table" id="premiumOrdersTable" style="margin-top:10px">
+                <thead>
+                  <tr><th>Order</th><th>User</th><th>Ad</th><th>Status</th><th class="nowrap">Actions</th></tr>
+                </thead>
+                <tbody><tr><td colspan="5" class="muted">—</td></tr></tbody>
+              </table>
+
+              <div class="hint">
+                API: <code>GET /api/admin/premium/orders</code>,
+                <code>PATCH /api/admin/premium/orders/:id</code> (approve/mark paid/cancel)
+              </div>
+            </div>
           </div>
         </div>
-        <div style="margin-top:12px" class="controls-row">
-          <button class="btn primary" id="saveSupportBtn">حفظ القنوات</button>
-        </div>
-      </section>
 
-      <!-- ADS -->
-      <section id="ads" class="card tab" style="display:none">
-        <h2>إدارة الإعلانات</h2>
-        <div class="small muted">قائمة الإعلانات (شامل الحالات). يمكنك البحث، الموافقة، الرفض، التمييز أو الحذف.</div>
-        <div style="margin-top:12px" class="search-row">
-          <input type="text" id="adsSearch" placeholder="ابحث بعنوان أو مرجع" />
-          <button class="btn ghost" id="adsSearchBtn">بحث</button>
-          <button class="btn primary" id="adsRefreshBtn">تحديث</button>
-        </div>
-        <div id="adsTable" style="margin-top:12px"></div>
-      </section>
+        <!-- 7) Users -->
+        <div class="view" data-view="users" style="display:none">
+          <div class="card">
+            <h3>بحث المستخدمين</h3>
+            <div class="form-grid">
+              <div>
+                <label>Search</label>
+                <input id="usersQ" placeholder="name/email/phone" />
+              </div>
+              <div>
+                <label>Role</label>
+                <select id="usersRole">
+                  <option value="">الكل</option>
+                  <option value="user">user</option>
+                  <option value="admin">admin</option>
+                  <option value="moderator">moderator</option>
+                </select>
+              </div>
+              <div>
+                <label>Verified</label>
+                <select id="usersVerified">
+                  <option value="">الكل</option>
+                  <option value="true">verified</option>
+                  <option value="false">not verified</option>
+                </select>
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="usersStatus">
+                  <option value="">الكل</option>
+                  <option value="active">active</option>
+                  <option value="banned">banned</option>
+                  <option value="disabled">disabled</option>
+                </select>
+              </div>
+              <div>
+                <label>Limit</label>
+                <input id="usersLimit" type="number" value="20" />
+              </div>
+              <div class="full actions">
+                <button class="btn primary" id="searchUsersBtn">🔎 Search</button>
+                <button class="btn" id="reloadUsersBtn">🔄 Reload</button>
+              </div>
+            </div>
 
-      <!-- USERS -->
-      <section id="users" class="card tab" style="display:none">
-        <h2>المستخدمون</h2>
-        <div class="small muted">قائمة المستخدمين المسجلين. يمكنك تعديل الحقول المدعومة أو حذف المستخدم أو تغيير كلمة السر كأدمن.</div>
-
-        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-          <input type="text" id="usersSearch" placeholder="ابحث بالإسم أو الإيميل أو الهاتف" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text)"/>
-          <button class="btn ghost" id="usersSearchBtn">بحث</button>
-          <button class="btn primary" id="refreshUsersBtn">تحديث</button>
-        </div>
-
-        <div id="usersTable" style="margin-top:12px"></div>
-      </section>
-
-      <!-- SETTINGS -->
-      <section id="settings" class="card tab" style="display:none">
-        <h2>إعدادات عامة</h2>
-        <div class="row">
-          <div class="col card">
-            <label>الحد الأقصى لعدد الصور لكل إعلان</label>
-            <input type="number" id="maxImages" value="3" />
-            <label style="margin-top:8px">الحد الأقصى لحجم الفيديو (ميغابايت)</label>
-            <input type="number" id="maxVideoMb" value="1024" />
-            <div style="margin-top:8px" class="controls-row"><button class="btn primary" id="saveLimitsBtn">حفظ</button></div>
-            <div class="small muted" style="margin-top:10px">تحتاج إلى مزامنة هذه القيم مع قيود السيرفر.</div>
+            <div class="hint">API: <code>GET /api/admin/users?q=&role=&verified=&status=&limit=</code></div>
           </div>
 
-          <div class="col card">
-            <label>إحصائيات أخرى</label>
-            <div style="margin-top:8px">عدد المستخدمين: <strong id="statUsers">—</strong></div>
-            <div style="margin-top:8px">إجمالي الإعلانات: <strong id="statAds2">—</strong></div>
+          <div class="card" style="margin-top:12px">
+            <h3>نتائج المستخدمين</h3>
+            <table class="table" id="usersTable">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th class="nowrap">Actions</th></tr>
+              </thead>
+              <tbody><tr><td colspan="5" class="muted">—</td></tr></tbody>
+            </table>
+
+            <div class="hint">
+              ✅ Edit User: <code>PUT /api/admin/users/:id</code><br>
+              ✅ Ban/Unban: <code>PATCH /api/admin/users/:id/status</code><br>
+              ✅ Verified: <code>PATCH /api/admin/users/:id/verify</code><br>
+              ✅ Reset Password: <code>POST /api/admin/users/:id/reset-password</code>
+            </div>
           </div>
         </div>
+
+        <!-- 8) Verification -->
+        <div class="view" data-view="verification" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>تفعيل نظام التوثيق</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Enable Verification</label>
+                  <select id="verEnabled">
+                    <option value="false">لا</option>
+                    <option value="true">نعم</option>
+                  </select>
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="saveVerSettingsBtn">💾 حفظ</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>PUT /api/admin/verification/settings</code></div>
+            </div>
+
+            <div class="card">
+              <h3>طلبات التوثيق</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Status</label>
+                  <select id="verReqStatus">
+                    <option value="">الكل</option>
+                    <option value="pending">pending</option>
+                    <option value="approved">approved</option>
+                    <option value="rejected">rejected</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Limit</label>
+                  <input id="verReqLimit" type="number" value="20" />
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="reloadVerReqBtn">🔄 Reload</button>
+                </div>
+              </div>
+
+              <table class="table" id="verReqTable" style="margin-top:10px">
+                <thead>
+                  <tr><th>User</th><th>Status</th><th>Docs</th><th class="nowrap">Actions</th></tr>
+                </thead>
+                <tbody><tr><td colspan="4" class="muted">—</td></tr></tbody>
+              </table>
+
+              <div class="hint">
+                API: <code>GET /api/admin/verification/requests</code>,
+                <code>PATCH /api/admin/verification/requests/:id</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9) Notifications -->
+        <div class="view" data-view="notifications" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>إرسال إشعار</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Target</label>
+                  <select id="notifTarget">
+                    <option value="user">User واحد</option>
+                    <option value="all">الكل</option>
+                    <option value="segment">Segment</option>
+                  </select>
+                </div>
+                <div>
+                  <label>User ID (إذا target=user)</label>
+                  <input id="notifUserId" placeholder="uuid" />
+                </div>
+
+                <div class="full">
+                  <label>Title</label>
+                  <input id="notifTitle" placeholder="عنوان الإشعار" />
+                </div>
+                <div class="full">
+                  <label>Body</label>
+                  <textarea id="notifBody" placeholder="المحتوى..."></textarea>
+                </div>
+
+                <div class="full">
+                  <label>Segment Filter (إذا segment)</label>
+                  <input id="notifSegment" placeholder='مثال: city=Casablanca&category=phones' />
+                </div>
+
+                <div class="full actions">
+                  <button class="btn primary" id="sendNotifBtn">📨 إرسال</button>
+                </div>
+              </div>
+
+              <div class="hint">API: <code>POST /api/admin/notifications/send</code></div>
+            </div>
+
+            <div class="card">
+              <h3>Templates</h3>
+              <div class="form-grid">
+                <div class="full">
+                  <label>Template Key</label>
+                  <input id="tmplKey" placeholder="ad_approved" />
+                </div>
+                <div class="full">
+                  <label>Template JSON</label>
+                  <textarea id="tmplJson" placeholder='{"title":"...","body":"..."}'></textarea>
+                </div>
+                <div class="full actions">
+                  <button class="btn good" id="saveTemplateBtn">💾 Save Template</button>
+                  <button class="btn" id="reloadTemplatesBtn">🔄 Reload</button>
+                </div>
+              </div>
+
+              <table class="table" id="tmplTable" style="margin-top:10px">
+                <thead><tr><th>Key</th><th>Title</th><th class="nowrap">Actions</th></tr></thead>
+                <tbody><tr><td colspan="3" class="muted">—</td></tr></tbody>
+              </table>
+
+              <div class="hint">API: <code>GET/PUT/DELETE /api/admin/notifications/templates</code></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10) Reports -->
+        <div class="view" data-view="reports" style="display:none">
+          <div class="card">
+            <h3>البلاغات</h3>
+            <div class="form-grid">
+              <div>
+                <label>Status</label>
+                <select id="reportsStatus">
+                  <option value="">الكل</option>
+                  <option value="open">open</option>
+                  <option value="resolved">resolved</option>
+                  <option value="dismissed">dismissed</option>
+                </select>
+              </div>
+              <div>
+                <label>Limit</label>
+                <input id="reportsLimit" type="number" value="20" />
+              </div>
+              <div class="full actions">
+                <button class="btn primary" id="reloadReportsBtn">🔄 Reload</button>
+              </div>
+            </div>
+
+            <table class="table" id="reportsTable" style="margin-top:10px">
+              <thead>
+                <tr><th>Ad</th><th>Reason</th><th>Status</th><th class="nowrap">Actions</th></tr>
+              </thead>
+              <tbody><tr><td colspan="4" class="muted">—</td></tr></tbody>
+            </table>
+
+            <div class="hint">
+              API: <code>GET /api/admin/reports</code>,
+              <code>PATCH /api/admin/reports/:id</code>,
+              (اختياري) <code>DELETE /api/admin/ads/:id</code> من هنا
+            </div>
+          </div>
+        </div>
+
+        <!-- 11) Support -->
+        <div class="view" data-view="support" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>بيانات الدعم</h3>
+              <div class="form-grid">
+                <div>
+                  <label>WhatsApp</label>
+                  <input id="supWa" placeholder="2126xxxxxxx" />
+                </div>
+                <div>
+                  <label>Email</label>
+                  <input id="supEmail" placeholder="support@samsar.com" />
+                </div>
+                <div class="full">
+                  <label>Telegram</label>
+                  <input id="supTg" placeholder="https://t.me/samsar_support" />
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="saveSupportBtn">💾 حفظ</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>PUT /api/admin/support/settings</code></div>
+            </div>
+
+            <div class="card">
+              <h3>FAQ</h3>
+              <div class="form-grid">
+                <div class="full">
+                  <label>Question</label>
+                  <input id="faqQ" placeholder="كيفاش ننشر إعلان؟" />
+                </div>
+                <div class="full">
+                  <label>Answer</label>
+                  <textarea id="faqA" placeholder="..." ></textarea>
+                </div>
+                <div>
+                  <label>Order</label>
+                  <input id="faqOrder" type="number" value="1" />
+                </div>
+                <div>
+                  <label>Active</label>
+                  <select id="faqActive">
+                    <option value="true">نعم</option>
+                    <option value="false">لا</option>
+                  </select>
+                </div>
+                <div class="full actions">
+                  <button class="btn good" id="addFaqBtn">➕ Add</button>
+                  <button class="btn" id="reloadFaqBtn">🔄 Reload</button>
+                </div>
+              </div>
+
+              <table class="table" id="faqTable" style="margin-top:10px">
+                <thead><tr><th>Q</th><th>Active</th><th class="nowrap">Actions</th></tr></thead>
+                <tbody><tr><td colspan="3" class="muted">—</td></tr></tbody>
+              </table>
+
+              <div class="hint">API: <code>GET/POST/PUT/DELETE /api/admin/support/faq</code></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12) Media Library -->
+        <div class="view" data-view="media" style="display:none">
+          <div class="card">
+            <h3>Media Library</h3>
+            <div class="form-grid">
+              <div>
+                <label>Type</label>
+                <select id="mediaType">
+                  <option value="">الكل</option>
+                  <option value="image">images</option>
+                  <option value="video">videos</option>
+                </select>
+              </div>
+              <div>
+                <label>Unused Only</label>
+                <select id="mediaUnused">
+                  <option value="">الكل</option>
+                  <option value="true">unused</option>
+                  <option value="false">used</option>
+                </select>
+              </div>
+              <div>
+                <label>Limit</label>
+                <input id="mediaLimit" type="number" value="30" />
+              </div>
+              <div class="full actions">
+                <button class="btn primary" id="reloadMediaBtn">🔄 Reload</button>
+              </div>
+            </div>
+
+            <table class="table" id="mediaTable" style="margin-top:10px">
+              <thead><tr><th>Path</th><th>Size</th><th>Used</th><th class="nowrap">Actions</th></tr></thead>
+              <tbody><tr><td colspan="4" class="muted">—</td></tr></tbody>
+            </table>
+
+            <div class="hint">
+              API: <code>GET /api/admin/media</code>,
+              <code>DELETE /api/admin/media</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- 13) Security & Logs -->
+        <div class="view" data-view="security" style="display:none">
+          <div class="grid">
+            <div class="card">
+              <h3>Audit Logs</h3>
+              <div class="form-grid">
+                <div>
+                  <label>Limit</label>
+                  <input id="logsLimit" type="number" value="50" />
+                </div>
+                <div>
+                  <label>Type</label>
+                  <input id="logsType" placeholder="ads.delete / user.ban ..." />
+                </div>
+                <div class="full actions">
+                  <button class="btn primary" id="reloadLogsBtn">🔄 Reload</button>
+                </div>
+              </div>
+
+              <table class="table" id="logsTable" style="margin-top:10px">
+                <thead><tr><th>Type</th><th>Admin</th><th>Target</th><th class="nowrap">Time</th></tr></thead>
+                <tbody><tr><td colspan="4" class="muted">—</td></tr></tbody>
+              </table>
+
+              <div class="hint">API: <code>GET /api/admin/logs</code></div>
+            </div>
+
+            <div class="card">
+              <h3>Admin Sessions</h3>
+              <div class="form-grid">
+                <div class="full">
+                  <label>Revoke Sessions (اختياري)</label>
+                  <input id="revokeUserId" placeholder="userId لقطع الجلسات" />
+                </div>
+                <div class="full actions">
+                  <button class="btn warn" id="revokeSessionsBtn">⛔ Revoke</button>
+                </div>
+              </div>
+              <div class="hint">API: <code>POST /api/admin/security/revoke-sessions</code></div>
+            </div>
+          </div>
+        </div>
+
       </section>
     </main>
   </div>
 
-  <!-- Modal: Edit User -->
-  <div id="modalEdit" class="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-label="تعديل المستخدم">
-    <h3 style="margin-top:0">تعديل بيانات المستخدم</h3>
-    <div class="muted-note">يمكنك تعديل الاسم، الهاتف، المدينة، والملاحظة (bio). لا يمكن تعديل الإيميل هنا.</div>
-    <div style="margin-top:8px">
-      <label>الاسم</label><input id="m_name" type="text" placeholder="أدخل الاسم">
-      <label style="margin-top:8px">الهاتف</label><input id="m_phone" type="text" placeholder="الهاتف">
-      <label style="margin-top:8px">المدينة</label><input id="m_city" type="text" placeholder="المدينة">
-      <label style="margin-top:8px">bio</label><textarea id="m_bio" placeholder="نبذة"></textarea>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn ghost" id="m_cancel">إلغاء</button>
-        <button class="btn primary" id="m_save">حفظ</button>
-      </div>
-    </div>
-  </div></div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
-  <!-- Modal: Change Password -->
-  <div id="modalPwd" class="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-label="تغيير كلمة السر">
-    <h3 style="margin-top:0">تعيين كلمة سر جديدة للمستخدم (كأدمن)</h3>
-    <div style="margin-top:8px">
-      <label>كلمة السر الجديدة</label><input id="p_new" type="password" placeholder="********">
-      <label style="margin-top:8px">تأكيد</label><input id="p_confirm" type="password" placeholder="********">
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn ghost" id="p_cancel">إلغاء</button>
-        <button class="btn primary" id="p_save">تعيين</button>
+  <!-- Modal: Change Ad Owner -->
+  <div class="modal" id="ownerModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>تغيير صاحب الإعلان</h3>
+        <button class="xbtn" id="closeOwnerModal">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="full">
+          <label>Ad ID</label>
+          <input id="ownerAdId" readonly />
+        </div>
+        <div class="full">
+          <label>New Owner User ID</label>
+          <input id="ownerNewUserId" placeholder="uuid" />
+          <div class="hint">API: <code>PATCH /api/admin/ads/:id/owner</code></div>
+        </div>
+        <div class="full actions">
+          <button class="btn primary" id="confirmOwnerBtn">💾 حفظ</button>
+        </div>
       </div>
     </div>
-  </div></div>
+  </div>
+
+  <!-- Modal: Reset User Password -->
+  <div class="modal" id="resetPwdModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Reset Password (Admin)</h3>
+        <button class="xbtn" id="closeResetPwdModal">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="full">
+          <label>User ID</label>
+          <input id="resetPwdUserId" readonly />
+        </div>
+        <div class="full">
+          <label>New Password</label>
+          <input id="resetPwdNew" type="password" placeholder="******" />
+          <div class="hint">API: <code>POST /api/admin/users/:id/reset-password</code></div>
+        </div>
+        <div class="full actions">
+          <button class="btn warn" id="confirmResetPwdBtn">⚠️ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // --- tabs ---
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(btn => btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(s => s.style.display = 'none');
-      document.getElementById(btn.dataset.tab).style.display = '';
-      tabs.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }));
+    /** ===========================
+     *  Admin Panel (Front-end only)
+     *  Ready to connect with Node.js + Postgres later.
+     *  =========================== */
 
-    // --- helpers ---
-    const api = (path, opts={}) => fetch(path, { credentials: 'include', method: opts.method || 'GET', headers: opts.headers || {}, body: opts.body })
-      .then(async r => {
-        const t = await r.text().catch(()=>'');
-        let json=null;
-        try { json = t ? JSON.parse(t) : null; } catch(e){ json=null; }
-        if (!r.ok) throw { status: r.status, body: json || t };
-        return json || t;
+    // ---- API BASE ----
+    const API_BASE = '/api/admin';
+
+    // ---- Helpers ----
+    const qs = (s)=>document.querySelector(s);
+    const qsa = (s)=>Array.from(document.querySelectorAll(s));
+
+    function toast(msg, ok=true){
+      const t = qs('#toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + (ok ? 'good' : 'bad');
+      setTimeout(()=> t.classList.remove('show'), 2600);
+    }
+
+    function apiOpts(method='GET', body=null){
+      const opts = { method, credentials:'include', headers:{} };
+      if(body && !(body instanceof FormData)){
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(body);
+      }else if(body instanceof FormData){
+        opts.body = body;
+      }
+      return opts;
+    }
+
+    async function api(path, opts={}){
+      const res = await fetch(API_BASE + path, {credentials:'include', ...opts});
+      if(!res.ok){
+        const txt = await res.text().catch(()=> '');
+        throw new Error('API ' + res.status + ' ' + txt);
+      }
+      const ct = res.headers.get('content-type') || '';
+      if(ct.includes('application/json')) return await res.json();
+      return await res.text();
+    }
+
+    function esc(s=''){
+      return String(s).replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
+    }
+
+    // ---- Navigation views ----
+    const viewTitle = qs('#viewTitle');
+    const navBtns = qsa('#nav button');
+    const views = qsa('.view');
+
+    function openView(key){
+      navBtns.forEach(b => b.classList.toggle('active', b.dataset.view===key));
+      views.forEach(v => v.style.display = (v.dataset.view===key) ? '' : 'none');
+      viewTitle.textContent = navBtns.find(b=>b.dataset.view===key)?.innerText?.split('\n')[0] || key;
+
+      // refresh specific view
+      refreshCurrentView(key).catch(err=>{
+        console.warn(err);
+        // don't spam toasts
       });
+    }
+    navBtns.forEach(b => b.addEventListener('click', ()=> openView(b.dataset.view)));
 
-    function showAlert(msg){ alert(msg); }
-    function setHtml(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
+    // ---- Top actions ----
+    qs('#btnPing').addEventListener('click', async ()=>{
+      try{
+        // Example endpoint to add later:
+        // GET /api/admin/ping -> {ok:true}
+        const data = await api('/ping', apiOpts());
+        toast('API OK ✅ ' + JSON.stringify(data), true);
+      }catch(e){
+        console.error(e);
+        toast('Ping فشل ❌ (زيد /api/admin/ping فالسيرفر)', false);
+      }
+    });
 
-    // --- init ---
-    async function initAdmin(){
-      try {
-        const init = await api('/api/admin/init');
-        const ads = init.ads || [];
-        const users = init.users || [];
-        const settings = init.settings || init.platform || init;
-        document.getElementById('statAds').textContent = ads.length;
-        document.getElementById('statPending').textContent = ads.filter(a=>a.status==='pending').length;
-        document.getElementById('statApproved').textContent = ads.filter(a=>a.status==='approved').length;
-        document.getElementById('statViews').textContent = (init.stats && init.stats.views) || '—';
-        document.getElementById('statUsers').textContent = users.length || 0;
-        // banners preview
-        const bannerWrap = document.getElementById('bannerList');
-        bannerWrap.innerHTML = '';
-        const bannerImgs = (init.banner && init.banner.images) || (init.settings && init.settings.bannerImages) || [];
-        bannerImgs.forEach((src, i) => {
-          const cont = document.createElement('div'); cont.style.display='inline-flex'; cont.style.alignItems='center';
-          const img = document.createElement('img'); img.src=src; img.alt='banner'; img.style.height='56px'; img.style.borderRadius='8px';
-          const del = document.createElement('button'); del.className='btn ghost'; del.textContent='حذف'; del.style.marginInlineStart='6px';
-          del.addEventListener('click', ()=> deleteBannerAt(i));
-          cont.appendChild(img); cont.appendChild(del);
-          bannerWrap.appendChild(cont);
-        });
+    qs('#btnRefresh').addEventListener('click', ()=>{
+      const active = navBtns.find(b=>b.classList.contains('active'))?.dataset.view || 'dashboard';
+      refreshCurrentView(active).catch(console.error);
+    });
 
-        // platform preview
-        const pb = document.getElementById('platformBannerPreview'); pb.innerHTML='';
-        (bannerImgs || []).forEach(src=>{
-          const im = document.createElement('img'); im.src=src; im.style.height='56px'; im.style.borderRadius='8px'; im.style.marginInlineStart='8px';
-          pb.appendChild(im);
-        });
+    // ---- Refresh router ----
+    async function refreshCurrentView(key){
+      if(key==='dashboard') return loadDashboard();
+      if(key==='settings') return loadSettings();
+      if(key==='home') return loadHome();
+      if(key==='categories') return loadCategories();
+      if(key==='ads') return loadAds();
+      if(key==='premium') return loadPremium();
+      if(key==='users') return loadUsers();
+      if(key==='verification') return loadVerification();
+      if(key==='notifications') return loadNotifications();
+      if(key==='reports') return loadReports();
+      if(key==='support') return loadSupport();
+      if(key==='media') return loadMedia();
+      if(key==='security') return loadSecurity();
+    }
 
-        // populate platform fields if available
-        if(init.platform){
-          document.getElementById('platformName').value = init.platform.name || '';
-          document.getElementById('platformSubtitle').value = init.platform.subtitle || '';
-        } else if(init.settings){
-          document.getElementById('platformName').value = init.settings.platformName || '';
-          document.getElementById('platformSubtitle').value = init.settings.platformSubtitle || '';
-        }
+    /** ===========================
+     *  1) Dashboard
+     *  =========================== */
+    async function loadDashboard(){
+      // stats
+      try{
+        const stats = await api('/stats', apiOpts());
+        qs('#statUsersToday').textContent = stats.usersToday ?? '—';
+        qs('#statAdsToday').textContent = stats.adsToday ?? '—';
+        qs('#statPending').textContent = stats.pendingAds ?? '—';
+        qs('#statReports').textContent = stats.openReports ?? '—';
+        qs('#statPremiumMonth').textContent = stats.premiumMonth ?? '—';
+      }catch(e){
+        console.warn(e);
+      }
 
-        // categories list
-        const cats = init.categories || (init.settings && init.settings.categories) || {};
-        renderCategories(cats);
+      // logs
+      try{
+        const logs = await api('/logs?limit=10', apiOpts());
+        const tbody = qs('#lastOpsTable tbody');
+        tbody.innerHTML = (logs?.items||[]).map(r=>`
+          <tr>
+            <td>${esc(r.type||'')}</td>
+            <td>${esc(r.admin||r.adminId||'')}</td>
+            <td>${esc(r.target||r.targetId||'')}</td>
+            <td class="nowrap">${esc(r.time||r.createdAt||'')}</td>
+          </tr>
+        `).join('') || `<tr><td colspan="4" class="muted">لا يوجد</td></tr>`;
+      }catch(e){}
 
-        // support
-        const support = init.support || (init.settings && init.settings.support) || {};
-        document.getElementById('supportWhatsapp').value = support.whatsapp || '';
-        document.getElementById('supportEmail').value = support.email || '';
-        document.getElementById('supportTelegram').value = support.telegram || '';
+      // last ads
+      try{
+        const ads = await api('/ads?sort=new&limit=10', apiOpts());
+        const tbody = qs('#lastAdsTable tbody');
+        tbody.innerHTML = (ads?.items||[]).map(a=>`
+          <tr>
+            <td>${esc(a.title||'')}</td>
+            <td>${statusTag(a.status)}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini primary" onclick="openAdsViewAndSearch('${esc(a.id||a._id||'')}')">فتح</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="3" class="muted">لا يوجد</td></tr>`;
+      }catch(e){}
 
-        // ads table
-        renderAdsTable(ads);
+      // last users
+      try{
+        const users = await api('/users?sort=new&limit=10', apiOpts());
+        const tbody = qs('#lastUsersTable tbody');
+        tbody.innerHTML = (users?.items||[]).map(u=>`
+          <tr>
+            <td>${esc(u.name||'')}</td>
+            <td>${esc(u.role||'user')}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini primary" onclick="openUsersViewAndSearch('${esc(u.id||u._id||'')}')">فتح</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="3" class="muted">لا يوجد</td></tr>`;
+      }catch(e){}
+    }
 
-        // users table
-        renderUsersTable(users);
+    function statusTag(status){
+      const s = String(status||'');
+      if(s==='published') return `<span class="tag good">published</span>`;
+      if(s==='pending') return `<span class="tag warn">pending</span>`;
+      if(s==='rejected') return `<span class="tag bad">rejected</span>`;
+      if(s==='hidden') return `<span class="tag warn">hidden</span>`;
+      if(s==='sold') return `<span class="tag good">sold</span>`;
+      if(s==='expired') return `<span class="tag bad">expired</span>`;
+      return `<span class="tag">${esc(s||'—')}</span>`;
+    }
 
-      } catch(err){
-        console.error('init failed', err);
-        showAlert('فشل جلب بيانات الأدمن. تأكد من تسجيل الدخول كأدمن وأن /api/admin/init متاحة.');
+    window.openAdsViewAndSearch = (id)=>{
+      openView('ads');
+      qs('#adsQ').value = id;
+      loadAds();
+    };
+    window.openUsersViewAndSearch = (id)=>{
+      openView('users');
+      qs('#usersQ').value = id;
+      loadUsers();
+    };
+
+    /** ===========================
+     *  2) Settings
+     *  =========================== */
+    async function loadSettings(){
+      try{
+        const s = await api('/settings', apiOpts());
+        qs('#setPlatformName').value = s.platformName || '';
+        qs('#setSubtitle').value = s.subtitle || '';
+        qs('#setSupportWhatsapp').value = s.supportWhatsapp || '';
+        qs('#setSupportEmail').value = s.supportEmail || '';
+        qs('#setLogoUrl').value = s.logoUrl || '';
+        qs('#setMaxImages').value = s.uploads?.maxImages ?? 6;
+        qs('#setMaxImageMb').value = s.uploads?.maxImageMb ?? 10;
+        qs('#setMaxVideoMb').value = s.uploads?.maxVideoMb ?? 1024;
+        qs('#setAllowRegister').value = String(s.allowRegister ?? true);
+      }catch(e){}
+    }
+
+    qs('#saveSettingsBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/settings', apiOpts('PUT', {
+          platformName: qs('#setPlatformName').value.trim(),
+          subtitle: qs('#setSubtitle').value.trim(),
+          supportWhatsapp: qs('#setSupportWhatsapp').value.trim(),
+          supportEmail: qs('#setSupportEmail').value.trim(),
+          logoUrl: qs('#setLogoUrl').value.trim()
+        }));
+        toast('تم حفظ الإعدادات ✅', true);
+      }catch(e){ console.error(e); toast('فشل حفظ الإعدادات ❌', false); }
+    });
+
+    qs('#saveLimitsBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/settings/uploads', apiOpts('PUT', {
+          uploads: {
+            maxImages: Number(qs('#setMaxImages').value || 6),
+            maxImageMb: Number(qs('#setMaxImageMb').value || 10),
+            maxVideoMb: Number(qs('#setMaxVideoMb').value || 1024),
+          },
+          allowRegister: qs('#setAllowRegister').value === 'true'
+        }));
+        toast('تم حفظ الحدود ✅', true);
+      }catch(e){ console.error(e); toast('فشل حفظ الحدود ❌', false); }
+    });
+
+    /** ===========================
+     *  3) Home
+     *  =========================== */
+    async function loadHome(){
+      // banner settings
+      try{
+        const b = await api('/home/banner-settings', apiOpts());
+        qs('#homeAutoplay').value = String(b.autoplay ?? true);
+        qs('#homeInterval').value = b.interval ?? 4000;
+        qs('#homeDots').value = String(b.dots ?? true);
+        qs('#homeMaxSlides').value = b.maxSlides ?? 10;
+      }catch(e){}
+
+      // slides list
+      await reloadSlides();
+
+      // sections
+      try{
+        const s = await api('/home/sections', apiOpts());
+        qs('#homeShowFeatured').value = String(s.showFeatured ?? true);
+        qs('#homeFeaturedLimit').value = s.featuredLimit ?? 8;
+        qs('#homeShowLatest').value = String(s.showLatest ?? true);
+        qs('#homeLatestLimit').value = s.latestLimit ?? 12;
+      }catch(e){}
+
+      // quick categories
+      try{
+        const qc = await api('/home/quick-categories', apiOpts());
+        qs('#homeQuickCats').value = (qc.keys || []).join(',');
+      }catch(e){}
+    }
+
+    qs('#saveHomeBannerSettings').addEventListener('click', async ()=>{
+      try{
+        await api('/home/banner-settings', apiOpts('PUT', {
+          autoplay: qs('#homeAutoplay').value === 'true',
+          interval: Number(qs('#homeInterval').value||4000),
+          dots: qs('#homeDots').value === 'true',
+          maxSlides: Number(qs('#homeMaxSlides').value||10),
+        }));
+        toast('تم حفظ إعدادات البانر ✅', true);
+      }catch(e){ console.error(e); toast('فشل حفظ إعدادات البانر ❌', false); }
+    });
+
+    qs('#saveHomeSectionsBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/home/sections', apiOpts('PUT', {
+          showFeatured: qs('#homeShowFeatured').value === 'true',
+          featuredLimit: Number(qs('#homeFeaturedLimit').value||8),
+          showLatest: qs('#homeShowLatest').value === 'true',
+          latestLimit: Number(qs('#homeLatestLimit').value||12),
+        }));
+        toast('تم حفظ الأقسام ✅', true);
+      }catch(e){ console.error(e); toast('فشل حفظ الأقسام ❌', false); }
+    });
+
+    qs('#saveQuickCatsBtn').addEventListener('click', async ()=>{
+      try{
+        const keys = qs('#homeQuickCats').value.split(',').map(s=>s.trim()).filter(Boolean);
+        await api('/home/quick-categories', apiOpts('PUT', { keys }));
+        toast('تم حفظ الأقسام السريعة ✅', true);
+      }catch(e){ console.error(e); toast('فشل الحفظ ❌', false); }
+    });
+
+    qs('#addSlideBtn').addEventListener('click', async ()=>{
+      try{
+        const imageUrl = qs('#slideImageUrl').value.trim();
+        const linkUrl = qs('#slideLinkUrl').value.trim();
+        if(!imageUrl) return toast('دخل رابط الصورة', false);
+
+        await api('/home/slides', apiOpts('POST', { imageUrl, linkUrl }));
+        qs('#slideImageUrl').value = '';
+        qs('#slideLinkUrl').value = '';
+        toast('تمت إضافة Slide ✅', true);
+        await reloadSlides();
+      }catch(e){ console.error(e); toast('فشل إضافة Slide ❌', false); }
+    });
+
+    qs('#reloadSlidesBtn').addEventListener('click', reloadSlides);
+
+    async function reloadSlides(){
+      try{
+        const s = await api('/home/slides', apiOpts());
+        const tbody = qs('#slidesTable tbody');
+        const items = s.items || s || [];
+        tbody.innerHTML = items.map(sl=>`
+          <tr>
+            <td class="nowrap"><a class="mini primary" href="${esc(sl.imageUrl||'#')}" target="_blank">Image</a></td>
+            <td>${esc(sl.linkUrl||'')}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini" onclick="deleteSlide('${esc(sl.id||sl._id||'')}')">حذف</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="3" class="muted">لا يوجد</td></tr>`;
+      }catch(e){
+        // silent
       }
     }
 
-    // ---------------- BANNERS ----------------
-    document.getElementById('uploadBannersBtn').addEventListener('click', async ()=>{
-      const files = document.getElementById('bannerFiles').files;
-      const title = document.getElementById('bannerTitle').value || '';
-      const desc = document.getElementById('bannerDesc').value || '';
-      if(!files || files.length===0){
-        showAlert('اختر صورة واحدة على الأقل للبانر');
+    window.deleteSlide = async (id)=>{
+      if(!confirm('حذف Slide؟')) return;
+      try{
+        await api('/home/slides/' + encodeURIComponent(id), apiOpts('DELETE'));
+        toast('تم الحذف ✅', true);
+        reloadSlides();
+      }catch(e){ console.error(e); toast('فشل الحذف ❌', false); }
+    };
+
+    /** ===========================
+     *  4) Categories
+     *  =========================== */
+    async function loadCategories(){
+      await reloadCats();
+    }
+
+    qs('#reloadCatsBtn').addEventListener('click', reloadCats);
+
+    async function reloadCats(){
+      try{
+        const c = await api('/categories', apiOpts());
+        const items = c.items || c || [];
+        const tbody = qs('#catsTable tbody');
+        tbody.innerHTML = items.map(cat=>`
+          <tr>
+            <td>${esc(cat.id||cat.key||'')}</td>
+            <td>${esc(cat.name||'')}</td>
+            <td>${cat.active ? '<span class="tag good">active</span>' : '<span class="tag bad">off</span>'}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini primary" onclick="fillCategoryForm(${JSON.stringify(cat).replace(/</g,'\\u003c')})">تعديل</button>
+                <button class="mini bad" onclick="deleteCategory('${esc(cat.id||cat.key||'')}')">حذف</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="4" class="muted">لا يوجد</td></tr>`;
+      }catch(e){ console.error(e); }
+    }
+
+    window.fillCategoryForm = (cat)=>{
+      qs('#catId').value = cat.id || cat.key || '';
+      qs('#catName').value = cat.name || '';
+      qs('#catDesc').value = cat.description || '';
+      qs('#catImage').value = cat.image || '';
+      qs('#catOrder').value = cat.order ?? 1;
+      qs('#catActive').value = String(cat.active ?? true);
+      toast('تم تعبئة الفورم ✅', true);
+    };
+
+    qs('#createCatBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/categories', apiOpts('POST', {
+          id: qs('#catId').value.trim(),
+          name: qs('#catName').value.trim(),
+          description: qs('#catDesc').value.trim(),
+          image: qs('#catImage').value.trim(),
+          order: Number(qs('#catOrder').value||1),
+          active: qs('#catActive').value === 'true'
+        }));
+        toast('تم إنشاء القسم ✅', true);
+        reloadCats();
+      }catch(e){ console.error(e); toast('فشل إنشاء القسم ❌', false); }
+    });
+
+    qs('#updateCatBtn').addEventListener('click', async ()=>{
+      const id = qs('#catId').value.trim();
+      if(!id) return toast('دخل Category ID', false);
+
+      try{
+        await api('/categories/' + encodeURIComponent(id), apiOpts('PUT', {
+          name: qs('#catName').value.trim(),
+          description: qs('#catDesc').value.trim(),
+          image: qs('#catImage').value.trim(),
+          order: Number(qs('#catOrder').value||1),
+          active: qs('#catActive').value === 'true'
+        }));
+        toast('تم تحديث القسم ✅', true);
+        reloadCats();
+      }catch(e){ console.error(e); toast('فشل تحديث القسم ❌', false); }
+    });
+
+    window.deleteCategory = async (id)=>{
+      if(!confirm('حذف القسم؟')) return;
+      try{
+        await api('/categories/' + encodeURIComponent(id), apiOpts('DELETE'));
+        toast('تم حذف القسم ✅', true);
+        reloadCats();
+      }catch(e){ console.error(e); toast('فشل حذف القسم ❌', false); }
+    };
+
+    /** ===========================
+     *  5) Ads
+     *  =========================== */
+    async function loadAds(){
+      const q = qs('#adsQ').value.trim();
+      const status = qs('#adsStatus').value;
+      const category = qs('#adsCategory').value.trim();
+      const city = qs('#adsCity').value.trim();
+      const featured = qs('#adsFeatured').value;
+      const limit = Number(qs('#adsLimit').value||20);
+
+      try{
+        const url = `/ads?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&category=${encodeURIComponent(category)}&city=${encodeURIComponent(city)}&featured=${encodeURIComponent(featured)}&limit=${encodeURIComponent(limit)}`;
+        const data = await api(url, apiOpts());
+        renderAdsTable(data.items || data || []);
+      }catch(e){
+        console.error(e);
+        renderAdsTable([]);
+        toast('تعذر تحميل الإعلانات (زيد السيرفر لاحقاً)', false);
+      }
+    }
+
+    qs('#searchAdsBtn').addEventListener('click', loadAds);
+    qs('#reloadAdsBtn').addEventListener('click', loadAds);
+
+    function renderAdsTable(items){
+      const tbody = qs('#adsTable tbody');
+      if(!items.length){
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">لا نتائج</td></tr>`;
         return;
       }
-      const fd = new FormData();
-      for(const f of files) fd.append('images', f);
-      fd.append('bannerTitle', title);
-      fd.append('bannerDesc', desc);
+
+      tbody.innerHTML = items.map(a=>{
+        const id = a.id||a._id||'';
+        const owner = a.ownerId || a.userId || a.owner || '';
+        return `
+          <tr>
+            <td>${esc(a.title||'')}</td>
+            <td>${statusTag(a.status)}</td>
+            <td>${esc(owner)}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini good" onclick="setAdStatus('${esc(id)}','published')">Approve</button>
+                <button class="mini warn" onclick="setAdStatus('${esc(id)}','pending')">Pending</button>
+                <button class="mini bad" onclick="setAdStatus('${esc(id)}','rejected')">Reject</button>
+                <button class="mini" onclick="setAdStatus('${esc(id)}','hidden')">Hide</button>
+                <button class="mini primary" onclick="toggleFeatured('${esc(id)}', ${a.featured? 'false':'true'})">${a.featured?'Unfeature':'Feature'}</button>
+                <button class="mini warn" onclick="openOwnerModal('${esc(id)}')">Change Owner</button>
+                <button class="mini bad" onclick="deleteAdAdmin('${esc(id)}')">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.setAdStatus = async (id, status)=>{
       try{
-        await api('/api/admin/banner', { method:'PUT', body: fd });
-        showAlert('تم رفع البانرات');
-        document.getElementById('bannerFiles').value = '';
-        initAdmin();
-      }catch(e){ console.error(e); showAlert('فشل رفع البانرات'); }
+        await api('/ads/' + encodeURIComponent(id) + '/status', apiOpts('PATCH', { status }));
+        toast('تم تحديث الحالة ✅', true);
+        loadAds();
+      }catch(e){ console.error(e); toast('فشل تحديث الحالة ❌', false); }
+    };
+
+    window.toggleFeatured = async (id, featured)=>{
+      try{
+        await api('/ads/' + encodeURIComponent(id) + '/feature', apiOpts('PATCH', { featured }));
+        toast('تم تحديث Featured ✅', true);
+        loadAds();
+      }catch(e){ console.error(e); toast('فشل العملية ❌', false); }
+    };
+
+    window.deleteAdAdmin = async (id)=>{
+      if(!confirm('حذف الإعلان نهائياً؟')) return;
+      try{
+        await api('/ads/' + encodeURIComponent(id), apiOpts('DELETE'));
+        toast('تم الحذف ✅', true);
+        loadAds();
+      }catch(e){ console.error(e); toast('فشل الحذف ❌', false); }
+    };
+
+    /** Owner modal */
+    const ownerModal = qs('#ownerModal');
+    const openOwnerModal = (adId)=>{
+      qs('#ownerAdId').value = adId;
+      qs('#ownerNewUserId').value = '';
+      ownerModal.classList.add('show');
+    };
+    window.openOwnerModal = openOwnerModal;
+    qs('#closeOwnerModal').addEventListener('click', ()=> ownerModal.classList.remove('show'));
+    ownerModal.addEventListener('click', (e)=>{ if(e.target===ownerModal) ownerModal.classList.remove('show'); });
+
+    qs('#confirmOwnerBtn').addEventListener('click', async ()=>{
+      const adId = qs('#ownerAdId').value.trim();
+      const newUserId = qs('#ownerNewUserId').value.trim();
+      if(!newUserId) return toast('دخل User ID الجديد', false);
+
+      try{
+        await api('/ads/' + encodeURIComponent(adId) + '/owner', apiOpts('PATCH', { newUserId }));
+        toast('تم تغيير صاحب الإعلان ✅', true);
+        ownerModal.classList.remove('show');
+        loadAds();
+      }catch(e){ console.error(e); toast('فشل تغيير صاحب الإعلان ❌', false); }
     });
 
-    document.getElementById('resetBannersBtn').addEventListener('click', async ()=>{
-      if(!confirm('هل تريد إفراغ جميع صور البانر؟')) return;
-      // send reset flag via PUT with resetBannerImages=true
-      const fd = new FormData(); fd.append('resetBannerImages','true');
-      try{ await api('/api/admin/banner',{ method:'PUT', body:fd }); showAlert('تم إفراغ البانرات'); initAdmin(); }catch(e){ console.error(e); showAlert('فشل تفريغ البانرات'); }
+    /** ===========================
+     *  6) Premium
+     *  =========================== */
+    async function loadPremium(){
+      await reloadPlans();
+      await reloadPremiumOrders();
+    }
+
+    qs('#reloadPlansBtn').addEventListener('click', reloadPlans);
+    async function reloadPlans(){
+      try{
+        const p = await api('/premium/plans', apiOpts());
+        // (عرض سريع داخل console أو ممكن تزاد table لاحقاً)
+        // هنا نكفي بالـ toast
+      }catch(e){}
+    }
+
+    qs('#createPlanBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/premium/plans', apiOpts('POST', {
+          key: qs('#planKey').value.trim(),
+          price: Number(qs('#planPrice').value||0),
+          days: Number(qs('#planDays').value||0),
+          benefits: qs('#planBenefits').value,
+          active: qs('#planActive').value === 'true'
+        }));
+        toast('تم إنشاء الخطة ✅', true);
+      }catch(e){ console.error(e); toast('فشل إنشاء الخطة ❌', false); }
     });
 
-    async function deleteBannerAt(index){
+    qs('#updatePlanBtn').addEventListener('click', async ()=>{
+      const key = qs('#planKey').value.trim();
+      if(!key) return toast('دخل Plan Key', false);
       try{
-        await api('/api/settings/banner-images/' + index, { method:'DELETE' });
-        showAlert('تم حذف الصورة');
-        initAdmin();
-      }catch(e){ console.error(e); showAlert('فشل حذف الصورة'); }
-    }
-
-    // ---------------- PLATFORM ----------------
-    document.getElementById('savePlatformBtn').addEventListener('click', async ()=>{
-      const name = document.getElementById('platformName').value || '';
-      const subtitle = document.getElementById('platformSubtitle').value || '';
-      const logoFile = document.getElementById('platformLogo').files[0];
-      const fd = new FormData();
-      fd.append('name', name);
-      fd.append('subtitle', subtitle);
-      if(logoFile) fd.append('logo', logoFile);
-      try{
-        await api('/api/admin/platform', { method:'PUT', body: fd });
-        showAlert('تم حفظ إعدادات المنصة');
-        initAdmin();
-      }catch(e){ console.error(e); showAlert('فشل حفظ إعدادات المنصة'); }
+        await api('/premium/plans/' + encodeURIComponent(key), apiOpts('PUT', {
+          price: Number(qs('#planPrice').value||0),
+          days: Number(qs('#planDays').value||0),
+          benefits: qs('#planBenefits').value,
+          active: qs('#planActive').value === 'true'
+        }));
+        toast('تم تحديث الخطة ✅', true);
+      }catch(e){ console.error(e); toast('فشل تحديث الخطة ❌', false); }
     });
 
-    // ---------------- CATEGORIES ----------------
-    function renderCategories(cats){
-      const wrap = document.getElementById('categoriesList'); wrap.innerHTML='';
-      const keys = Object.keys(cats || {});
-      if(keys.length===0){ wrap.innerHTML = '<div class="small muted">لا توجد أقسام.</div>'; return; }
-      keys.forEach(k=>{
-        const c = cats[k];
-        const card = document.createElement('div'); card.className='card'; card.style.marginBottom='10px';
-        card.innerHTML = `<div style="display:flex;gap:12px;align-items:center"><div style="flex:1">
-          <label>اسم (${k})</label><input type="text" data-key="${k}" class="cat-name" value="${escapeHtml(c.name||'')}" />
-          <label style="margin-top:8px">الوصف</label><input type="text" class="cat-desc" data-key="${k}" value="${escapeHtml(c.description||'')}" />
-        </div>
-        <div style="width:220px">
-          <label>صورة القسم</label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div class="cat-preview-${k}">${c.image? `<img src="${c.image}" style="height:72px;border-radius:8px">` : '<div class="small muted">لا توجد صورة</div>'}</div>
-          </div>
-          <input type="file" data-keyfile="${k}" accept="image/*" style="margin-top:8px" />
-        </div></div>
-        <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn primary save-cat" data-key="${k}">حفظ القسم</button>
-        </div>`;
-        wrap.appendChild(card);
-      });
-
-      // attach save handlers
-      wrap.querySelectorAll('.save-cat').forEach(btn=>{
-        btn.addEventListener('click', async ()=>{
-          const key = btn.dataset.key;
-          const nameEl = wrap.querySelector(`input.cat-name[data-key="${key}"]`);
-          const descEl = wrap.querySelector(`input.cat-desc[data-key="${key}"]`);
-          const fileEl = wrap.querySelector(`input[data-keyfile="${key}"]`);
-          const payload = {};
-          payload[key] = { name: nameEl.value.trim(), description: descEl.value.trim() };
-          const fd = new FormData();
-          fd.append('categories', JSON.stringify(payload));
-          if(fileEl && fileEl.files && fileEl.files[0]) fd.append('cat_' + key, fileEl.files[0]);
-          try{
-            await api('/api/admin/categories', { method:'PUT', body: fd });
-            showAlert('تم حفظ القسم');
-            initAdmin();
-          }catch(e){ console.error(e); showAlert('فشل حفظ القسم'); }
-        });
-      });
-    }
-
-    // ---------------- SUPPORT ----------------
-    document.getElementById('saveSupportBtn').addEventListener('click', async ()=>{
-      const w = document.getElementById('supportWhatsapp').value.trim();
-      const e = document.getElementById('supportEmail').value.trim();
-      const t = document.getElementById('supportTelegram').value.trim();
+    qs('#reloadPremiumOrdersBtn').addEventListener('click', reloadPremiumOrders);
+    async function reloadPremiumOrders(){
       try{
-        await api('/api/admin/support', { method:'PUT', body: JSON.stringify({ whatsapp: w, email: e, telegram: t }), headers: { 'Content-Type':'application/json' }});
-        showAlert('تم حفظ قنوات الدعم');
-      }catch(err){ console.error(err); showAlert('فشل حفظ قنوات الدعم'); }
-    });
+        const status = qs('#premiumOrderStatus').value;
+        const limit = Number(qs('#premiumOrderLimit').value||20);
+        const data = await api(`/premium/orders?status=${encodeURIComponent(status)}&limit=${encodeURIComponent(limit)}`, apiOpts());
+        const tbody = qs('#premiumOrdersTable tbody');
+        const items = data.items || data || [];
+        tbody.innerHTML = items.map(o=>`
+          <tr>
+            <td>${esc(o.id||o._id||'')}</td>
+            <td>${esc(o.userId||'')}</td>
+            <td>${esc(o.adId||'')}</td>
+            <td>${esc(o.status||'')}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini good" onclick="updatePremiumOrder('${esc(o.id||o._id||'')}','paid')">Mark Paid</button>
+                <button class="mini warn" onclick="updatePremiumOrder('${esc(o.id||o._id||'')}','canceled')">Cancel</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="5" class="muted">لا يوجد</td></tr>`;
+      }catch(e){}
+    }
 
-    // ---------------- ADS ----------------
-    document.getElementById('adsRefreshBtn').addEventListener('click', fetchAds);
-    document.getElementById('adsSearchBtn').addEventListener('click', () => {
-      const q = document.getElementById('adsSearch').value.trim().toLowerCase();
-      fetchAds(q);
-    });
-
-    async function fetchAds(query){
+    window.updatePremiumOrder = async (id, status)=>{
       try{
-        const path = query ? ('/api/admin/ads?search=' + encodeURIComponent(query)) : '/api/admin/ads';
-        const ads = await api(path);
-        renderAdsTable(ads);
-      }catch(e){ console.error(e); showAlert('فشل جلب الإعلانات'); }
-    }
+        await api('/premium/orders/' + encodeURIComponent(id), apiOpts('PATCH', { status }));
+        toast('تم تحديث الطلب ✅', true);
+        reloadPremiumOrders();
+      }catch(e){ console.error(e); toast('فشل تحديث الطلب ❌', false); }
+    };
 
-    function renderAdsTable(ads){
-      const wrap = document.getElementById('adsTable'); if(!ads || ads.length===0){ wrap.innerHTML='<div class="small muted">لا توجد إعلانات.</div>'; return; }
-      let html = '<table><thead><tr><th>مرجع</th><th>العنوان</th><th>البائع</th><th>المدينة</th><th>السعر</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>';
-      ads.forEach(ad=>{
-        html += `<tr data-id="${ad.id || ad.ref}"><td>${escapeHtml(ad.ref||ad.id||'—')}</td><td>${escapeHtml(ad.title||'—')}</td><td>${escapeHtml(ad.ownerName||ad.ownerEmail||'—')}</td><td>${escapeHtml(ad.city||'—')}</td><td>${ad.price||'—'}</td><td>${escapeHtml(ad.status||'—')}</td><td style="text-align:left">
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn ghost" data-act="view">عرض</button>
-            <button class="btn primary" data-act="approve">قبول</button>
-            <button class="btn" style="background:linear-gradient(135deg,#f59e0b,#f97316);color:#0b0513" data-act="reject">رفض</button>
-            <button class="btn ghost" data-act="feature">${ad.featured? 'إلغاء تمييز':'تمييز'}</button>
-            <button class="btn warn" data-act="delete">حذف</button>
-          </div>
-        </td></tr>`;
-      });
-      html += '</tbody></table>'; wrap.innerHTML = html;
+    /** ===========================
+     *  7) Users
+     *  =========================== */
+    async function loadUsers(){
+      const q = qs('#usersQ').value.trim();
+      const role = qs('#usersRole').value;
+      const verified = qs('#usersVerified').value;
+      const status = qs('#usersStatus').value;
+      const limit = Number(qs('#usersLimit').value||20);
 
-      wrap.querySelectorAll('button[data-act]').forEach(btn=>{
-        const tr = btn.closest('tr'); const id = tr.dataset.id;
-        btn.addEventListener('click', async ()=>{
-          const act = btn.dataset.act;
-          try{
-            if(act==='view'){ window.open('/ads/' + encodeURIComponent(id), '_blank'); return; }
-            if(act==='approve'){ await api('/api/admin/ads/' + encodeURIComponent(id) + '/approve', { method:'PATCH' }); showAlert('تم قبول الإعلان'); fetchAds(); return; }
-            if(act==='reject'){ await api('/api/admin/ads/' + encodeURIComponent(id) + '/reject', { method:'PATCH' }); showAlert('تم رفض الإعلان'); fetchAds(); return; }
-            if(act==='feature'){ await api('/api/ads/' + encodeURIComponent(id) + '/featured', { method:'PATCH' }); showAlert('تم تحديث التمييز'); fetchAds(); return; }
-            if(act==='delete'){ if(!confirm('هل تريد حذف الإعلان؟')) return; await api('/api/ads/' + encodeURIComponent(id), { method:'DELETE' }); showAlert('تم حذف الإعلان'); fetchAds(); return; }
-          }catch(e){ console.error(e); showAlert('فشل تنفيذ الإجراء — تأكد من توفر endpoint المناسب على السيرفر'); }
-        });
-      });
-    }
-
-    // ---------------- USERS ----------------
-    let currentUsers = [];
-    async function fetchUsers(){
       try{
-        const res = await api('/api/admin/init');
-        if(res && res.users){ currentUsers = res.users; renderUsersTable(currentUsers); }
-        else { const u = await api('/api/users'); currentUsers = u; renderUsersTable(currentUsers); }
-      }catch(e){ console.error(e); showAlert('فشل جلب المستخدمين'); }
-    }
-
-    document.getElementById('refreshUsersBtn').addEventListener('click', fetchUsers);
-    document.getElementById('usersSearchBtn').addEventListener('click', ()=>{
-      const q = document.getElementById('usersSearch').value.trim().toLowerCase();
-      if(!q) return renderUsersTable(currentUsers);
-      const filtered = (currentUsers||[]).filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q) || (u.phone||'').toLowerCase().includes(q));
-      renderUsersTable(filtered);
-    });
-
-    function renderUsersTable(users){
-      const wrap = document.getElementById('usersTable'); if(!users || users.length===0){ wrap.innerHTML='<div class="small muted">لا يوجد مستخدمين.</div>'; return; }
-      let html = '<table><thead><tr><th>الإسم</th><th>الإيميل</th><th>الهاتف</th><th>المدينة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>';
-      users.forEach(u=>{
-        html += `<tr data-id="${u.id}"><td>${escapeHtml(u.name||'—')}</td><td>${escapeHtml(u.email||'—')}</td><td>${escapeHtml(u.phone||'—')}</td><td>${escapeHtml(u.city||'—')}</td><td>${u.disabled?'<span class="muted">معلق</span>':'<span>نشط</span>'}</td><td class="user-actions">
-          <button class="btn ghost" data-action="edit">تعديل</button>
-          <button class="btn ghost" data-action="pwd">كلمة السر</button>
-          <button class="btn warn" data-action="delete">حذف</button>
-        </td></tr>`;
-      });
-      html += '</tbody></table>'; wrap.innerHTML = html;
-
-      wrap.querySelectorAll('button[data-action]').forEach(btn=>{
-        const tr = btn.closest('tr'); const id = tr.dataset.id;
-        btn.addEventListener('click', ()=>{
-          const act = btn.dataset.action;
-          if(act==='edit') openEditModal(id);
-          if(act==='pwd') openPwdModal(id);
-          if(act==='delete') confirmDeleteUser(id);
-        });
-      });
-    }
-
-    // edit user modal
-    let editingUserId = null;
-    const modalEdit = document.getElementById('modalEdit'), modalPwd = document.getElementById('modalPwd');
-    function openEditModal(id){
-      const u = currentUsers.find(x=>x.id===id);
-      if(!u) return showAlert('المستخدم غير موجود');
-      editingUserId = id;
-      document.getElementById('m_name').value = u.name || '';
-      document.getElementById('m_phone').value = u.phone || '';
-      document.getElementById('m_city').value = u.city || '';
-      document.getElementById('m_bio').value = u.bio || '';
-      modalEdit.style.display = 'flex';
-    }
-    document.getElementById('m_cancel').addEventListener('click', ()=>{ modalEdit.style.display='none'; editingUserId=null; });
-    document.getElementById('m_save').addEventListener('click', async ()=>{
-      if(!editingUserId) return;
-      const payload = { name: document.getElementById('m_name').value.trim(), phone: document.getElementById('m_phone').value.trim(), city: document.getElementById('m_city').value.trim(), bio: document.getElementById('m_bio').value.trim() };
-      try{
-        await api('/api/users/' + encodeURIComponent(editingUserId), { method:'PUT', body: JSON.stringify(payload), headers:{ 'Content-Type':'application/json' }});
-        showAlert('تم حفظ بيانات المستخدم');
-        modalEdit.style.display = 'none';
-        editingUserId = null;
-        fetchUsers();
-      }catch(e){ console.error(e); showAlert('فشل الحفظ — تأكد من وجود PUT /api/users/:id (أو ملف admin users endpoint)'); }
-    });
-
-    // change password modal
-    let pwdUserId = null;
-    function openPwdModal(id){
-      pwdUserId = id; document.getElementById('p_new').value=''; document.getElementById('p_confirm').value=''; modalPwd.style.display='flex';
-    }
-    document.getElementById('p_cancel').addEventListener('click', ()=>{ modalPwd.style.display='none'; pwdUserId=null; });
-    document.getElementById('p_save').addEventListener('click', async ()=>{
-      const p = document.getElementById('p_new').value.trim(), c = document.getElementById('p_confirm').value.trim();
-      if(!p || p.length < 6) return showAlert('كلمة السر يجب أن تكون 6 أحرف على الأقل');
-      if(p !== c) return showAlert('تأكيد كلمة السر غير مطابق');
-      try{
-        // try admin endpoint first
-        await api('/api/admin/users/' + encodeURIComponent(pwdUserId) + '/password', { method:'POST', body: JSON.stringify({ newPassword: p }), headers:{ 'Content-Type':'application/json' }});
-        showAlert('تم تعيين كلمة السر');
-        modalPwd.style.display='none'; pwdUserId = null;
+        const url = `/users?q=${encodeURIComponent(q)}&role=${encodeURIComponent(role)}&verified=${encodeURIComponent(verified)}&status=${encodeURIComponent(status)}&limit=${encodeURIComponent(limit)}`;
+        const data = await api(url, apiOpts());
+        renderUsersTable(data.items || data || []);
       }catch(e){
         console.error(e);
-        // fallback: try set on /api/users/:id if server allows admin override there
-        try{
-          await api('/api/users/' + encodeURIComponent(pwdUserId) + '/password', { method:'POST', body: JSON.stringify({ newPassword: p }), headers:{ 'Content-Type':'application/json' }});
-          showAlert('تم تعيين كلمة السر (fallback)');
-          modalPwd.style.display='none'; pwdUserId = null;
-        }catch(e2){
-          console.error(e2);
-          showAlert('فشل تعيين كلمة السر — السيرفر يحتاج endpoint لإدارة كلمات السر كأدمن');
-        }
-      }
-    });
-
-    async function confirmDeleteUser(id){
-      if(!confirm('هل متأكد من حذف المستخدم؟ لا يمكن التراجع.')) return;
-      try{
-        await api('/api/admin/users/' + encodeURIComponent(id), { method:'DELETE' });
-        showAlert('تم حذف المستخدم');
-        fetchUsers();
-      }catch(e){
-        console.error(e);
-        try{
-          await api('/api/users/' + encodeURIComponent(id), { method:'DELETE' });
-          showAlert('تم حذف المستخدم (fallback)');
-          fetchUsers();
-        }catch(e2){
-          console.error(e2);
-          showAlert('فشل حذف المستخدم — السيرفر يحتاج endpoint لحذف المستخدم كأدمن.');
-        }
+        renderUsersTable([]);
       }
     }
 
-    // ---------------- SETTINGS save limits ----------------
-    document.getElementById('saveLimitsBtn').addEventListener('click', async ()=>{
-      const images = Number(document.getElementById('maxImages').value || 3);
-      const videoMb = Number(document.getElementById('maxVideoMb').value || 1024);
-      try{
-        // update settings via /api/settings (PUT) if server supports; fallback to /api/admin/platform for storing arbitrary settings
-        await api('/api/settings', { method:'PUT', body: JSON.stringify({ maxImages: images, maxVideoMb: videoMb }), headers:{ 'Content-Type':'application/json' }});
-        showAlert('تم حفظ الإعدادات (إن وُجد endpoint)');
-      }catch(e){
-        try{
-          await api('/api/admin/platform', { method:'PUT', body: new FormData() });
-          showAlert('تم حفظ الإعدادات (fallback)');
-        }catch(err){ console.error(err); showAlert('فشل حفظ الإعدادات — أضف endpoint في السيرفر.'); }
+    qs('#searchUsersBtn').addEventListener('click', loadUsers);
+    qs('#reloadUsersBtn').addEventListener('click', loadUsers);
+
+    function renderUsersTable(items){
+      const tbody = qs('#usersTable tbody');
+      if(!items.length){
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">لا نتائج</td></tr>`;
+        return;
       }
+
+      tbody.innerHTML = items.map(u=>{
+        const id = u.id||u._id||'';
+        const st = u.status || 'active';
+        return `
+          <tr>
+            <td>${esc(u.name||'')}</td>
+            <td>${esc(u.email||'')}</td>
+            <td>${esc(u.role||'user')}</td>
+            <td>${esc(st)}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini primary" onclick="openEditUser('${esc(id)}', ${JSON.stringify(u).replace(/</g,'\\u003c')})">Edit</button>
+                <button class="mini warn" onclick="toggleBan('${esc(id)}','${esc(st)}')">${st==='banned'?'Unban':'Ban'}</button>
+                <button class="mini good" onclick="toggleVerify('${esc(id)}', ${u.verified? 'false':'true'})">${u.verified?'Unverify':'Verify'}</button>
+                <button class="mini bad" onclick="openResetPwd('${esc(id)}')">Reset Pwd</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.toggleBan = async (id, status)=>{
+      const next = (status==='banned') ? 'active' : 'banned';
+      try{
+        await api('/users/' + encodeURIComponent(id) + '/status', apiOpts('PATCH', { status: next }));
+        toast('تم تحديث حالة المستخدم ✅', true);
+        loadUsers();
+      }catch(e){ console.error(e); toast('فشل العملية ❌', false); }
+    };
+
+    window.toggleVerify = async (id, verified)=>{
+      try{
+        await api('/users/' + encodeURIComponent(id) + '/verify', apiOpts('PATCH', { verified }));
+        toast('تم تحديث التوثيق ✅', true);
+        loadUsers();
+      }catch(e){ console.error(e); toast('فشل العملية ❌', false); }
+    };
+
+    // Simple "Edit user" using prompt to keep single-file compact
+    window.openEditUser = async (id, user)=>{
+      const phone = prompt('Phone:', user.phone || '');
+      if(phone === null) return;
+      const role = prompt('Role (user/admin/moderator):', user.role || 'user');
+      if(role === null) return;
+
+      try{
+        await api('/users/' + encodeURIComponent(id), apiOpts('PUT', {
+          phone: phone.trim(),
+          role: role.trim()
+        }));
+        toast('تم تعديل المستخدم ✅', true);
+        loadUsers();
+      }catch(e){ console.error(e); toast('فشل تعديل المستخدم ❌', false); }
+    };
+
+    /** Reset password modal */
+    const resetPwdModal = qs('#resetPwdModal');
+    window.openResetPwd = (userId)=>{
+      qs('#resetPwdUserId').value = userId;
+      qs('#resetPwdNew').value = '';
+      resetPwdModal.classList.add('show');
+    };
+    qs('#closeResetPwdModal').addEventListener('click', ()=> resetPwdModal.classList.remove('show'));
+    resetPwdModal.addEventListener('click', (e)=>{ if(e.target===resetPwdModal) resetPwdModal.classList.remove('show'); });
+
+    qs('#confirmResetPwdBtn').addEventListener('click', async ()=>{
+      const userId = qs('#resetPwdUserId').value.trim();
+      const newPassword = qs('#resetPwdNew').value;
+      if(!newPassword || newPassword.length < 6) return toast('باس قصير (6+)', false);
+
+      try{
+        await api('/users/' + encodeURIComponent(userId) + '/reset-password', apiOpts('POST', { newPassword }));
+        toast('تم Reset ✅', true);
+        resetPwdModal.classList.remove('show');
+      }catch(e){ console.error(e); toast('فشل Reset ❌', false); }
     });
 
-    // utility
-    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    /** ===========================
+     *  8) Verification
+     *  =========================== */
+    async function loadVerification(){
+      // optional: fetch settings/requests
+      try{
+        const s = await api('/verification/settings', apiOpts());
+        qs('#verEnabled').value = String(s.enabled ?? false);
+      }catch(e){}
+    }
 
-    // init on load
-    initAdmin();
+    qs('#saveVerSettingsBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/verification/settings', apiOpts('PUT', { enabled: qs('#verEnabled').value === 'true' }));
+        toast('تم حفظ ✅', true);
+      }catch(e){ console.error(e); toast('فشل ❌', false); }
+    });
 
-    window.initAdmin = initAdmin;
-    window.fetchUsers = fetchUsers;
-    window.fetchAds = () => fetchAds('');
+    qs('#reloadVerReqBtn').addEventListener('click', async ()=>{
+      try{
+        const st = qs('#verReqStatus').value;
+        const limit = Number(qs('#verReqLimit').value||20);
+        const data = await api(`/verification/requests?status=${encodeURIComponent(st)}&limit=${encodeURIComponent(limit)}`, apiOpts());
+        const tbody = qs('#verReqTable tbody');
+        const items = data.items || data || [];
+        tbody.innerHTML = items.map(r=>`
+          <tr>
+            <td>${esc(r.userId||'')}</td>
+            <td>${esc(r.status||'')}</td>
+            <td class="nowrap"><a class="mini primary" target="_blank" href="${esc(r.docsUrl||'#')}">Docs</a></td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini good" onclick="updateVerReq('${esc(r.id||r._id||'')}','approved')">Approve</button>
+                <button class="mini bad" onclick="updateVerReq('${esc(r.id||r._id||'')}','rejected')">Reject</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="4" class="muted">لا يوجد</td></tr>`;
+      }catch(e){}
+    });
+
+    window.updateVerReq = async (id, status)=>{
+      try{
+        await api('/verification/requests/' + encodeURIComponent(id), apiOpts('PATCH', { status }));
+        toast('تم تحديث الطلب ✅', true);
+        qs('#reloadVerReqBtn').click();
+      }catch(e){ console.error(e); toast('فشل ❌', false); }
+    };
+
+    /** ===========================
+     *  9) Notifications
+     *  =========================== */
+    async function loadNotifications(){
+      // templates optional
+      // keep silent
+    }
+
+    qs('#sendNotifBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/notifications/send', apiOpts('POST', {
+          target: qs('#notifTarget').value,
+          userId: qs('#notifUserId').value.trim() || null,
+          title: qs('#notifTitle').value.trim(),
+          body: qs('#notifBody').value.trim(),
+          segment: qs('#notifSegment').value.trim() || null,
+        }));
+        toast('تم إرسال الإشعار ✅', true);
+      }catch(e){ console.error(e); toast('فشل إرسال الإشعار ❌', false); }
+    });
+
+    qs('#saveTemplateBtn').addEventListener('click', async ()=>{
+      const key = qs('#tmplKey').value.trim();
+      if(!key) return toast('دخل Template Key', false);
+      try{
+        let json = {};
+        try{ json = JSON.parse(qs('#tmplJson').value || '{}'); }catch(err){ return toast('JSON غير صحيح', false); }
+        await api('/notifications/templates/' + encodeURIComponent(key), apiOpts('PUT', json));
+        toast('تم حفظ Template ✅', true);
+      }catch(e){ console.error(e); toast('فشل حفظ Template ❌', false); }
+    });
+
+    /** ===========================
+     *  10) Reports
+     *  =========================== */
+    async function loadReports(){
+      qs('#reloadReportsBtn').click();
+    }
+
+    qs('#reloadReportsBtn').addEventListener('click', async ()=>{
+      try{
+        const st = qs('#reportsStatus').value;
+        const limit = Number(qs('#reportsLimit').value||20);
+        const data = await api(`/reports?status=${encodeURIComponent(st)}&limit=${encodeURIComponent(limit)}`, apiOpts());
+        const items = data.items || data || [];
+        const tbody = qs('#reportsTable tbody');
+        tbody.innerHTML = items.map(r=>`
+          <tr>
+            <td>${esc(r.adId||'')}</td>
+            <td>${esc(r.reason||'')}</td>
+            <td>${esc(r.status||'open')}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini good" onclick="updateReport('${esc(r.id||r._id||'')}','resolved')">Resolve</button>
+                <button class="mini warn" onclick="updateReport('${esc(r.id||r._id||'')}','dismissed')">Dismiss</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="4" class="muted">لا يوجد</td></tr>`;
+      }catch(e){ console.error(e); }
+    });
+
+    window.updateReport = async (id, status)=>{
+      try{
+        await api('/reports/' + encodeURIComponent(id), apiOpts('PATCH', { status }));
+        toast('تم تحديث البلاغ ✅', true);
+        qs('#reloadReportsBtn').click();
+      }catch(e){ console.error(e); toast('فشل ❌', false); }
+    };
+
+    /** ===========================
+     *  11) Support
+     *  =========================== */
+    async function loadSupport(){
+      try{
+        const s = await api('/support/settings', apiOpts());
+        qs('#supWa').value = s.whatsapp || '';
+        qs('#supEmail').value = s.email || '';
+        qs('#supTg').value = s.telegram || '';
+      }catch(e){}
+    }
+
+    qs('#saveSupportBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/support/settings', apiOpts('PUT', {
+          whatsapp: qs('#supWa').value.trim(),
+          email: qs('#supEmail').value.trim(),
+          telegram: qs('#supTg').value.trim(),
+        }));
+        toast('تم حفظ الدعم ✅', true);
+      }catch(e){ console.error(e); toast('فشل ❌', false); }
+    });
+
+    qs('#addFaqBtn').addEventListener('click', async ()=>{
+      try{
+        await api('/support/faq', apiOpts('POST', {
+          question: qs('#faqQ').value.trim(),
+          answer: qs('#faqA').value.trim(),
+          order: Number(qs('#faqOrder').value||1),
+          active: qs('#faqActive').value === 'true'
+        }));
+        toast('تمت إضافة FAQ ✅', true);
+      }catch(e){ console.error(e); toast('فشل ❌', false); }
+    });
+
+    /** ===========================
+     *  12) Media
+     *  =========================== */
+    async function loadMedia(){
+      qs('#reloadMediaBtn').click();
+    }
+
+    qs('#reloadMediaBtn').addEventListener('click', async ()=>{
+      try{
+        const type = qs('#mediaType').value;
+        const unused = qs('#mediaUnused').value;
+        const limit = Number(qs('#mediaLimit').value||30);
+        const data = await api(`/media?type=${encodeURIComponent(type)}&unused=${encodeURIComponent(unused)}&limit=${encodeURIComponent(limit)}`, apiOpts());
+        const items = data.items || data || [];
+        const tbody = qs('#mediaTable tbody');
+        tbody.innerHTML = items.map(m=>`
+          <tr>
+            <td>${esc(m.path||'')}</td>
+            <td class="nowrap">${esc(m.size||'')}</td>
+            <td>${m.used ? '<span class="tag good">used</span>' : '<span class="tag warn">unused</span>'}</td>
+            <td class="nowrap">
+              <div class="actions">
+                <button class="mini bad" onclick="deleteMedia('${esc(m.path||'')}')">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `).join('') || `<tr><td colspan="4" class="muted">لا يوجد</td></tr>`;
+      }catch(e){ console.error(e); }
+    });
+
+    window.deleteMedia = async (path)=>{
+      if(!confirm('حذف الملف؟')) return;
+      try{
+        await api('/media', apiOpts('DELETE', { path }));
+        toast('تم الحذف ✅', true);
+        qs('#reloadMediaBtn').click();
+      }catch(e){ console.error(e); toast('فشل ❌', false); }
+    };
+
+    /** ===========================
+     *  13) Security & Logs
+     *  =========================== */
+    async function loadSecurity(){
+      qs('#reloadLogsBtn').click();
+    }
+
+    qs('#reloadLogsBtn').addEventListener('click', async ()=>{
+      try{
+        const limit = Number(qs('#logsLimit').value||50);
+        const type = qs('#logsType').value.trim();
+        const data = await api(`/logs?limit=${encodeURIComponent(limit)}&type=${encodeURIComponent(type)}`, apiOpts());
+        const items = data.items || data || [];
+        const tbody = qs('#logsTable tbody');
+        tbody.innerHTML = items.map(l=>`
+          <tr>
+            <td>${esc(l.type||'')}</td>
+            <td>${esc(l.admin||l.adminId||'')}</td>
+            <td>${esc(l.target||l.targetId||'')}</td>
+            <td class="nowrap">${esc(l.time||l.createdAt||'')}</td>
+          </tr>
+        `).join('') || `<tr><td colspan="4" class="muted">لا يوجد</td></tr>`;
+      }catch(e){ console.error(e); }
+    });
+
+    qs('#revokeSessionsBtn').addEventListener('click', async ()=>{
+      const userId = qs('#revokeUserId').value.trim();
+      if(!userId) return toast('دخل userId', false);
+      if(!confirm('قطع جلسات المستخدم؟')) return;
+      try{
+        await api('/security/revoke-sessions', apiOpts('POST', { userId }));
+        toast('تمت العملية ✅', true);
+      }catch(e){ console.error(e); toast('فشل ❌', false); }
+    });
+
+    // ---- Start ----
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // set env label (you can replace later)
+      qs('#envPill').textContent = (location.hostname.includes('localhost') ? 'DEV' : 'LIVE');
+      qs('#apiBaseTxt').textContent = API_BASE;
+      // initial load
+      openView('dashboard');
+    });
   </script>
 </body>
 </html>

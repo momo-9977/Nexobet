@@ -50,6 +50,25 @@ input,select,textarea{
   color:white;
 }
 
+/* ✅ FIX select dropdown colors (white issue) */
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.10);
+}
+select:focus{
+  outline:none;
+  box-shadow:0 0 0 4px rgba(46,163,255,0.15);
+  border-color:rgba(46,163,255,0.35);
+}
+option{
+  background:#0b172a; /* dark dropdown */
+  color:#fff;
+}
+
 .preview-grid{
   display:flex;
   flex-wrap:wrap;
@@ -122,6 +141,7 @@ button{
   display:none;
   z-index: 9999;
 }
+
 /* ================= NAV (UNCHANGED) ================= */
 
 .modern-flat-nav{
@@ -160,11 +180,6 @@ button{
 .modern-flat-item.active{
   color:#16a34a;
 }
-
-@media(max-width:700px){
-  .hero{height:240px}
-}
-
 </style>
 </head>
 
@@ -193,12 +208,8 @@ button{
 
 <label>التصنيف</label>
 <select id="category" name="category" required>
-  <option value="">اختر التصنيف</option>
-  <option value="phones">الهواتف</option>
-  <option value="cars">السيارات</option>
-  <option value="homes">العقارات</option>
-  <option value="furniture">الأثاث</option>
-  <option value="other">أخرى</option>
+  <!-- ✅ will be filled from API, fallback if fails -->
+  <option value="">تحميل التصنيفات...</option>
 </select>
 
 <label>الصور (حد أقصى 6)</label>
@@ -219,10 +230,11 @@ button{
 </div>
 
 <div class="toast" id="toast">تم نشر الإعلان بنجاح ✔</div>
+
 <!-- NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
 
-  <a href="/" class="modern-flat-item active">
+  <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
     </svg>
@@ -236,7 +248,7 @@ button{
     <span>الأقسام</span>
   </a>
 
-  <a href="/post-ad" class="modern-flat-item">
+  <a href="/post-ad" class="modern-flat-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 5v14M5 12h14"/>
     </svg>
@@ -259,23 +271,74 @@ const MAX_VIDEO = 1024 * 1024 * 1024;
 
 const imagesInput = document.getElementById('images');
 const preview = document.getElementById('imagePreview');
+const categorySelect = document.getElementById('category');
 
-// نخدمو ب state باش الحذف يكون فعلي
 let selectedImages = [];
 
-/* IMAGE PREVIEW + REMOVE (Fixed) */
-imagesInput.addEventListener('change', (e) => {
-  const files = Array.from(e.target.files || []);
+/* =========================
+   ✅ CATEGORIES API (Admin-ready)
+   GET /api/categories
+   expected: [{ id:"cars", name:"السيارات", active:true }, ...]
+   ========================= */
+async function loadCategories(){
+  try{
+    const res = await fetch('/api/categories', { credentials:'include' });
+    if(!res.ok) throw new Error('categories api failed');
+    const cats = await res.json();
 
-  if (files.length > MAX_IMAGES) {
+    categorySelect.innerHTML = '<option value="">اختر التصنيف</option>';
+
+    (Array.isArray(cats) ? cats : []).forEach(c=>{
+      if(c && (c.active === undefined || c.active === true)){
+        const opt = document.createElement('option');
+        opt.value = c.id ?? c.key ?? c.value ?? '';
+        opt.textContent = c.name ?? c.label ?? opt.value;
+        if(opt.value) categorySelect.appendChild(opt);
+      }
+    });
+
+    // if API returns empty
+    if(categorySelect.options.length === 1){
+      fillCategoryFallback();
+    }
+  }catch(e){
+    fillCategoryFallback();
+  }
+}
+
+function fillCategoryFallback(){
+  categorySelect.innerHTML = `
+    <option value="">اختر التصنيف</option>
+    <option value="phones">الهواتف</option>
+    <option value="cars">السيارات</option>
+    <option value="homes">العقارات</option>
+    <option value="furniture">الأثاث</option>
+    <option value="other">أخرى</option>
+  `;
+}
+
+loadCategories();
+
+/* =========================
+   ✅ IMAGES (append + remove)
+   - multiple selections add up
+   - max 6
+   ========================= */
+imagesInput.addEventListener('change', (e) => {
+  const newFiles = Array.from(e.target.files || []);
+  if(!newFiles.length) return;
+
+  // append new images
+  const merged = selectedImages.concat(newFiles);
+
+  if (merged.length > MAX_IMAGES) {
     alert('الحد الأقصى 6 صور');
     imagesInput.value = '';
-    selectedImages = [];
-    preview.innerHTML = '';
     return;
   }
 
-  selectedImages = files;
+  selectedImages = merged;
+  applySelectedImagesToInput();
   renderSelectedImages();
 });
 
@@ -306,13 +369,14 @@ function renderSelectedImages(){
 }
 
 function applySelectedImagesToInput(){
-  // نرجعو الملفات للـ input باستعمال DataTransfer
   const dt = new DataTransfer();
   selectedImages.forEach(f => dt.items.add(f));
   imagesInput.files = dt.files;
 }
 
-/* VIDEO */
+/* =========================
+   ✅ VIDEO (limit 1GB + preview)
+   ========================= */
 document.getElementById('video').addEventListener('change', e=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -320,8 +384,9 @@ document.getElementById('video').addEventListener('change', e=>{
   if(file.size > MAX_VIDEO){
     alert('الفيديو أكبر من 1GB');
     e.target.value='';
-    document.getElementById('videoPreview').style.display='none';
-    document.getElementById('videoPreview').src='';
+    const v = document.getElementById('videoPreview');
+    v.style.display='none';
+    v.src='';
     return;
   }
 
@@ -330,9 +395,19 @@ document.getElementById('video').addEventListener('change', e=>{
   video.style.display='block';
 });
 
-/* SUBMIT (XHR + progress) */
+/* =========================
+   ✅ SUBMIT (XHR + progress)
+   POST /api/ads
+   fields: title, description, price, city, category, images[], video
+   ========================= */
 document.getElementById('postForm').addEventListener('submit', (e)=>{
   e.preventDefault();
+
+  // basic validation
+  if(!categorySelect.value){
+    alert('اختر التصنيف');
+    return;
+  }
 
   const formData = new FormData();
   formData.append('csrf', document.getElementById('csrf').value || '');
@@ -340,18 +415,15 @@ document.getElementById('postForm').addEventListener('submit', (e)=>{
   formData.append('description', document.getElementById('description').value.trim());
   formData.append('price', document.getElementById('price').value);
   formData.append('city', document.getElementById('city').value.trim());
-  formData.append('category', document.getElementById('category').value);
+  formData.append('category', categorySelect.value);
 
-  // الصور (الحد الأقصى 6)
   selectedImages.slice(0, MAX_IMAGES).forEach(f => formData.append('images', f));
 
-  // الفيديو
   const videoFile = document.getElementById('video').files[0];
   if(videoFile) formData.append('video', videoFile);
 
   const xhr = new XMLHttpRequest();
   xhr.open('POST','/api/ads');
-
   xhr.withCredentials = true;
 
   xhr.upload.onprogress = (ev) => {
@@ -365,6 +437,9 @@ document.getElementById('postForm').addEventListener('submit', (e)=>{
     if (xhr.status >= 200 && xhr.status < 300){
       document.getElementById('toast').style.display='block';
       setTimeout(()=>location.reload(),2000);
+    } else if (xhr.status === 401){
+      alert('خاصك تسجل الدخول');
+      window.location.href = '/login';
     } else {
       alert('فشل نشر الإعلان');
       document.getElementById('progressBar').style.width = '0%';
@@ -378,7 +453,6 @@ document.getElementById('postForm').addEventListener('submit', (e)=>{
 
   xhr.send(formData);
 });
-
 </script>
 
 </body>

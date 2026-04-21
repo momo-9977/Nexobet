@@ -4,32 +4,34 @@ require('dotenv').config();
 
 const path = require('path');
 const fs = require('fs');
-
 const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cors = require('cors');
-
 const bcrypt = require('bcrypt');
-
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
-
 const multer = require('multer');
 const { z } = require('zod');
-
 const crypto = require('crypto');
 
-const { pool, q } = require('./db'); // db.js: exports { pool, q(text, params) }
+const { pool, q } = require('./db'); // db.js فيه pool و q()
+
+const adminRoutes = require('./admin.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/* -------------------- Directories -------------------- */
+
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
 
 /* -------------------- Middlewares -------------------- */
+
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('dev'));
 
@@ -41,15 +43,14 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Needed on Railway/Proxy when secure cookies are enabled
+// مهم للـ Railway
 app.set('trust proxy', 1);
 
-// Sessions (Postgres)
-app.set('trust proxy', 1);
+/* -------------------- Sessions -------------------- */
 
 app.use(session({
   store: new pgSession({
-    pool,
+    pool,               // جاية من ./db
     tableName: 'session'
   }),
   secret: process.env.SESSION_SECRET || 'change_me',
@@ -57,16 +58,21 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false,   // خليه false دابا
+    secure: false,      // خليه false دابا
     sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 14
   }
 }));
 
-// Static
+/* -------------------- Admin Routes -------------------- */
+
+app.set('pool', pool);              // مهم باش admin.routes يلقا pool
+app.use('/api/admin', adminRoutes);
+
+/* -------------------- Static -------------------- */
+
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(PUBLIC_DIR));
-
 /* -------------------- Helpers -------------------- */
 async function getSettings() {
   const r = await q('select * from settings where id=1');
@@ -441,7 +447,6 @@ app.patch('/api/auth/password', requireAuthApi, async (req, res) => {
 
   res.json({ ok: true });
 });
-
 
 /* =========================================================
    USER API (Profile)

@@ -337,8 +337,11 @@ app.get('/api/auth/me', async (req, res) => {
 // Register
 app.post('/api/auth/register', async (req, res) => {
   const s = await getSettings();
-  if (!s.allow_register) return res.status(403).json({ error: 'REGISTER_DISABLED' });
+console.log("DEBUG SETTINGS:", s);
 
+  if (!s || s.allow_register !== true) {
+  return res.status(403).json({ error: 'REGISTER_DISABLED', debug: s });
+}
   const schema = z.object({
     name: z.string().min(2),
     email: z.string().email(),

@@ -373,6 +373,7 @@ form.addEventListener('submit', async (e)=>{
     });
 
     const data = await res.json().catch(()=> ({}));
+
     if(!res.ok){
       toast(data.message || data.error || 'فشل تسجيل الدخول', false);
       submitBtn.disabled = false;
@@ -381,9 +382,12 @@ form.addEventListener('submit', async (e)=>{
 
     toast('تم الدخول بنجاح ✅', true);
 
-    // ✅ إذا admin يمشي للأدمن، إلا لا يمشي للرئيسية
-    const isAdmin = !!(data.user && (data.user.role === 'admin' || data.user.is_admin === true));
-    setTimeout(()=> window.location.href = isAdmin ? '/admin' : '/', 700);
+    // ✅ السيرفر كيرجع: { ... , is_admin: true/false }
+    const isAdmin = data.is_admin === true;
+
+    setTimeout(()=> {
+      window.location.href = isAdmin ? '/admin' : '/';
+    }, 700);
 
   }catch(err){
     toast('خطأ في الاتصال بالسيرفر', false);

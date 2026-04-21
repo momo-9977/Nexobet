@@ -18,6 +18,8 @@ const pgSession = require('connect-pg-simple')(session);
 const multer = require('multer');
 const { z } = require('zod');
 
+const crypto = require('crypto');
+
 const { pool, q } = require('./db'); // db.js: exports { pool, q(text, params) }
 
 const app = express();
@@ -38,6 +40,9 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Needed on Railway/Proxy when secure cookies are enabled
+app.set('trust proxy', 1);
 
 // Sessions (Postgres)
 app.use(session({
@@ -73,17 +78,19 @@ function safeUserRow(u) {
     name: u.name,
     email: u.email,
     phone: u.phone,
-    avatar: u.avatar_url,
-    role: u.role,
-    status: u.status,
-    verified: u.verified,
+    city: u.city,
+    bio: u.bio,
+    avatar: u.avatar,
+    disabled: !!u.disabled,
+    is_admin: !!u.is_admin,
     createdAt: u.created_at
   };
 }
 
 async function loadUser(userId) {
   const r = await q(
-    'select id,name,email,phone,avatar_url,role,status,verified,created_at from users where id=$1',
+    `select id,name,email,phone,city,bio,avatar,disabled,is_admin,created_at
+     from users where id=$1`,
     [userId]
   );
   return r.rows[0] || null;
@@ -102,15 +109,15 @@ function requireAuthPage(req, res, next) {
 function requireAdmin(req, res, next) {
   const u = req.session.user;
   if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
-  if (u.role !== 'admin') return res.status(403).json({ error: 'FORBIDDEN' });
+  if (!u.is_admin) return res.status(403).json({ error: 'FORBIDDEN' });
   next();
 }
 
-// ✅ حماية صفحة /admin (page) — ماشي API
+// حماية صفحة /admin (page)
 function requireAdminPage(req, res, next) {
   const u = req.session.user;
   if (!u) return res.redirect('/login');
-  if (u.role !== 'admin') return res.redirect('/');
+  if (!u.is_admin) return res.redirect('/');
   next();
 }
 
@@ -148,10 +155,7 @@ const upload = multer({
 });
 
 /* =========================================================
-   صفحات الموقع (Routes بلا .html)
-   - Public: / /categories /ad /support /login /register
-   - Protected: /post-ad /profile /edit-ad
-   - Admin: /admin
+   Pages (Routes بدون .html)
    ========================================================= */
 
 // Public pages
@@ -167,14 +171,13 @@ app.get('/post-ad', requireAuthPage, (req, res) => res.sendFile(path.join(PUBLIC
 app.get('/profile', requireAuthPage, (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'profile.html')));
 app.get('/edit-ad', requireAuthPage, (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'edit-ad.html')));
 
-// ✅ Admin page (protected)
+// Admin page (protected)
 app.get('/admin', requireAdminPage, (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'admin.html')));
 
 /* =========================================================
-   PUBLIC API (لي كتشوفو الصفحات)
+   PUBLIC API
    ========================================================= */
 
-/** SETTINGS (branding/support/uploads limits) */
 app.get('/api/settings', async (req, res) => {
   const s = await getSettings();
   res.json({
@@ -188,7 +191,6 @@ app.get('/api/settings', async (req, res) => {
   });
 });
 
-/** HOME SLIDES (banner) */
 app.get('/api/home/slides', async (req, res) => {
   const r = await q('select id,image_url,link_url,ord from home_slides order by ord asc, created_at desc');
   res.json(r.rows.map(x => ({
@@ -199,7 +201,6 @@ app.get('/api/home/slides', async (req, res) => {
   })));
 });
 
-/** SUPPORT public */
 app.get('/api/support/settings', async (req, res) => {
   const s = await getSettings();
   res.json({ whatsapp: s.support_whatsapp, email: s.support_email });
@@ -210,7 +211,6 @@ app.get('/api/support/faq', async (req, res) => {
   res.json(r.rows);
 });
 
-/** CATEGORIES public */
 app.get('/api/categories', async (req, res) => {
   const r = await q(`
     select c.id, c.name, c.description, c.image_url, c.ord, c.active,
@@ -230,7 +230,6 @@ app.get('/api/categories', async (req, res) => {
   })));
 });
 
-/** ADS public list (search/filter/featured/latest) */
 app.get('/api/ads', async (req, res) => {
   const { q: query, category, city, featured, limit } = req.query;
 
@@ -288,7 +287,6 @@ app.get('/api/ads', async (req, res) => {
   })));
 });
 
-/** AD details public */
 app.get('/api/ads/:id', async (req, res) => {
   const adId = req.params.id;
 
@@ -323,7 +321,10 @@ app.get('/api/ads/:id', async (req, res) => {
 });
 
 /* =========================================================
-   AUTH API
+   AUTH API (FIXED for your DB schema)
+   users columns:
+   id(text), name, email, password(text=bcrypt hash), phone, city, bio, avatar,
+   disabled(boolean), created_at, is_admin(boolean)
    ========================================================= */
 
 app.get('/api/auth/me', async (req, res) => {
@@ -333,6 +334,7 @@ app.get('/api/auth/me', async (req, res) => {
   res.json(safeUserRow(u));
 });
 
+// Register
 app.post('/api/auth/register', async (req, res) => {
   const s = await getSettings();
   if (!s.allow_register) return res.status(403).json({ error: 'REGISTER_DISABLED' });
@@ -349,24 +351,28 @@ app.post('/api/auth/register', async (req, res) => {
 
   const { name, email, password, phone } = parsed.data;
 
-  const exists = await q('select id from users where email=$1', [email.toLowerCase()]);
+  const exists = await q('select id from users where lower(email)=lower($1)', [email.trim()]);
   if (exists.rows[0]) return res.status(409).json({ error: 'EMAIL_EXISTS' });
 
   const hash = await bcrypt.hash(password, 10);
+  const id = crypto.randomUUID();
 
   const r = await q(`
-    insert into users (name,email,password_hash,phone,role,status,verified)
-    values ($1,$2,$3,$4,'user','active',true)
+    insert into users (id,name,email,password,phone,disabled,is_admin,created_at)
+    values ($1,$2,$3,$4,$5,false,false,now())
     returning id
-  `, [name, email.toLowerCase(), hash, phone || null]);
+  `, [id, name, email.toLowerCase(), hash, phone || null]);
 
   const userId = r.rows[0].id;
-  req.session.user = { id: userId, role: 'user' };
+
+  // session
+  req.session.user = { id: userId, is_admin: false };
 
   const u = await loadUser(userId);
   res.json(safeUserRow(u));
 });
 
+// Login (normal) -> returns is_admin, frontend can redirect to /admin
 app.post('/api/auth/login', async (req, res) => {
   const schema = z.object({
     email: z.string().email(),
@@ -379,18 +385,22 @@ app.post('/api/auth/login', async (req, res) => {
   const { email, password } = parsed.data;
 
   const r = await q(
-    'select id,email,password_hash,role,status from users where email=$1',
-    [email.toLowerCase()]
+    `select id,email,password,disabled,is_admin
+     from users
+     where lower(email)=lower($1)
+     limit 1`,
+    [email.trim()]
   );
 
   const u = r.rows[0];
   if (!u) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
-  if (u.status && u.status !== 'active') return res.status(403).json({ error: 'ACCOUNT_DISABLED' });
+  if (u.disabled) return res.status(403).json({ error: 'ACCOUNT_DISABLED' });
 
-  const ok = await bcrypt.compare(password, u.password_hash);
+  const ok = await bcrypt.compare(password, u.password);
   if (!ok) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
 
-  req.session.user = { id: u.id, role: u.role || 'user' };
+  req.session.user = { id: u.id, is_admin: !!u.is_admin };
+
   const full = await loadUser(u.id);
   res.json(safeUserRow(full));
 });
@@ -402,7 +412,7 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
-/** Change password (profile/security) */
+// Change password
 app.patch('/api/auth/password', requireAuthApi, async (req, res) => {
   const schema = z.object({
     currentPassword: z.string().min(1),
@@ -414,24 +424,22 @@ app.patch('/api/auth/password', requireAuthApi, async (req, res) => {
 
   const { currentPassword, newPassword } = parsed.data;
 
-  const r = await q('select id,password_hash from users where id=$1', [req.session.user.id]);
+  const r = await q('select id,password from users where id=$1', [req.session.user.id]);
   const u = r.rows[0];
   if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
 
-  const ok = await bcrypt.compare(currentPassword, u.password_hash);
+  const ok = await bcrypt.compare(currentPassword, u.password);
   if (!ok) return res.status(401).json({ error: 'WRONG_PASSWORD' });
 
   const hash = await bcrypt.hash(newPassword, 10);
-  await q('update users set password_hash=$1 where id=$2', [hash, req.session.user.id]);
+  await q('update users set password=$1 where id=$2', [hash, req.session.user.id]);
 
   res.json({ ok: true });
 });
 
 /* =========================================================
-   ✅ ADMIN AUTH (مخصص للـ /admin.html)
-   لازم ENV:
-   ADMIN_EMAIL=...
-   ADMIN_PASSWORD_HASH=... (bcrypt hash)
+   ✅ ADMIN AUTH (optional) - keeps env admin working too
+   If you want ONLY DB admins, you can delete this block.
    ========================================================= */
 
 app.post('/api/admin/login', async (req, res) => {
@@ -452,7 +460,7 @@ app.post('/api/admin/login', async (req, res) => {
     const ok = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
     if (!ok) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
 
-    req.session.user = { id: 'admin', role: 'admin', email: ADMIN_EMAIL };
+    req.session.user = { id: 'env-admin', is_admin: true };
     return res.json({ ok: true });
   } catch (e) {
     console.error(e);
@@ -474,20 +482,24 @@ app.post('/api/admin/logout', (req, res) => {
 app.put('/api/users/:id', requireAuthApi, async (req, res) => {
   const userId = req.params.id;
 
-  // user يقدر يبدّل غير راسو، admin يقدر يبدّل أي واحد
-  const isAdmin = req.session.user.role === 'admin';
+  const isAdmin = !!req.session.user.is_admin;
   if (!isAdmin && String(req.session.user.id) !== String(userId)) {
     return res.status(403).json({ error: 'FORBIDDEN' });
   }
 
   const schema = z.object({
-    phone: z.string().optional().nullable()
+    phone: z.string().optional().nullable(),
+    city: z.string().optional().nullable(),
+    bio: z.string().optional().nullable()
   });
 
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-  await q('update users set phone=$1 where id=$2', [parsed.data.phone || null, userId]);
+  await q(
+    'update users set phone=$1, city=$2, bio=$3 where id=$4',
+    [parsed.data.phone ?? null, parsed.data.city ?? null, parsed.data.bio ?? null, userId]
+  );
 
   const u = await loadUser(userId);
   res.json(safeUserRow(u));
@@ -496,7 +508,7 @@ app.put('/api/users/:id', requireAuthApi, async (req, res) => {
 app.put('/api/users/:id/avatar', requireAuthApi, upload.single('avatar'), async (req, res) => {
   const userId = req.params.id;
 
-  const isAdmin = req.session.user.role === 'admin';
+  const isAdmin = !!req.session.user.is_admin;
   if (!isAdmin && String(req.session.user.id) !== String(userId)) {
     return res.status(403).json({ error: 'FORBIDDEN' });
   }
@@ -504,7 +516,7 @@ app.put('/api/users/:id/avatar', requireAuthApi, upload.single('avatar'), async 
   const url = safeFilenameUrl(req.file);
   if (!url) return res.status(400).json({ error: 'NO_FILE' });
 
-  await q('update users set avatar_url=$1 where id=$2', [url, userId]);
+  await q('update users set avatar=$1 where id=$2', [url, userId]);
   res.json({ ok: true, avatar: url });
 });
 
@@ -512,7 +524,6 @@ app.put('/api/users/:id/avatar', requireAuthApi, upload.single('avatar'), async 
    ADS API (Create/Edit/Delete/MyAds)
    ========================================================= */
 
-// My ads (profile)
 app.get('/api/my/ads', requireAuthApi, async (req, res) => {
   const userId = req.session.user.id;
   const r = await q(`
@@ -550,7 +561,6 @@ app.get('/api/my/ads', requireAuthApi, async (req, res) => {
   })));
 });
 
-// Create ad (post-ad.html) — multipart: images[], video
 app.post('/api/ads', requireAuthApi, upload.fields([
   { name: 'images', maxCount: 6 },
   { name: 'video', maxCount: 1 }
@@ -575,7 +585,6 @@ app.post('/api/ads', requireAuthApi, upload.fields([
   const images = (req.files?.images || []).slice(0, maxImages);
   const videoFile = (req.files?.video && req.files.video[0]) ? req.files.video[0] : null;
 
-  // validate sizes
   const maxImageBytes = maxImageMb * 1024 * 1024;
   for (const f of images) {
     if (f.size > maxImageBytes) return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
@@ -589,7 +598,6 @@ app.post('/api/ads', requireAuthApi, upload.fields([
   const userId = req.session.user.id;
   const { title, description, price, city, category } = parsed.data;
 
-  // Save
   const client = await pool.connect();
   try {
     await client.query('begin');
@@ -602,7 +610,6 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 
     const adId = adRes.rows[0].id;
 
-    // images
     for (let idx = 0; idx < images.length; idx++) {
       const url = safeFilenameUrl(images[idx]);
       await client.query(
@@ -622,21 +629,20 @@ app.post('/api/ads', requireAuthApi, upload.fields([
   }
 });
 
-// Update ad (edit-ad.html) — multipart optional
 app.put('/api/ads/:id', requireAuthApi, upload.fields([
   { name: 'images', maxCount: 6 },
   { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
   const adId = req.params.id;
   const userId = req.session.user.id;
-  const isAdmin = req.session.user.role === 'admin';
+  const isAdmin = !!req.session.user.is_admin;
 
   const schema = z.object({
     title: z.string().min(2),
-    description: z.string().min(0).optional(),
+    description: z.string().optional(),
     price: z.coerce.number().min(0).optional(),
-    city: z.string().min(0).optional(),
-    category: z.string().min(0).optional()
+    city: z.string().optional(),
+    category: z.string().optional()
   });
 
   const parsed = schema.safeParse(req.body);
@@ -678,7 +684,6 @@ app.put('/api/ads/:id', requireAuthApi, upload.fields([
       videoFile ? safeFilenameUrl(videoFile) : null
     ]);
 
-    // إذا جاو صور جداد => نعوضوهم كاملين
     if (images.length) {
       await client.query('delete from ad_images where ad_id=$1', [adId]);
       for (let idx = 0; idx < images.length; idx++) {
@@ -700,11 +705,10 @@ app.put('/api/ads/:id', requireAuthApi, upload.fields([
   }
 });
 
-// Delete ad
 app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
   const adId = req.params.id;
   const userId = req.session.user.id;
-  const isAdmin = req.session.user.role === 'admin';
+  const isAdmin = !!req.session.user.is_admin;
 
   const r = await q('select id,user_id from ads where id=$1', [adId]);
   if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
@@ -719,11 +723,10 @@ app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Toggle visibility
 app.patch('/api/ads/:id/visibility', requireAuthApi, async (req, res) => {
   const adId = req.params.id;
   const userId = req.session.user.id;
-  const isAdmin = req.session.user.role === 'admin';
+  const isAdmin = !!req.session.user.is_admin;
 
   const schema = z.object({ status: z.enum(['published', 'hidden']) });
   const parsed = schema.safeParse(req.body);
@@ -740,11 +743,10 @@ app.patch('/api/ads/:id/visibility', requireAuthApi, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Mark sold
 app.patch('/api/ads/:id/sold', requireAuthApi, async (req, res) => {
   const adId = req.params.id;
   const userId = req.session.user.id;
-  const isAdmin = req.session.user.role === 'admin';
+  const isAdmin = !!req.session.user.is_admin;
 
   const r = await q('select id,user_id from ads where id=$1', [adId]);
   if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
@@ -758,7 +760,7 @@ app.patch('/api/ads/:id/sold', requireAuthApi, async (req, res) => {
 });
 
 /* =========================================================
-   Favorites / Reports (ad page)
+   Favorites / Reports
    ========================================================= */
 
 app.post('/api/favorites', requireAuthApi, async (req, res) => {
@@ -806,7 +808,6 @@ app.delete('/api/favorites/:id', requireAuthApi, async (req, res) => {
   res.json({ ok: true });
 });
 
-// (اختياري) check if ad is favorited
 app.get('/api/ads/:id/favorite', requireAuthApi, async (req, res) => {
   const userId = req.session.user.id;
   const adId = req.params.id;
@@ -833,7 +834,7 @@ app.post('/api/reports', requireAuthApi, async (req, res) => {
 });
 
 /* =========================================================
-   Premium (profile)
+   Premium
    ========================================================= */
 
 app.post('/api/premium/buy', requireAuthApi, async (req, res) => {
@@ -844,7 +845,6 @@ app.post('/api/premium/buy', requireAuthApi, async (req, res) => {
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-  // هنا نخليها "طلب" فقط باش تربطها بالدفع لاحقاً
   const userId = req.session.user.id;
 
   await q(`
@@ -868,7 +868,7 @@ app.get('/api/premium/history', requireAuthApi, async (req, res) => {
 });
 
 /* =========================================================
-   Notifications (profile)
+   Notifications
    ========================================================= */
 
 app.get('/api/notifications', requireAuthApi, async (req, res) => {
@@ -897,10 +897,9 @@ app.post('/api/notifications/read-all', requireAuthApi, async (req, res) => {
 });
 
 /* =========================================================
-   ADMIN API (لوحة التحكم) — محمية بـ requireAdmin
+   ADMIN API (لوحة التحكم) — FIXED for your DB schema
    ========================================================= */
 
-// Settings update (branding/uploads/support)
 app.put('/api/admin/settings', requireAdmin, async (req, res) => {
   const schema = z.object({
     platformName: z.string().min(1).optional(),
@@ -1063,10 +1062,10 @@ app.delete('/api/admin/home/slides/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Admin: manage users (phone / role / status / password reset)
+// Admin: manage users (FIXED)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   const r = await q(`
-    select id,name,email,phone,avatar_url,role,status,verified,created_at
+    select id,name,email,phone,city,bio,avatar,disabled,is_admin,created_at
     from users
     order by created_at desc
     limit 200
@@ -1077,23 +1076,32 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
 app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
   const schema = z.object({
     phone: z.string().optional().nullable(),
-    role: z.enum(['user', 'admin']).optional(),
-    status: z.enum(['active', 'disabled']).optional(),
-    verified: z.boolean().optional()
+    city: z.string().optional().nullable(),
+    bio: z.string().optional().nullable(),
+    disabled: z.boolean().optional(),
+    is_admin: z.boolean().optional()
   });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
   const d = parsed.data;
+
   await q(`
     update users set
       phone = coalesce($2, phone),
-      role = coalesce($3, role),
-      status = coalesce($4, status),
-      verified = coalesce($5, verified),
-      updated_at = now()
+      city = coalesce($3, city),
+      bio = coalesce($4, bio),
+      disabled = coalesce($5, disabled),
+      is_admin = coalesce($6, is_admin)
     where id=$1
-  `, [req.params.id, d.phone ?? null, d.role ?? null, d.status ?? null, (typeof d.verified === 'boolean') ? d.verified : null]);
+  `, [
+    req.params.id,
+    d.phone ?? null,
+    d.city ?? null,
+    d.bio ?? null,
+    typeof d.disabled === 'boolean' ? d.disabled : null,
+    typeof d.is_admin === 'boolean' ? d.is_admin : null
+  ]);
 
   const u = await loadUser(req.params.id);
   res.json(safeUserRow(u));
@@ -1105,7 +1113,7 @@ app.post('/api/admin/users/:id/reset-password', requireAdmin, async (req, res) =
   if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
   const hash = await bcrypt.hash(parsed.data.newPassword, 10);
-  await q('update users set password_hash=$1 where id=$2', [hash, req.params.id]);
+  await q('update users set password=$1 where id=$2', [hash, req.params.id]);
 
   res.json({ ok: true });
 });

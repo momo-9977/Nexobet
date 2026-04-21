@@ -3,220 +3,428 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Le Marché - تسجيل الدخول</title>
+<title>Samsar — تسجيل الدخول</title>
 
 <style>
 :root{
   --bg-0:#071024;
   --bg-1:#081426;
-  --card-bg:rgba(255,255,255,0.04);
-  --card-border:rgba(255,255,255,0.05);
+  --card:rgba(255,255,255,0.05);
+  --stroke:rgba(255,255,255,0.09);
   --text:#f8fafc;
   --muted:#94a3b8;
   --accent:#2ea3ff;
-  --accent-2:#60a5fa;
+  --accent2:#60a5fa;
   --danger:#ef4444;
-
-  --diamond-size:64px;
-  --diamond-gap:64px;
+  --ok:#34d399;
+  --shadow:0 26px 70px rgba(0,0,0,.55);
 }
 
 *{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:Inter,Arial,sans-serif;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:22px;
   background:
-    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
+    radial-gradient(circle at 20% 10%, rgba(46,163,255,.22), transparent 35%),
+    radial-gradient(circle at 90% 40%, rgba(96,165,250,.16), transparent 40%),
     linear-gradient(180deg,var(--bg-0),var(--bg-1));
   color:var(--text);
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  padding-bottom:120px;
 }
 
-/* -------- PANEL -------- */
-.auth-panel{
+.shell{
   width:100%;
-  max-width:520px;
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  border-radius:20px;
+  max-width:980px;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:18px;
+  align-items:stretch;
+}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+}
+
+.hero{
+  position:relative;
+  overflow:hidden;
+  border-radius:26px;
+  border:1px solid var(--stroke);
+  background:linear-gradient(135deg, rgba(46,163,255,.10), rgba(255,255,255,.03));
+  box-shadow:var(--shadow);
   padding:26px;
-  backdrop-filter:blur(14px);
-  box-shadow:0 20px 45px rgba(0,0,0,.45);
-  animation:fadeIn .4s ease;
+  min-height:520px;
 }
 
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(12px)}
-  to{opacity:1;transform:translateY(0)}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:-120px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(46,163,255,.35), transparent 45%),
+    radial-gradient(circle at 80% 55%, rgba(167,139,250,.25), transparent 45%),
+    radial-gradient(circle at 20% 80%, rgba(244,114,182,.18), transparent 45%);
+  filter:blur(10px);
+  opacity:.9;
 }
 
-h2{
-  margin:0 0 6px;
-  font-size:28px;
-}
-
-.lead{
-  margin:0 0 20px;
-  color:var(--muted);
-  font-size:14px;
-}
-
-.field-box{
+.hero-inner{
+  position:relative;
+  z-index:2;
+  height:100%;
   display:flex;
   flex-direction:column;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:54px;
+  height:54px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  letter-spacing:.5px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 18px 40px rgba(46,163,255,.25);
+}
+
+.brand h1{
+  margin:0;
+  font-size:24px;
+}
+.brand p{
+  margin:2px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.hero-card{
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(0,0,0,.22);
+  backdrop-filter:blur(12px);
+  padding:18px;
+}
+
+.hero-card h2{
+  margin:0 0 8px;
+  font-size:18px;
+}
+.hero-card ul{
+  margin:0;
+  padding:0 18px;
+  color:rgba(248,250,252,.92);
+  line-height:1.85;
+  font-size:13.5px;
+}
+.hero-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:14px;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
   gap:8px;
+  padding:10px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:#e5e7eb;
+  font-size:12px;
+  font-weight:800;
+}
+
+.panel{
+  border-radius:26px;
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(14px);
+  box-shadow:var(--shadow);
+  padding:26px;
+  position:relative;
+  overflow:hidden;
+}
+
+.panel::after{
+  content:"";
+  position:absolute;
+  top:-120px; left:-120px;
+  width:240px; height:240px;
+  background:radial-gradient(circle, rgba(46,163,255,.35), transparent 60%);
+  filter:blur(6px);
+  opacity:.6;
+}
+
+.panel h2{
+  margin:0 0 6px;
+  font-size:26px;
+  position:relative;
+  z-index:2;
+}
+.panel .lead{
+  margin:0 0 18px;
+  color:var(--muted);
+  font-size:14px;
+  position:relative;
+  z-index:2;
+}
+
+.field{
+  position:relative;
+  z-index:2;
   margin-bottom:14px;
 }
-
 label{
+  display:block;
+  margin-bottom:8px;
   font-size:13px;
-  font-weight:700;
+  font-weight:900;
+  color:#e5e7eb;
 }
 
+.input{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(0,0,0,.25);
+  padding:12px 14px;
+  transition:.18s ease;
+}
+.input:focus-within{
+  border-color:rgba(46,163,255,.45);
+  box-shadow:0 0 0 6px rgba(46,163,255,.10);
+}
+
+.input span{
+  opacity:.9;
+  font-size:18px;
+}
 input{
-  padding:14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.03);
+  width:100%;
+  border:none;
+  outline:none;
+  background:transparent;
   color:white;
   font-size:14px;
-  outline:none;
-  transition:.2s;
 }
 
-input:focus{
-  border-color:rgba(46,163,255,.5);
-  box-shadow:0 0 0 6px rgba(46,163,255,.08);
-}
-
-.remember-row{
+.row{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:18px;
-  font-size:14px;
+  gap:12px;
+  margin:6px 0 16px;
   color:var(--muted);
+  font-size:13px;
+  position:relative;
+  z-index:2;
 }
-
-.auth-btn{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:14px;
-  font-weight:800;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:white;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.auth-btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 12px 24px rgba(46,163,255,.25);
-}
-
-.auth-footer{
-  margin-top:18px;
-  text-align:center;
-  font-size:14px;
-  color:var(--muted);
-}
-
-.auth-footer a{
+.row a{
   color:#bfdbfe;
   text-decoration:none;
-  font-weight:700;
+  font-weight:800;
+}
+.row label{
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:800;
+  font-size:13px;
+  color:var(--muted);
+}
+.row input[type="checkbox"]{accent-color:var(--accent);}
+
+.btn{
+  width:100%;
+  border:none;
+  cursor:pointer;
+  padding:14px;
+  border-radius:16px;
+  font-weight:900;
+  color:white;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  transition:.18s ease;
+  position:relative;
+  z-index:2;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 40px rgba(46,163,255,.22);
+}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+.footer{
+  margin-top:16px;
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+  position:relative;
+  z-index:2;
+}
+.footer a{
+  color:#bfdbfe;
+  text-decoration:none;
+  font-weight:900;
 }
 
-/* -------- TOAST -------- */
 .toast{
   position:fixed;
-  bottom:28px;
+  bottom:22px;
   left:50%;
   transform:translateX(-50%);
-  padding:12px 20px;
-  border-radius:12px;
-  background:rgba(0,0,0,.8);
-  font-weight:600;
+  padding:12px 16px;
+  border-radius:14px;
+  background:rgba(0,0,0,.82);
+  border:1px solid rgba(255,255,255,0.12);
   display:none;
-  z-index:999;
+  z-index:9999;
+  min-width:240px;
+  text-align:center;
+  font-weight:900;
 }
-.toast.error{background:linear-gradient(90deg,#ef4444,#c026d3)}
 .toast.show{display:block}
-
-
+.toast.ok{background:linear-gradient(135deg, rgba(52,211,153,.25), rgba(16,185,129,.18))}
+.toast.err{background:linear-gradient(135deg, rgba(239,68,68,.25), rgba(192,38,211,.18))}
 </style>
 </head>
 
 <body>
 
-<div class="auth-panel">
-  <h2>تسجيل الدخول</h2>
-  <p class="lead">دخل المعلومات ديالك باش تدخل للحساب</p>
+<div class="shell">
+  <!-- LEFT HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <h1>Samsar</h1>
+          <p>بيع وشراء بسهولة — بسرعة وبأمان</p>
+        </div>
+      </div>
 
-  <form id="loginForm">
-    <div class="field-box">
-      <label>البريد الإلكتروني</label>
-      <input type="text" id="identifier" required>
+      <div class="hero-card">
+        <h2>شنو غادي تستافد؟</h2>
+        <ul>
+          <li>نشر إعلانات بصور وفيديو</li>
+          <li>إعلانات مميزة (Premium) باش يبان إعلانك فالرئيسية</li>
+          <li>مفضلة + إشعارات + إدارة الإعلانات</li>
+        </ul>
+
+        <div class="hero-badges">
+          <span class="badge">⚡ سريع</span>
+          <span class="badge">🔒 آمن</span>
+          <span class="badge">⭐ Premium</span>
+          <span class="badge">📩 إشعارات</span>
+        </div>
+      </div>
+
+      <div class="hero-card" style="opacity:.92">
+        <h2>ملاحظة</h2>
+        <ul>
+          <li>الصفحات العامة كتشوفها بلا حساب</li>
+          <li>نشر/بروفايل كيتطلبو تسجيل الدخول</li>
+        </ul>
+      </div>
     </div>
+  </section>
 
-    <div class="field-box">
-      <label>كلمة المرور</label>
-      <input type="password" id="password" required>
+  <!-- RIGHT FORM -->
+  <section class="panel">
+    <h2>تسجيل الدخول</h2>
+    <p class="lead">دخل الإيميل وكلمة السر باش تدخل للحساب</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>البريد الإلكتروني</label>
+        <div class="input">
+          <span>📧</span>
+          <input id="emailInput" type="email" required autocomplete="email" placeholder="name@email.com">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>كلمة المرور</label>
+        <div class="input">
+          <span>🔑</span>
+          <input id="passwordInput" type="password" required autocomplete="current-password" placeholder="••••••••">
+        </div>
+      </div>
+
+      <div class="row">
+        <label><input type="checkbox" id="remember"> تذكرني</label>
+        <a href="/support" id="forgot">نسيت كلمة المرور؟</a>
+      </div>
+
+      <button class="btn" id="submitBtn" type="submit">دخول للحساب</button>
+    </form>
+
+    <div class="footer">
+      ما عندكش حساب؟ <a href="/register">إنشاء حساب</a>
     </div>
-
-    <div class="remember-row">
-      <label><input type="checkbox" id="remember"> تذكرني</label>
-      <a href="#" id="forgot">نسيت كلمة المرور؟</a>
-    </div>
-
-    <button class="auth-btn">دخول للحساب</button>
-  </form>
-
-  <div class="auth-footer">
-    ما عندكش حساب؟ <a href="register.html">إنشاء حساب</a>
-  </div>
+  </section>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-const form=document.getElementById("loginForm");
-const toast=document.getElementById("toast");
+const form = document.getElementById('loginForm');
+const toastEl = document.getElementById('toast');
+const submitBtn = document.getElementById('submitBtn');
 
-function showToast(msg,error=false){
-  toast.textContent=msg;
-  toast.className="toast show"+(error?" error":"");
-  setTimeout(()=>toast.classList.remove("show"),3000);
+function toast(msg, ok=true){
+  toastEl.textContent = msg;
+  toastEl.className = 'toast show ' + (ok ? 'ok' : 'err');
+  setTimeout(()=> toastEl.classList.remove('show'), 2600);
 }
 
-form.addEventListener("submit",async(e)=>{
+form.addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const email=document.getElementById("identifier").value.trim();
-  const password=document.getElementById("password").value;
+  submitBtn.disabled = true;
 
-  const res=await fetch("/api/auth/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({email,password}),
-    credentials:"include"
-  });
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
 
-  const data=await res.json().catch(()=>({}));
+  try{
+    const res = await fetch('/api/auth/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ email, password })
+    });
 
-  if(!res.ok){
-    showToast(data.message||"فشل تسجيل الدخول",true);
-    return;
+    const data = await res.json().catch(()=> ({}));
+    if(!res.ok){
+      toast(data.message || data.error || 'فشل تسجيل الدخول', false);
+      submitBtn.disabled = false;
+      return;
+    }
+
+    toast('تم الدخول بنجاح ✅', true);
+
+    // ✅ إذا admin يمشي للأدمن، إلا لا يمشي للرئيسية
+    const isAdmin = !!(data.user && (data.user.role === 'admin' || data.user.is_admin === true));
+    setTimeout(()=> window.location.href = isAdmin ? '/admin' : '/', 700);
+
+  }catch(err){
+    toast('خطأ في الاتصال بالسيرفر', false);
+    submitBtn.disabled = false;
   }
-
-  showToast("تم الدخول بنجاح");
-  setTimeout(()=>window.location.href="/",1000);
 });
 </script>
 

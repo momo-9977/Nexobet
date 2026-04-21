@@ -473,7 +473,14 @@ app.post('/api/admin/login', async (req, res) => {
       return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
 
     req.session.user = { id: 'env-admin', is_admin: true };
-    return res.json({ ok: true });
+
+req.session.save(err => {
+  if (err) {
+    console.error("SESSION SAVE ERROR:", err);
+    return res.status(500).json({ error: "SESSION_FAILED" });
+  }
+  return res.json({ ok: true });
+});
 
   } catch (e) {
     console.error(e);

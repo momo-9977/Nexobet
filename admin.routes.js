@@ -138,5 +138,109 @@ router.delete('/ads/:id', requireAdmin, async (req, res) => {
     res.status(500).json({ error: 'SERVER_ERROR' });
   }
 });
+/* ============================
+   REPORTS LIST
+============================ */
+router.get('/reports', requireAdmin, async (req, res) => {
+  try {
+    const pool = req.app.get('pool');
+    const result = await pool.query(`
+      SELECT r.id, r.reason, r.created_at,
+             u.email as reporter,
+             a.title as ad_title
+      FROM reports r
+      LEFT JOIN users u ON r.user_id = u.id
+      LEFT JOIN ads a ON r.ad_id = a.id
+      ORDER BY r.created_at DESC
+      LIMIT 50
+    `);
 
+    res.json({ items: result.rows });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+/* ============================
+   CATEGORIES LIST
+============================ */
+router.get('/categories', requireAdmin, async (req, res) => {
+  try {
+    const pool = req.app.get('pool');
+    const result = await pool.query(`
+      SELECT id, name, created_at
+      FROM categories
+      ORDER BY created_at DESC
+    `);
+
+    res.json({ items: result.rows });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
+/* ============================
+   CREATE CATEGORY
+============================ */
+router.post('/categories', requireAdmin, async (req, res) => {
+  try {
+    const pool = req.app.get('pool');
+    const { name } = req.body;
+
+    await pool.query(
+      `INSERT INTO categories (name) VALUES ($1)`,
+      [name]
+    );
+
+    res.json({ ok: true });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+/* ============================
+   PREMIUM USERS
+============================ */
+router.get('/premium', requireAdmin, async (req, res) => {
+  try {
+    const pool = req.app.get('pool');
+
+    const result = await pool.query(`
+      SELECT id, email, premium_until
+      FROM users
+      WHERE premium_until > NOW()
+      ORDER BY premium_until DESC
+    `);
+
+    res.json({ items: result.rows });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+/* ============================
+   SEND NOTIFICATION
+============================ */
+router.post('/notifications', requireAdmin, async (req, res) => {
+  try {
+    const pool = req.app.get('pool');
+    const { title, message } = req.body;
+
+    await pool.query(`
+      INSERT INTO notifications (title, message)
+      VALUES ($1, $2)
+    `, [title, message]);
+
+    res.json({ ok: true });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
 module.exports = router;

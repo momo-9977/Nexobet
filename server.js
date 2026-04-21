@@ -45,6 +45,8 @@ app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
 
 // Sessions (Postgres)
+app.set('trust proxy', 1);
+
 app.use(session({
   store: new pgSession({
     pool,
@@ -55,7 +57,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: String(process.env.COOKIE_SECURE || 'false') === 'true',
+    secure: false,   // خليه false دابا
     sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 14
   }

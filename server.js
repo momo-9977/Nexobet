@@ -457,20 +457,29 @@ app.post('/api/admin/login', async (req, res) => {
       return res.status(500).json({ error: 'ADMIN_ENV_MISSING' });
     }
 
-    if (!email || !password) return res.status(400).json({ error: 'MISSING_FIELDS' });
-    if (email !== ADMIN_EMAIL) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+    if (!email || !password)
+      return res.status(400).json({ error: 'MISSING_FIELDS' });
+
+    if (email !== ADMIN_EMAIL)
+      return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+
+    console.log("ENV EMAIL:", ADMIN_EMAIL);
+    console.log("INPUT EMAIL:", email);
+    console.log("ENV HASH:", ADMIN_PASSWORD_HASH);
 
     const ok = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
-    if (!ok) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+
+    if (!ok)
+      return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
 
     req.session.user = { id: 'env-admin', is_admin: true };
     return res.json({ ok: true });
+
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'SERVER_ERROR' });
   }
 });
-
 app.post('/api/admin/logout', (req, res) => {
   req.session.destroy(() => {
     res.clearCookie('connect.sid');

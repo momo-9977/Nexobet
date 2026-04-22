@@ -80,6 +80,85 @@ app.get('/api/categories', async (req, res) => {
     res.status(500).json({ error: 'SERVER_ERROR' });
   }
 });
+// ========== ADS CREATE (PUBLIC) ==========
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+const crypto = require('crypto');
+
+const PUBLIC_DIR = path.join(__dirname, 'public');
+const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+// storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    cb(null, Date.now() + '-' + Math.round(Math.random() * 1e9) + ext);
+  }
+});
+
+// limits: images 10MB each, video 1GB
+const uploadAd = multer({
+  storage,
+  limits: { fileSize: 1024 * 1024 * 1024 }, // 1GB (overall per file)
+});
+
+function requireAuth(req, res, next){
+  if(!req.session || !req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
+  next();
+}
+
+app.post('/api/ads',
+  requireAuth,
+  uploadAd.fields([
+    { name: 'images', maxCount: 6 },
+    { name: 'video', maxCount: 1 }
+  ]),
+  async (req, res) => {
+    try{
+      const pool = req.app.get('pool');
+
+      const title = String(req.body.title || '').trim();
+      const description = String(req.body.description || '').trim();
+      const price = Number(req.body.price || 0);
+      const city = String(req.body.city || '').trim();
+      const category = String(req.body.category || '').trim(); // 👈 نفس اسم الصفحة
+
+      if(!title || !description || !city || !category){
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Missing required fields' });
+      }
+
+      // ✅ لازم category تكون موجودة فـ categories (باش ما يطيحش FK/UUID)
+      const catCheck = await pool.query(`SELECT id FROM categories WHERE id=$1 AND COALESCE(active,true)=true`, [category]);
+      if(!catCheck.rows[0]){
+        return res.status(400).json({ error: 'BAD_CATEGORY', message: 'Category not found/disabled' });
+      }
+
+      const userId = req.session.user.id;
+
+      // files
+      const imgs = (req.files?.images || []).map(f => '/uploads/' + f.filename);
+      const videoFile = (req.files?.video || [])[0];
+      const videoUrl = videoFile ? ('/uploads/' + videoFile.filename) : null;
+
+      const adId = crypto.randomUUID();
+
+      // ✅ ads table عندك فيه: category, images, video ... حسب صورك
+      await pool.query(`
+        INSERT INTO ads (id, title, description, price, city, category, images, video, status, featured, views, created_at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending',false,0,NOW())
+      `, [adId, title, description, price, city, category, imgs, videoUrl]);
+
+      return res.json({ ok:true, id: adId });
+
+    }catch(e){
+      console.error(e);
+      return res.status(500).json({ error:'SERVER_ERROR', message: String(e.message || e) });
+    }
+  }
+);
 
 /* -------------------- Admin Routes -------------------- */
 

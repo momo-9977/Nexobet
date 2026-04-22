@@ -59,7 +59,9 @@ body{
   align-items:center;
   justify-content:center;
   font-weight:800;
+  overflow:hidden;
 }
+.logo-img img{width:100%;height:100%;object-fit:cover;display:block}
 
 .brand-text{
   text-align:right;
@@ -74,6 +76,50 @@ body{
   margin:0;
   font-size:13px;
   color:var(--muted);
+}
+
+/* ✅ Premium Support Icon */
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.support-btn{
+  width:44px;height:44px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  color:var(--text);
+  position:relative;
+  transition:.2s;
+}
+.support-btn:hover{transform:translateY(-2px); box-shadow:0 14px 28px rgba(0,0,0,.25)}
+.support-btn::after{
+  content:"Support";
+  position:absolute;
+  bottom:-18px;
+  font-size:11px;
+  color:rgba(255,255,255,.65);
+  display:none;
+}
+@media(min-width:900px){
+  .support-btn::after{display:block}
+}
+.support-btn .badge{
+  position:absolute;
+  top:-8px;
+  left:-8px;
+  background:var(--premium);
+  color:#111;
+  font-weight:900;
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:999px;
+  box-shadow:0 12px 24px rgba(251,191,36,.22);
 }
 
 /* ================= HERO SLIDER ================= */
@@ -190,6 +236,9 @@ body{
   overflow:hidden;
   border:1px solid var(--card-border);
   transition:.3s;
+  text-decoration:none;
+  color:inherit;
+  display:block;
 }
 
 .ad-card:hover{transform:translateY(-6px)}
@@ -198,6 +247,7 @@ body{
   width:100%;
   height:180px;
   object-fit:cover;
+  background:rgba(255,255,255,.04);
 }
 
 .ad-content{padding:14px}
@@ -281,7 +331,6 @@ body{
 @media(max-width:700px){
   .hero{height:240px}
 }
-
 </style>
 </head>
 
@@ -292,26 +341,38 @@ body{
 <!-- HEADER -->
 <header class="home-brand-bar">
   <div class="logo-area">
-    <div class="logo-img">LM</div>
+    <div class="logo-img" id="logoBox">LM</div>
     <div class="brand-text">
-      <h1>Le Marché</h1>
-      <p>Vendre et acheter facilement</p>
+      <h1 id="platformName">Le Marché</h1>
+      <p id="platformSubtitle">Vendre et acheter facilement</p>
     </div>
+  </div>
+
+  <!-- ✅ Support icon premium -->
+  <div class="header-actions">
+    <a class="support-btn" href="/support" title="الدعم">
+      <span class="badge">★</span>
+      <!-- headset icon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22">
+        <path d="M4 12a8 8 0 0 1 16 0"/>
+        <path d="M4 12v4a2 2 0 0 0 2 2h2v-6H6a2 2 0 0 0-2 2z"/>
+        <path d="M20 12v4a2 2 0 0 1-2 2h-2v-6h2a2 2 0 0 1 2 2z"/>
+        <path d="M8 20h8"/>
+      </svg>
+    </a>
   </div>
 </header>
 
 <!-- HERO -->
 <div class="hero" id="hero">
-  <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop')"></div>
-  <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=1600&auto=format&fit=crop')"></div>
-
-  <div class="hero-dots"></div>
+  <!-- slides injected -->
+  <div class="hero-dots" id="heroDots"></div>
 </div>
 
 <!-- SEARCH -->
 <div class="search-box">
-  <input placeholder="ابحث عن أي شيء...">
-  <button>بحث</button>
+  <input id="searchInput" placeholder="ابحث عن أي شيء...">
+  <button id="searchBtn">بحث</button>
 </div>
 
 <!-- PREMIUM ADS -->
@@ -320,17 +381,8 @@ body{
     <h2>إعلانات مميزة</h2>
   </div>
 
-  <div class="ads-grid">
-    <div class="ad-card">
-      <div style="position:relative">
-        <img class="ad-image" src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
-        <div class="premium-badge">مميز</div>
-      </div>
-      <div class="ad-content">
-        <div class="ad-title">iPhone 15 Pro</div>
-        <div class="ad-price">9500 د.م</div>
-      </div>
-    </div>
+  <div class="ads-grid" id="featuredGrid">
+    <!-- filled from API -->
   </div>
 </div>
 
@@ -341,14 +393,8 @@ body{
     <a href="/categories">عرض الكل</a>
   </div>
 
-  <div class="ads-grid">
-    <div class="ad-card">
-      <img class="ad-image" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200&auto=format&fit=crop">
-      <div class="ad-content">
-        <div class="ad-title">سيارة BMW</div>
-        <div class="ad-price">180000 د.م</div>
-      </div>
-    </div>
+  <div class="ads-grid" id="latestGrid">
+    <!-- filled from API -->
   </div>
 </div>
 
@@ -358,11 +404,8 @@ body{
     <h2>الأقسام</h2>
   </div>
 
-  <div class="categories">
-    <div class="category">الهواتف</div>
-    <div class="category">السيارات</div>
-    <div class="category">العقارات</div>
-    <div class="category">الأثاث</div>
+  <div class="categories" id="catsGrid">
+    <!-- filled from API -->
   </div>
 </div>
 
@@ -403,34 +446,218 @@ body{
 </nav>
 
 <script>
-
-/* HERO AUTOPLAY */
-const slides = document.querySelectorAll('.hero-slide');
-const dotsContainer = document.querySelector('.hero-dots');
-let current = 0;
-
-slides.forEach((_,i)=>{
-  const dot=document.createElement('span');
-  if(i===0) dot.classList.add('active');
-  dot.onclick=()=>goTo(i);
-  dotsContainer.appendChild(dot);
-});
-
-const dots=document.querySelectorAll('.hero-dots span');
-
-function goTo(i){
-  slides[current].classList.remove('active');
-  dots[current].classList.remove('active');
-  current=i;
-  slides[current].classList.add('active');
-  dots[current].classList.add('active');
+/* ===========================
+   API helpers
+=========================== */
+async function jget(url){
+  const res = await fetch(url, { credentials:'include' });
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
+  return data;
 }
 
-setInterval(()=>{
-  let next=(current+1)%slides.length;
-  goTo(next);
-},4000);
+function safeText(s){ return String(s || '').trim(); }
 
+function formatPrice(p){
+  const n = Number(p);
+  if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
+  return (p ? String(p) + ' د.م' : '');
+}
+
+function firstImage(ad){
+  if(ad && Array.isArray(ad.images) && ad.images.length) return ad.images[0];
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+      <rect width="100%" height="100%" fill="#0b1222"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
+    </svg>`
+  );
+}
+
+function renderAdCard(ad, showBadge){
+  const id = ad.id;
+  const img = firstImage(ad);
+  const title = safeText(ad.title);
+  const price = formatPrice(ad.price);
+
+  // صفحة الإعلان عندك: /ad (وكتخدم بـ query غالبا). نخليه id فـ query باش ما نكسروش routing ديالك.
+  const href = '/ad?id=' + encodeURIComponent(id);
+
+  return `
+    <a class="ad-card" href="${href}">
+      <div style="position:relative">
+        <img class="ad-image" src="${img}" alt="">
+        ${showBadge ? `<div class="premium-badge">مميز</div>` : ``}
+      </div>
+      <div class="ad-content">
+        <div class="ad-title">${title || '—'}</div>
+        <div class="ad-price">${price || ''}</div>
+      </div>
+    </a>
+  `;
+}
+
+/* ===========================
+   1) Settings -> Name/Sub/Logo
+=========================== */
+async function loadBrand(){
+  try{
+    const s = await jget('/api/settings');
+
+    const name = safeText(s.platformName) || 'Le Marché';
+    const sub  = safeText(s.subtitle) || 'Vendre et acheter facilement';
+    const logo = safeText(s.logoUrl);
+
+    document.getElementById('platformName').textContent = name;
+    document.getElementById('platformSubtitle').textContent = sub;
+
+    const logoBox = document.getElementById('logoBox');
+    if(logo){
+      logoBox.innerHTML = `<img src="${logo}" alt="logo">`;
+    }else{
+      // fallback initials
+      logoBox.textContent = (name.split(' ').map(x=>x[0]).join('').slice(0,2) || 'LM').toUpperCase();
+    }
+  }catch(e){
+    // نخلي defaults
+  }
+}
+
+/* ===========================
+   2) Hero slides from /api/home/slides
+=========================== */
+let heroTimer = null;
+function startHero(slides, intervalMs){
+  const hero = document.getElementById('hero');
+  const dotsWrap = document.getElementById('heroDots');
+
+  // remove old slides
+  hero.querySelectorAll('.hero-slide').forEach(x=>x.remove());
+  dotsWrap.innerHTML = '';
+
+  if(!slides.length){
+    // fallback slide
+    slides = [{
+      imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop'
+    }];
+  }
+
+  slides.forEach((sl, i)=>{
+    const d = document.createElement('div');
+    d.className = 'hero-slide' + (i===0 ? ' active' : '');
+    d.style.backgroundImage = `url('${sl.imageUrl}')`;
+    hero.insertBefore(d, dotsWrap);
+
+    const dot = document.createElement('span');
+    if(i===0) dot.classList.add('active');
+    dot.onclick = ()=> goTo(i);
+    dotsWrap.appendChild(dot);
+  });
+
+  const heroSlides = hero.querySelectorAll('.hero-slide');
+  const dots = dotsWrap.querySelectorAll('span');
+  let current = 0;
+
+  function goTo(i){
+    heroSlides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = i;
+    heroSlides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  // expose for clicks
+  window.__heroGoTo = goTo;
+
+  if(heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(()=>{
+    const next = (current + 1) % heroSlides.length;
+    goTo(next);
+  }, Math.max(1500, intervalMs || 4000));
+}
+
+async function loadHero(){
+  try{
+    const rows = await jget('/api/home/slides');
+    const slides = (Array.isArray(rows) ? rows : []).map(x=>({
+      imageUrl: x.imageUrl,
+      linkUrl: x.linkUrl || ''
+    })).filter(x=>x.imageUrl);
+
+    startHero(slides, 4000);
+  }catch(e){
+    startHero([], 4000);
+  }
+}
+
+/* ===========================
+   3) Ads
+   - featured: /api/ads?featured=true
+   - latest:   /api/ads?limit=12
+   NOTE: server يعرض غير status='published'
+=========================== */
+async function loadFeatured(){
+  const grid = document.getElementById('featuredGrid');
+  grid.innerHTML = '';
+  try{
+    const ads = await jget('/api/ads?featured=true&limit=8');
+    const items = Array.isArray(ads) ? ads : [];
+    grid.innerHTML = items.map(a=>renderAdCard(a, true)).join('') || `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات مميزة</div>`;
+  }catch(e){
+    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل الإعلانات المميزة</div>`;
+  }
+}
+
+async function loadLatest(){
+  const grid = document.getElementById('latestGrid');
+  grid.innerHTML = '';
+  try{
+    const ads = await jget('/api/ads?limit=12');
+    const items = Array.isArray(ads) ? ads : [];
+    grid.innerHTML = items.map(a=>renderAdCard(a, false)).join('') || `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات</div>`;
+  }catch(e){
+    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل أحدث الإعلانات</div>`;
+  }
+}
+
+/* ===========================
+   4) Categories
+=========================== */
+async function loadCats(){
+  const grid = document.getElementById('catsGrid');
+  grid.innerHTML = '';
+  try{
+    const cats = await jget('/api/categories');
+    const items = Array.isArray(cats) ? cats : [];
+    grid.innerHTML = items.slice(0, 12).map(c=>{
+      const name = safeText(c.name) || '—';
+      // categories page عندك: /categories (وتقدر تدير filter لاحقاً)
+      return `<div class="category" data-id="${c.id}">${name}</div>`;
+    }).join('') || `<div style="color:rgba(255,255,255,.65)">لا توجد أقسام</div>`;
+  }catch(e){
+    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل الأقسام</div>`;
+  }
+}
+
+/* ===========================
+   Search -> go to categories with q
+=========================== */
+document.getElementById('searchBtn').addEventListener('click', ()=>{
+  const q = document.getElementById('searchInput').value.trim();
+  if(!q) return;
+  window.location.href = '/categories?q=' + encodeURIComponent(q);
+});
+
+/* ===========================
+   Start
+=========================== */
+(async function init(){
+  await loadBrand();
+  await loadHero();
+  await loadFeatured();
+  await loadLatest();
+  await loadCats();
+})();
 </script>
 
 </body>

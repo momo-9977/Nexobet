@@ -186,3 +186,40 @@ body {
 .modern-flat-item.active {
   color: #16a34a;
 }
+/* ===== Support Premium Icon ===== */
+.support-premium{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  background:rgba(251,191,36,.14);
+  border:1px solid rgba(251,191,36,.30);
+  box-shadow:0 10px 28px rgba(0,0,0,.28);
+  cursor:pointer;
+  transition:.18s ease;
+  text-decoration:none;
+}
+
+.support-premium:hover{
+  transform:translateY(-2px);
+  background:rgba(251,191,36,.18);
+}
+
+.support-premium svg{
+  width:22px;
+  height:22px;
+  stroke:var(--premium);
+}
+
+.support-premium .dot{
+  position:absolute;
+  top:8px;
+  left:8px;
+  width:9px;
+  height:9px;
+  border-radius:999px;
+  background:var(--premium);
+  box-shadow:0 0 0 4px rgba(251,191,36,.18);
+}

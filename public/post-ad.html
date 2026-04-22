@@ -272,14 +272,17 @@ const MAX_VIDEO = 1024 * 1024 * 1024;
 const imagesInput = document.getElementById('images');
 const preview = document.getElementById('imagePreview');
 const categorySelect = document.getElementById('category');
+const progressBar = document.getElementById('progressBar');
+const submitBtn = document.getElementById('submitBtn');
 
 let selectedImages = [];
+let categoriesLoaded = false;
 
 /* =========================
-   ✅ CATEGORIES API (Admin-ready)
+   ✅ CATEGORIES API
    GET /api/categories
-   expected: [{ id:"cars", name:"السيارات", active:true }, ...]
-   ========================= */
+   IMPORTANT: لازم يرجّع id الحقيقي (uuid أو text) اللي كيوافق ads.category_id
+========================= */
 async function loadCategories(){
   try{
     const res = await fetch('/api/categories', { credentials:'include' });
@@ -290,45 +293,40 @@ async function loadCategories(){
 
     (Array.isArray(cats) ? cats : []).forEach(c=>{
       if(c && (c.active === undefined || c.active === true)){
+        const val = (c.id ?? c.key ?? '').toString().trim();
+        const label = (c.name ?? val).toString();
+        if(!val) return;
+
         const opt = document.createElement('option');
-        opt.value = c.id ?? c.key ?? c.value ?? '';
-        opt.textContent = c.name ?? c.label ?? opt.value;
-        if(opt.value) categorySelect.appendChild(opt);
+        opt.value = val;
+        opt.textContent = label;
+        categorySelect.appendChild(opt);
       }
     });
 
-    // if API returns empty
-    if(categorySelect.options.length === 1){
-      fillCategoryFallback();
+    // إذا ما كاين حتى اختيار حقيقي
+    if(categorySelect.options.length <= 1){
+      categoriesLoaded = false;
+      categorySelect.innerHTML = '<option value="">لا توجد تصنيفات (دخل للأدمن وزيد تصنيفات)</option>';
+    }else{
+      categoriesLoaded = true;
     }
+
   }catch(e){
-    fillCategoryFallback();
+    categoriesLoaded = false;
+    // ❌ ما نزيدوش fallback بقيم phones/cars (كتطيح UUID)
+    categorySelect.innerHTML = '<option value="">فشل تحميل التصنيفات — حاول تحديث الصفحة</option>';
   }
 }
-
-function fillCategoryFallback(){
-  categorySelect.innerHTML = `
-    <option value="">اختر التصنيف</option>
-    <option value="phones">الهواتف</option>
-    <option value="cars">السيارات</option>
-    <option value="homes">العقارات</option>
-    <option value="furniture">الأثاث</option>
-    <option value="other">أخرى</option>
-  `;
-}
-
 loadCategories();
 
 /* =========================
    ✅ IMAGES (append + remove)
-   - multiple selections add up
-   - max 6
-   ========================= */
+========================= */
 imagesInput.addEventListener('change', (e) => {
   const newFiles = Array.from(e.target.files || []);
   if(!newFiles.length) return;
 
-  // append new images
   const merged = selectedImages.concat(newFiles);
 
   if (merged.length > MAX_IMAGES) {
@@ -376,7 +374,7 @@ function applySelectedImagesToInput(){
 
 /* =========================
    ✅ VIDEO (limit 1GB + preview)
-   ========================= */
+========================= */
 document.getElementById('video').addEventListener('change', e=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -396,21 +394,28 @@ document.getElementById('video').addEventListener('change', e=>{
 });
 
 /* =========================
-   ✅ SUBMIT (XHR + progress)
+   ✅ SUBMIT
    POST /api/ads
    fields: title, description, price, city, category, images[], video
-   ========================= */
+========================= */
 document.getElementById('postForm').addEventListener('submit', (e)=>{
   e.preventDefault();
 
-  // basic validation
+  if(!categoriesLoaded){
+    alert('التصنيفات ما تحمّلاتش. دخل للأدمن وزيد تصنيفات أو حدّث الصفحة.');
+    return;
+  }
+
   if(!categorySelect.value){
     alert('اختر التصنيف');
     return;
   }
 
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'جاري النشر...';
+  progressBar.style.width = '0%';
+
   const formData = new FormData();
-  formData.append('csrf', document.getElementById('csrf').value || '');
   formData.append('title', document.getElementById('title').value.trim());
   formData.append('description', document.getElementById('description').value.trim());
   formData.append('price', document.getElementById('price').value);
@@ -429,26 +434,44 @@ document.getElementById('postForm').addEventListener('submit', (e)=>{
   xhr.upload.onprogress = (ev) => {
     if(ev.lengthComputable){
       const percent = (ev.loaded / ev.total) * 100;
-      document.getElementById('progressBar').style.width = percent + '%';
+      progressBar.style.width = percent + '%';
     }
   };
 
   xhr.onload = () => {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'نشر الإعلان';
+
     if (xhr.status >= 200 && xhr.status < 300){
       document.getElementById('toast').style.display='block';
-      setTimeout(()=>location.reload(),2000);
-    } else if (xhr.status === 401){
+      setTimeout(()=>location.href='/profile', 900);
+      return;
+    }
+
+    if (xhr.status === 401){
       alert('خاصك تسجل الدخول');
       window.location.href = '/login';
-    } else {
-      alert('فشل نشر الإعلان');
-      document.getElementById('progressBar').style.width = '0%';
+      return;
     }
+
+    // ✅ عرض الخطأ الحقيقي من السيرفر
+    let msg = 'فشل نشر الإعلان';
+    try{
+      const j = JSON.parse(xhr.responseText || '{}');
+      msg = j.message || j.error || msg;
+      // إذا كان UUID مشكل كيبان غالباً فـ error
+    }catch(_){
+      if(xhr.responseText) msg = xhr.responseText.slice(0, 200);
+    }
+    alert(msg);
+    progressBar.style.width = '0%';
   };
 
   xhr.onerror = () => {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'نشر الإعلان';
     alert('خطأ في الاتصال');
-    document.getElementById('progressBar').style.width = '0%';
+    progressBar.style.width = '0%';
   };
 
   xhr.send(formData);

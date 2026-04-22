@@ -1,5 +1,5 @@
 // admin.routes.js  (Samsar Admin API - Postgres)
-// ضع هذا الملف بجانب server.js ثم استعمل:
+// حط هاد الملف حدّ server.js واستعمل:
 // const adminRoutes = require('./admin.routes'); app.use('/api/admin', adminRoutes);
 
 const express = require('express');
@@ -37,9 +37,23 @@ function toBool(v) {
 function nowISO() {
   return new Date().toISOString();
 }
+async function hasTable(pool, table) {
+  const r = await pool.query(
+    `SELECT 1 FROM information_schema.tables WHERE table_name=$1 LIMIT 1`,
+    [table]
+  );
+  return !!r.rows[0];
+}
+async function hasColumn(pool, table, col) {
+  const r = await pool.query(
+    `SELECT 1 FROM information_schema.columns WHERE table_name=$1 AND column_name=$2 LIMIT 1`,
+    [table, col]
+  );
+  return !!r.rows[0];
+}
 
 /* ============================
-   UPLOADS (for slides/media)
+   UPLOADS (slides/media)
 ============================ */
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
@@ -60,8 +74,19 @@ function fileUrl(file) {
   return '/uploads/' + file.filename;
 }
 
+// مهم: باش يخدم JSON ولا multipart فـ نفس endpoint
+function maybeUploadSingle(field) {
+  const mw = upload.single(field);
+  return (req, res, next) => {
+    const ct = String(req.headers['content-type'] || '');
+    if (ct.includes('multipart/form-data')) return mw(req, res, next);
+    return next();
+  };
+}
+
 /* ============================
-   SCHEMA ENSURE (auto-create missing admin tables/columns)
+   SCHEMA ENSURE
+   (كيكمّل غير الجداول اللي ناقصين، وما كيخرّبش الموجودين)
 ============================ */
 let schemaReady = false;
 
@@ -70,7 +95,7 @@ async function ensureSchema(req) {
   const pool = getPool(req);
   if (!pool) throw new Error('POOL_MISSING');
 
-  // idempotent DDL
+  // Audit logs
   await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_audit_logs(
       id BIGSERIAL PRIMARY KEY,
@@ -82,6 +107,27 @@ async function ensureSchema(req) {
     );
   `);
 
+  // Settings (إذا ما كانتش موجودة، كنصايبوها)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS settings(
+      id INT PRIMARY KEY,
+      platform_name TEXT,
+      subtitle TEXT,
+      logo_url TEXT,
+      support_whatsapp TEXT,
+      support_email TEXT,
+      support_telegram TEXT,
+      allow_register BOOLEAN DEFAULT true,
+      max_images INT DEFAULT 6,
+      max_image_mb INT DEFAULT 10,
+      max_video_mb INT DEFAULT 1024,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+  await pool.query(`INSERT INTO settings(id) VALUES (1) ON CONFLICT (id) DO NOTHING;`);
+
+  // Home banner settings + sections
   await pool.query(`
     CREATE TABLE IF NOT EXISTS home_banner_settings(
       id INT PRIMARY KEY DEFAULT 1,
@@ -96,11 +142,9 @@ async function ensureSchema(req) {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
-  await pool.query(`
-    INSERT INTO home_banner_settings(id) VALUES (1)
-    ON CONFLICT (id) DO NOTHING;
-  `);
+  await pool.query(`INSERT INTO home_banner_settings(id) VALUES (1) ON CONFLICT (id) DO NOTHING;`);
 
+  // Quick categories
   await pool.query(`
     CREATE TABLE IF NOT EXISTS home_quick_categories(
       id INT PRIMARY KEY DEFAULT 1,
@@ -108,11 +152,20 @@ async function ensureSchema(req) {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+  await pool.query(`INSERT INTO home_quick_categories(id) VALUES (1) ON CONFLICT (id) DO NOTHING;`);
+
+  // Home slides (كانت ناقصة عند بزاف الناس)
   await pool.query(`
-    INSERT INTO home_quick_categories(id) VALUES (1)
-    ON CONFLICT (id) DO NOTHING;
+    CREATE TABLE IF NOT EXISTS home_slides(
+      id UUID PRIMARY KEY,
+      image_url TEXT NOT NULL,
+      link_url TEXT,
+      ord INT NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 
+  // Verification
   await pool.query(`
     CREATE TABLE IF NOT EXISTS verification_settings(
       id INT PRIMARY KEY DEFAULT 1,
@@ -120,10 +173,7 @@ async function ensureSchema(req) {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
-  await pool.query(`
-    INSERT INTO verification_settings(id) VALUES (1)
-    ON CONFLICT (id) DO NOTHING;
-  `);
+  await pool.query(`INSERT INTO verification_settings(id) VALUES (1) ON CONFLICT (id) DO NOTHING;`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS verification_requests(
@@ -131,6 +181,18 @@ async function ensureSchema(req) {
       user_id TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
       docs_url TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  // Notifications (إلا ماكانت)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS notifications(
+      id UUID PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      read BOOLEAN NOT NULL DEFAULT false,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -145,6 +207,32 @@ async function ensureSchema(req) {
     );
   `);
 
+  // Reports
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS reports(
+      id UUID PRIMARY KEY,
+      user_id TEXT,
+      ad_id UUID,
+      reason TEXT,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  // Support FAQ
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS support_faq(
+      id UUID PRIMARY KEY,
+      question TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      active BOOLEAN NOT NULL DEFAULT true,
+      ord INT NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  // Premium
   await pool.query(`
     CREATE TABLE IF NOT EXISTS premium_plans(
       key TEXT PRIMARY KEY,
@@ -156,29 +244,14 @@ async function ensureSchema(req) {
     );
   `);
 
-  // Add optional column support_telegram in settings (if settings exists)
+  // Premium orders (باش /stats ما يطيحش + admin page)
   await pool.query(`
-    DO $$
-    BEGIN
-      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='settings') THEN
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.columns
-          WHERE table_name='settings' AND column_name='support_telegram'
-        ) THEN
-          ALTER TABLE settings ADD COLUMN support_telegram TEXT;
-        END IF;
-      END IF;
-    END $$;
-  `);
-
-  // Ensure "reports" table minimal (your app already uses it)
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS reports(
+    CREATE TABLE IF NOT EXISTS premium_orders(
       id UUID PRIMARY KEY,
       user_id TEXT,
       ad_id UUID,
-      reason TEXT,
-      status TEXT NOT NULL DEFAULT 'open',
+      plan TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -206,17 +279,17 @@ router.get('/ping', requireAdmin, async (req, res) => {
 });
 
 /* ============================
-   STATS (Dashboard)
+   STATS
 ============================ */
 router.get('/stats', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
 
-    const usersToday = await pool.query(`SELECT COUNT(*)::int AS n FROM users WHERE created_at::date = CURRENT_DATE`);
-    const adsToday = await pool.query(`SELECT COUNT(*)::int AS n FROM ads WHERE created_at::date = CURRENT_DATE`);
-    const pendingAds = await pool.query(`SELECT COUNT(*)::int AS n FROM ads WHERE status = 'pending'`);
-    const openReports = await pool.query(`SELECT COUNT(*)::int AS n FROM reports WHERE status = 'open'`);
+    const usersToday = await pool.query(`SELECT COUNT(*)::int AS n FROM users WHERE created_at::date = CURRENT_DATE`).catch(() => ({ rows:[{n:0}] }));
+    const adsToday = await pool.query(`SELECT COUNT(*)::int AS n FROM ads WHERE created_at::date = CURRENT_DATE`).catch(() => ({ rows:[{n:0}] }));
+    const pendingAds = await pool.query(`SELECT COUNT(*)::int AS n FROM ads WHERE status = 'pending'`).catch(() => ({ rows:[{n:0}] }));
+    const openReports = await pool.query(`SELECT COUNT(*)::int AS n FROM reports WHERE status = 'open'`).catch(() => ({ rows:[{n:0}] }));
     const premiumMonth = await pool.query(`
       SELECT COUNT(*)::int AS n
       FROM premium_orders
@@ -260,14 +333,7 @@ router.get('/logs', requireAdmin, async (req, res) => {
       params
     );
 
-    res.json({
-      items: r.rows.map(x => ({
-        type: x.type,
-        adminId: x.adminId || '',
-        targetId: x.targetId || '',
-        createdAt: x.createdAt
-      }))
-    });
+    res.json({ items: r.rows });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR' });
@@ -378,12 +444,7 @@ router.get('/home/banner-settings', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const r = await pool.query(`SELECT * FROM home_banner_settings WHERE id=1`);
     const b = r.rows[0] || {};
-    res.json({
-      autoplay: b.autoplay,
-      interval: b.interval,
-      dots: b.dots,
-      maxSlides: b.max_slides
-    });
+    res.json({ autoplay: b.autoplay, interval: b.interval, dots: b.dots, maxSlides: b.max_slides });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR' });
@@ -486,10 +547,7 @@ router.put('/home/quick-categories', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const keys = Array.isArray(req.body?.keys) ? req.body.keys.map(x => String(x).trim()).filter(Boolean) : [];
 
-    await pool.query(
-      `UPDATE home_quick_categories SET keys=$1, updated_at=NOW() WHERE id=1`,
-      [keys]
-    );
+    await pool.query(`UPDATE home_quick_categories SET keys=$1, updated_at=NOW() WHERE id=1`, [keys]);
 
     await audit(req, 'home.quick_categories', 'home_quick_categories:1', { keys });
     res.json({ ok: true });
@@ -501,15 +559,15 @@ router.put('/home/quick-categories', requireAdmin, async (req, res) => {
 
 /* ============================
    HOME SLIDES
-   - supports JSON {imageUrl, linkUrl, order?}
-   - supports multipart field name: image
+   - JSON: {imageUrl, linkUrl, order}
+   - multipart: field "image"
 ============================ */
 router.get('/home/slides', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
 
-    const r = await pool.query(`SELECT id, image_url, link_url, ord FROM home_slides ORDER BY ord ASC, created_at DESC`);
+    const r = await pool.query(`SELECT id, image_url, link_url, ord, created_at FROM home_slides ORDER BY ord ASC, created_at DESC`);
     res.json({
       items: r.rows.map(x => ({
         id: x.id,
@@ -524,7 +582,8 @@ router.get('/home/slides', requireAdmin, async (req, res) => {
   }
 });
 
-router.post('/home/slides', requireAdmin, upload.single('image'), async (req, res) => {
+// مهم: maybeUploadSingle باش JSON ما يتحولش لـ {}
+router.post('/home/slides', requireAdmin, maybeUploadSingle('image'), async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
@@ -570,16 +629,29 @@ router.delete('/home/slides/:id', requireAdmin, async (req, res) => {
 
 /* ============================
    CATEGORIES CRUD
+   (كيحاول مع columns: image_url + ord + active)
 ============================ */
 router.get('/categories', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
 
+    const hasImageUrl = await hasColumn(pool, 'categories', 'image_url').catch(() => false);
+    const hasOrd = await hasColumn(pool, 'categories', 'ord').catch(() => false);
+    const hasActive = await hasColumn(pool, 'categories', 'active').catch(() => false);
+    const hasCreatedAt = await hasColumn(pool, 'categories', 'created_at').catch(() => false);
+
     const r = await pool.query(`
-      SELECT id, name, description, image_url, ord, active
+      SELECT
+        id,
+        name,
+        description
+        ${hasImageUrl ? ', image_url' : ''}
+        ${hasOrd ? ', ord' : ''}
+        ${hasActive ? ', active' : ''}
+        ${hasCreatedAt ? ', created_at' : ''}
       FROM categories
-      ORDER BY ord ASC, created_at DESC
+      ORDER BY ${hasOrd ? 'ord ASC,' : ''} ${hasCreatedAt ? 'created_at DESC' : 'id ASC'}
     `);
 
     res.json({
@@ -587,9 +659,9 @@ router.get('/categories', requireAdmin, async (req, res) => {
         id: c.id,
         name: c.name,
         description: c.description || '',
-        image: c.image_url || '',
-        order: c.ord ?? 0,
-        active: !!c.active
+        image: hasImageUrl ? (c.image_url || '') : '',
+        order: hasOrd ? (c.ord ?? 0) : 0,
+        active: hasActive ? !!c.active : true
       }))
     });
   } catch (e) {
@@ -608,24 +680,28 @@ router.post('/categories', requireAdmin, async (req, res) => {
     const name = String(b.name || '').trim();
     if (!id || !name) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-    await pool.query(
-      `INSERT INTO categories(id,name,description,image_url,active,ord,created_at)
-       VALUES($1,$2,$3,$4,$5,$6,NOW())`,
-      [
-        id,
-        name,
-        String(b.description || ''),
-        String(b.image || '') || null,
-        toBool(b.active),
-        toInt(b.order, 0)
-      ]
-    );
+    const hasImageUrl = await hasColumn(pool, 'categories', 'image_url').catch(() => false);
+    const hasOrd = await hasColumn(pool, 'categories', 'ord').catch(() => false);
+    const hasActive = await hasColumn(pool, 'categories', 'active').catch(() => false);
+    const hasCreatedAt = await hasColumn(pool, 'categories', 'created_at').catch(() => false);
+
+    const cols = ['id', 'name', 'description'];
+    const vals = [id, name, String(b.description || '')];
+
+    if (hasImageUrl) { cols.push('image_url'); vals.push(String(b.image || '') || null); }
+    if (hasActive) { cols.push('active'); vals.push(toBool(b.active)); }
+    if (hasOrd) { cols.push('ord'); vals.push(toInt(b.order, 0)); }
+    if (hasCreatedAt) { cols.push('created_at'); vals.push(new Date()); }
+
+    const ph = cols.map((_, idx) => `$${idx + 1}`).join(',');
+
+    await pool.query(`INSERT INTO categories(${cols.join(',')}) VALUES(${ph})`, vals);
 
     await audit(req, 'categories.create', id, b);
     res.json({ ok: true, id });
   } catch (e) {
     console.error(e);
-    if (String(e.message || '').includes('duplicate')) return res.status(409).json({ error: 'ALREADY_EXISTS' });
+    if (String(e.message || '').toLowerCase().includes('duplicate')) return res.status(409).json({ error: 'ALREADY_EXISTS' });
     res.status(500).json({ error: 'SERVER_ERROR' });
   }
 });
@@ -637,24 +713,32 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
     const id = req.params.id;
     const b = req.body || {};
 
-    await pool.query(
-      `UPDATE categories SET
-        name = COALESCE($2, name),
-        description = COALESCE($3, description),
-        image_url = COALESCE($4, image_url),
-        active = COALESCE($5, active),
-        ord = COALESCE($6, ord),
-        updated_at = NOW()
-       WHERE id=$1`,
-      [
-        id,
-        b.name !== undefined ? String(b.name).trim() : null,
-        b.description !== undefined ? String(b.description) : null,
-        b.image !== undefined ? (String(b.image) || null) : null,
-        b.active !== undefined ? toBool(b.active) : null,
-        b.order !== undefined ? toInt(b.order, 0) : null
-      ]
-    );
+    const sets = [];
+    const params = [id];
+    let i = 2;
+
+    if (b.name !== undefined) { sets.push(`name=$${i++}`); params.push(String(b.name).trim()); }
+    if (b.description !== undefined) { sets.push(`description=$${i++}`); params.push(String(b.description)); }
+
+    if (await hasColumn(pool, 'categories', 'image_url').catch(() => false)) {
+      if (b.image !== undefined) { sets.push(`image_url=$${i++}`); params.push(String(b.image) || null); }
+    }
+
+    if (await hasColumn(pool, 'categories', 'active').catch(() => false)) {
+      if (b.active !== undefined) { sets.push(`active=$${i++}`); params.push(toBool(b.active)); }
+    }
+
+    if (await hasColumn(pool, 'categories', 'ord').catch(() => false)) {
+      if (b.order !== undefined) { sets.push(`ord=$${i++}`); params.push(toInt(b.order, 0)); }
+    }
+
+    if (await hasColumn(pool, 'categories', 'updated_at').catch(() => false)) {
+      sets.push(`updated_at=NOW()`);
+    }
+
+    if (!sets.length) return res.json({ ok: true });
+
+    await pool.query(`UPDATE categories SET ${sets.join(', ')} WHERE id=$1`, params);
 
     await audit(req, 'categories.update', id, b);
     res.json({ ok: true });
@@ -681,7 +765,9 @@ router.delete('/categories/:id', requireAdmin, async (req, res) => {
 });
 
 /* ============================
-   ADS (Admin)
+   ADS (Admin)  ✅ FIXED FOR YOUR SCHEMA
+   جدول ads عندك: category / city / owner_name / owner_email / owner_phone / featured / status ...
+   ماكاينش user_id نهائياً
 ============================ */
 router.get('/ads', requireAdmin, async (req, res) => {
   try {
@@ -699,15 +785,38 @@ router.get('/ads', requireAdmin, async (req, res) => {
     const params = [];
     let i = 1;
 
-    if (q) { where.push(`(a.title ILIKE $${i} OR a.description ILIKE $${i})`); params.push(`%${q}%`); i++; }
-    if (status) { where.push(`a.status = $${i}`); params.push(status); i++; }
-    if (category) { where.push(`a.category_id = $${i}`); params.push(category); i++; }
-    if (city) { where.push(`a.city ILIKE $${i}`); params.push(city); i++; }
-    if (featured === 'true') where.push(`a.featured = true`);
-    if (featured === 'false') where.push(`a.featured = false`);
+    // columns presence
+    const hasDesc = await hasColumn(pool, 'ads', 'description').catch(() => false);
+    const hasCategory = await hasColumn(pool, 'ads', 'category').catch(() => false);
+    const hasCity = await hasColumn(pool, 'ads', 'city').catch(() => false);
+    const hasFeatured = await hasColumn(pool, 'ads', 'featured').catch(() => false);
+    const hasStatus = await hasColumn(pool, 'ads', 'status').catch(() => false);
+    const hasOwnerEmail = await hasColumn(pool, 'ads', 'owner_email').catch(() => false);
+
+    if (q) {
+      const parts = [];
+      parts.push(`a.title ILIKE $${i}`);
+      if (hasDesc) parts.push(`a.description ILIKE $${i}`);
+      if (hasOwnerEmail) parts.push(`a.owner_email ILIKE $${i}`);
+      where.push(`(${parts.join(' OR ')})`);
+      params.push(`%${q}%`);
+      i++;
+    }
+    if (status && hasStatus) { where.push(`a.status = $${i}`); params.push(status); i++; }
+    if (category && hasCategory) { where.push(`a.category = $${i}`); params.push(category); i++; }
+    if (city && hasCity) { where.push(`a.city ILIKE $${i}`); params.push(city); i++; }
+    if (hasFeatured) {
+      if (featured === 'true') where.push(`a.featured = true`);
+      if (featured === 'false') where.push(`a.featured = false`);
+    }
+
+    const ownerSelect = hasOwnerEmail ? `a.owner_email as "ownerId"` : `NULL as "ownerId"`;
 
     const r = await pool.query(
-      `SELECT a.id, a.title, a.status, a.featured, a.user_id as "ownerId"
+      `SELECT a.id, a.title
+              ${hasStatus ? ', a.status' : ", 'published' as status"}
+              ${hasFeatured ? ', a.featured' : ', false as featured'}
+              , ${ownerSelect}
        FROM ads a
        ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
        ORDER BY a.created_at DESC
@@ -730,8 +839,11 @@ router.patch('/ads/:id/status', requireAdmin, async (req, res) => {
     const status = String(req.body?.status || '').trim();
     if (!status) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-    await pool.query(`UPDATE ads SET status=$1, updated_at=NOW() WHERE id=$2`, [status, id]);
+    if (!(await hasColumn(pool, 'ads', 'status').catch(() => false))) {
+      return res.status(400).json({ error: 'STATUS_COLUMN_MISSING' });
+    }
 
+    await pool.query(`UPDATE ads SET status=$1 WHERE id=$2`, [status, id]);
     await audit(req, 'ads.status', id, { status });
     res.json({ ok: true });
   } catch (e) {
@@ -745,12 +857,14 @@ router.patch('/ads/:id/feature', requireAdmin, async (req, res) => {
     await ensureSchema(req);
     const pool = getPool(req);
     const id = req.params.id;
-    const featured = req.body?.featured;
-    const val = typeof featured === 'boolean' ? featured : toBool(featured);
+    const featured = typeof req.body?.featured === 'boolean' ? req.body.featured : toBool(req.body?.featured);
 
-    await pool.query(`UPDATE ads SET featured=$1, updated_at=NOW() WHERE id=$2`, [val, id]);
+    if (!(await hasColumn(pool, 'ads', 'featured').catch(() => false))) {
+      return res.status(400).json({ error: 'FEATURED_COLUMN_MISSING' });
+    }
 
-    await audit(req, 'ads.feature', id, { featured: val });
+    await pool.query(`UPDATE ads SET featured=$1 WHERE id=$2`, [featured, id]);
+    await audit(req, 'ads.feature', id, { featured });
     res.json({ ok: true });
   } catch (e) {
     console.error(e);
@@ -758,21 +872,38 @@ router.patch('/ads/:id/feature', requireAdmin, async (req, res) => {
   }
 });
 
+// ✅ FIXED: Change owner => update owner_name/owner_email/owner_phone (ماشي user_id)
 router.patch('/ads/:id/owner', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
-    const id = req.params.id;
+    const adId = req.params.id;
     const newUserId = String(req.body?.newUserId || '').trim();
     if (!newUserId) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-    // ensure user exists
-    const u = await pool.query(`SELECT id FROM users WHERE id=$1`, [newUserId]);
-    if (!u.rows[0]) return res.status(404).json({ error: 'USER_NOT_FOUND' });
+    const u = await pool.query(`SELECT id, name, email, phone FROM users WHERE id=$1`, [newUserId]);
+    const user = u.rows[0];
+    if (!user) return res.status(404).json({ error: 'USER_NOT_FOUND' });
 
-    await pool.query(`UPDATE ads SET user_id=$1, updated_at=NOW() WHERE id=$2`, [newUserId, id]);
+    const hasOwnerName = await hasColumn(pool, 'ads', 'owner_name').catch(() => false);
+    const hasOwnerEmail = await hasColumn(pool, 'ads', 'owner_email').catch(() => false);
+    const hasOwnerPhone = await hasColumn(pool, 'ads', 'owner_phone').catch(() => false);
 
-    await audit(req, 'ads.owner', id, { newUserId });
+    if (!hasOwnerName && !hasOwnerEmail && !hasOwnerPhone) {
+      return res.status(400).json({ error: 'OWNER_COLUMNS_MISSING' });
+    }
+
+    const sets = [];
+    const params = [adId];
+    let i = 2;
+
+    if (hasOwnerName) { sets.push(`owner_name=$${i++}`); params.push(user.name || ''); }
+    if (hasOwnerEmail) { sets.push(`owner_email=$${i++}`); params.push(user.email || ''); }
+    if (hasOwnerPhone) { sets.push(`owner_phone=$${i++}`); params.push(user.phone || ''); }
+
+    await pool.query(`UPDATE ads SET ${sets.join(', ')} WHERE id=$1`, params);
+
+    await audit(req, 'ads.owner', adId, { newUserId, owner_email: user.email });
     res.json({ ok: true });
   } catch (e) {
     console.error(e);
@@ -786,8 +917,6 @@ router.delete('/ads/:id', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const id = req.params.id;
 
-    // delete images first if table exists
-    await pool.query(`DELETE FROM ad_images WHERE ad_id=$1`, [id]).catch(() => {});
     await pool.query(`DELETE FROM ads WHERE id=$1`, [id]);
 
     await audit(req, 'ads.delete', id, null);
@@ -800,59 +929,56 @@ router.delete('/ads/:id', requireAdmin, async (req, res) => {
 
 /* ============================
    USERS (Admin)
-   ملاحظة: مشروعك فيه users.is_admin و users.disabled
-   - role: admin => is_admin=true else false
-   - status: active => disabled=false | banned/disabled => disabled=true
-   - verified: اختياري إذا عندك عمود verified (وإلا يتجاهل)
 ============================ */
-async function hasColumn(pool, table, col) {
-  const r = await pool.query(
-    `SELECT 1 FROM information_schema.columns WHERE table_name=$1 AND column_name=$2 LIMIT 1`,
-    [table, col]
-  );
-  return !!r.rows[0];
-}
-
 router.get('/users', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
 
     const q = String(req.query.q || '').trim();
-    const role = String(req.query.role || '').trim();      // user/admin/moderator (moderator treated as user)
-    const status = String(req.query.status || '').trim();  // active/banned/disabled
-    const verified = String(req.query.verified || '').trim(); // true/false (optional)
+    const role = String(req.query.role || '').trim();        // user/admin/moderator
+    const status = String(req.query.status || '').trim();    // active/banned/disabled
+    const verified = String(req.query.verified || '').trim();// true/false (optional)
     const limit = Math.min(toInt(req.query.limit, 20), 200);
 
     const where = [];
     const params = [];
     let i = 1;
 
+    const hasPhone = await hasColumn(pool, 'users', 'phone').catch(() => false);
+    const hasVerified = await hasColumn(pool, 'users', 'verified').catch(() => false);
+    const hasDisabled = await hasColumn(pool, 'users', 'disabled').catch(() => false);
+    const hasIsAdmin = await hasColumn(pool, 'users', 'is_admin').catch(() => false);
+
     if (q) {
-      where.push(`(u.name ILIKE $${i} OR u.email ILIKE $${i} OR u.phone ILIKE $${i})`);
+      const parts = [`u.name ILIKE $${i}`, `u.email ILIKE $${i}`];
+      if (hasPhone) parts.push(`u.phone ILIKE $${i}`);
+      where.push(`(${parts.join(' OR ')})`);
       params.push(`%${q}%`);
       i++;
     }
 
-    if (role === 'admin') where.push(`u.is_admin = true`);
-    if (role === 'user' || role === 'moderator') where.push(`u.is_admin = false`);
+    if (hasIsAdmin) {
+      if (role === 'admin') where.push(`u.is_admin = true`);
+      if (role === 'user' || role === 'moderator') where.push(`u.is_admin = false`);
+    }
 
-    if (status === 'active') where.push(`COALESCE(u.disabled,false) = false`);
-    if (status === 'banned' || status === 'disabled') where.push(`COALESCE(u.disabled,false) = true`);
+    if (hasDisabled) {
+      if (status === 'active') where.push(`COALESCE(u.disabled,false) = false`);
+      if (status === 'banned' || status === 'disabled') where.push(`COALESCE(u.disabled,false) = true`);
+    }
 
-    const hasVerified = await hasColumn(pool, 'users', 'verified').catch(() => false);
     if (hasVerified) {
       if (verified === 'true') where.push(`COALESCE(u.verified,false) = true`);
       if (verified === 'false') where.push(`COALESCE(u.verified,false) = false`);
     }
 
-    const selectVerified = hasVerified ? `, COALESCE(u.verified,false) as verified` : ``;
-
     const r = await pool.query(
-      `SELECT u.id, u.name, u.email, u.phone,
-              CASE WHEN u.is_admin THEN 'admin' ELSE 'user' END as role,
-              CASE WHEN COALESCE(u.disabled,false) THEN 'banned' ELSE 'active' END as status
-              ${selectVerified}
+      `SELECT u.id, u.name, u.email
+              ${hasPhone ? ', u.phone' : ", '' as phone"}
+              ${hasIsAdmin ? `, CASE WHEN u.is_admin THEN 'admin' ELSE 'user' END as role` : `, 'user' as role`}
+              ${hasDisabled ? `, CASE WHEN COALESCE(u.disabled,false) THEN 'banned' ELSE 'active' END as status` : `, 'active' as status`}
+              ${hasVerified ? `, COALESCE(u.verified,false) as verified` : ``}
        FROM users u
        ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
        ORDER BY u.created_at DESC
@@ -874,23 +1000,31 @@ router.put('/users/:id', requireAdmin, async (req, res) => {
     const id = req.params.id;
     const b = req.body || {};
 
-    const phone = b.phone !== undefined ? String(b.phone).trim() : null;
-    const role = b.role !== undefined ? String(b.role).trim() : null;
+    const sets = [];
+    const params = [id];
+    let i = 2;
 
-    // map role -> is_admin
-    let isAdmin = null;
-    if (role === 'admin') isAdmin = true;
-    if (role === 'user' || role === 'moderator') isAdmin = false;
+    if ((await hasColumn(pool, 'users', 'phone').catch(() => false)) && b.phone !== undefined) {
+      sets.push(`phone=$${i++}`);
+      params.push(String(b.phone).trim());
+    }
 
-    await pool.query(
-      `UPDATE users SET
-        phone = COALESCE($2, phone),
-        is_admin = COALESCE($3, is_admin)
-       WHERE id=$1`,
-      [id, phone && phone.length ? phone : null, isAdmin]
-    );
+    if ((await hasColumn(pool, 'users', 'is_admin').catch(() => false)) && b.role !== undefined) {
+      const role = String(b.role).trim();
+      let isAdmin = null;
+      if (role === 'admin') isAdmin = true;
+      if (role === 'user' || role === 'moderator') isAdmin = false;
+      if (isAdmin !== null) {
+        sets.push(`is_admin=$${i++}`);
+        params.push(isAdmin);
+      }
+    }
 
-    await audit(req, 'users.update', id, { phone, role });
+    if (!sets.length) return res.json({ ok: true });
+
+    await pool.query(`UPDATE users SET ${sets.join(', ')} WHERE id=$1`, params);
+
+    await audit(req, 'users.update', id, b);
     res.json({ ok: true });
   } catch (e) {
     console.error(e);
@@ -905,6 +1039,10 @@ router.patch('/users/:id/status', requireAdmin, async (req, res) => {
     const id = req.params.id;
     const status = String(req.body?.status || '').trim();
     if (!status) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+    if (!(await hasColumn(pool, 'users', 'disabled').catch(() => false))) {
+      return res.status(400).json({ error: 'DISABLED_COLUMN_MISSING' });
+    }
 
     const disabled = (status === 'banned' || status === 'disabled') ? true : false;
     await pool.query(`UPDATE users SET disabled=$1 WHERE id=$2`, [disabled, id]);
@@ -923,8 +1061,9 @@ router.patch('/users/:id/verify', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const id = req.params.id;
 
-    const okCol = await hasColumn(pool, 'users', 'verified').catch(() => false);
-    if (!okCol) return res.json({ ok: true, note: 'verified_column_missing_ignored' });
+    if (!(await hasColumn(pool, 'users', 'verified').catch(() => false))) {
+      return res.json({ ok: true, note: 'verified_column_missing_ignored' });
+    }
 
     const verified = typeof req.body?.verified === 'boolean' ? req.body.verified : toBool(req.body?.verified);
     await pool.query(`UPDATE users SET verified=$1 WHERE id=$2`, [verified, id]);
@@ -946,7 +1085,18 @@ router.post('/users/:id/reset-password', requireAdmin, async (req, res) => {
     if (newPassword.length < 6) return res.status(400).json({ error: 'WEAK_PASSWORD' });
 
     const hash = await bcrypt.hash(newPassword, 10);
-    await pool.query(`UPDATE users SET password=$1 WHERE id=$2`, [hash, id]);
+
+    // بعض المشاريع كيسميوها password أو password_hash
+    const hasPassword = await hasColumn(pool, 'users', 'password').catch(() => false);
+    const hasPasswordHash = await hasColumn(pool, 'users', 'password_hash').catch(() => false);
+
+    if (hasPassword) {
+      await pool.query(`UPDATE users SET password=$1 WHERE id=$2`, [hash, id]);
+    } else if (hasPasswordHash) {
+      await pool.query(`UPDATE users SET password_hash=$1 WHERE id=$2`, [hash, id]);
+    } else {
+      return res.status(400).json({ error: 'PASSWORD_COLUMN_MISSING' });
+    }
 
     await audit(req, 'users.reset_password', id, null);
     res.json({ ok: true });
@@ -1047,7 +1197,6 @@ router.post('/notifications/send', requireAdmin, async (req, res) => {
 
     if (!title || !body) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-    // notifications table already exists in your app. We'll insert for user/all.
     if (target === 'user') {
       if (!userId) return res.status(400).json({ error: 'VALIDATION_ERROR' });
       await pool.query(
@@ -1056,7 +1205,6 @@ router.post('/notifications/send', requireAdmin, async (req, res) => {
         [crypto.randomUUID(), userId, title, body]
       );
     } else {
-      // all users
       const users = await pool.query(`SELECT id FROM users`);
       for (const u of users.rows) {
         await pool.query(
@@ -1189,11 +1337,7 @@ router.get('/support/settings', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const r = await pool.query(`SELECT support_whatsapp, support_email, support_telegram FROM settings WHERE id=1`);
     const s = r.rows[0] || {};
-    res.json({
-      whatsapp: s.support_whatsapp || '',
-      email: s.support_email || '',
-      telegram: s.support_telegram || ''
-    });
+    res.json({ whatsapp: s.support_whatsapp || '', email: s.support_email || '', telegram: s.support_telegram || '' });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR' });
@@ -1213,11 +1357,7 @@ router.put('/support/settings', requireAdmin, async (req, res) => {
         support_telegram = COALESCE($3, support_telegram),
         updated_at = NOW()
        WHERE id=1`,
-      [
-        (b.whatsapp ?? null) || null,
-        (b.email ?? null) || null,
-        (b.telegram ?? null) || null
-      ]
+      [(b.whatsapp ?? null) || null, (b.email ?? null) || null, (b.telegram ?? null) || null]
     );
 
     await audit(req, 'support.settings', 'settings:1', b);
@@ -1251,8 +1391,8 @@ router.post('/support/faq', requireAdmin, async (req, res) => {
 
     const id = crypto.randomUUID();
     await pool.query(
-      `INSERT INTO support_faq(id, question, answer, active, ord, created_at)
-       VALUES($1,$2,$3,$4,$5,NOW())`,
+      `INSERT INTO support_faq(id, question, answer, active, ord, created_at, updated_at)
+       VALUES($1,$2,$3,$4,$5,NOW(),NOW())`,
       [id, question, answer, toBool(b.active), toInt(b.order, 0)]
     );
 
@@ -1350,8 +1490,8 @@ router.post('/premium/plans', requireAdmin, async (req, res) => {
 });
 
 router.put('/premium/plans/:key', requireAdmin, async (req, res) => {
-  // same as upsert for simplicity
   req.body = { ...(req.body || {}), key: req.params.key };
+  // نعاود نستعمل نفس منطق POST
   return router.handle({ ...req, method: 'POST', url: '/premium/plans' }, res);
 });
 
@@ -1417,64 +1557,46 @@ router.patch('/premium/orders/:id', requireAdmin, async (req, res) => {
 
 /* ============================
    MEDIA LIBRARY
-   - lists files under /public/uploads
-   - used detection from DB (best effort)
 ============================ */
 router.get('/media', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
 
-    const type = String(req.query.type || '').trim();   // image/video
+    const type = String(req.query.type || '').trim();     // image/video
     const unused = String(req.query.unused || '').trim(); // true/false
     const limit = Math.min(toInt(req.query.limit, 30), 200);
 
     const files = fs.existsSync(UPLOADS_DIR) ? fs.readdirSync(UPLOADS_DIR) : [];
-    const items = files.slice(0, 5000).map(f => {
+    const raw = files.slice(0, 5000).map(f => {
       const p = path.join(UPLOADS_DIR, f);
       const st = fs.statSync(p);
-      const ext = path.extname(f).toLowerCase();
-      const isImage = ['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(ext);
-      const isVideo = ['.mp4', '.webm', '.mov', '.mkv'].includes(ext);
-      return {
-        path: '/uploads/' + f,
-        size: st.size,
-        _isImage: isImage,
-        _isVideo: isVideo
-      };
+      return { path: '/uploads/' + f, size: st.size };
     });
 
-    // detect used (best effort)
     const usedSet = new Set();
 
-    // ads.video_url
-    await pool.query(`SELECT video_url FROM ads WHERE video_url IS NOT NULL`).then(r => {
-      r.rows.forEach(x => usedSet.add(x.video_url));
-    }).catch(() => {});
+    // ads.video (عندك column video)
+    if (await hasColumn(pool, 'ads', 'video').catch(() => false)) {
+      await pool.query(`SELECT video FROM ads WHERE video IS NOT NULL`).then(r => r.rows.forEach(x => usedSet.add(x.video))).catch(() => {});
+    }
 
-    // ad_images.url
-    await pool.query(`SELECT url FROM ad_images`).then(r => {
-      r.rows.forEach(x => usedSet.add(x.url));
-    }).catch(() => {});
+    // ads.images (عندك column images) - ممكن يكون json/text => كنقلبو غير على /uploads/
+    if (await hasColumn(pool, 'ads', 'images').catch(() => false)) {
+      await pool.query(`SELECT images FROM ads WHERE images IS NOT NULL`).then(r => {
+        r.rows.forEach(x => {
+          const t = JSON.stringify(x.images || '');
+          raw.forEach(f => { if (t.includes(f.path)) usedSet.add(f.path); });
+        });
+      }).catch(() => {});
+    }
 
     // slides
-    await pool.query(`SELECT image_url FROM home_slides`).then(r => {
-      r.rows.forEach(x => usedSet.add(x.image_url));
-    }).catch(() => {});
+    await pool.query(`SELECT image_url FROM home_slides`).then(r => r.rows.forEach(x => usedSet.add(x.image_url))).catch(() => {});
+    // settings logo
+    await pool.query(`SELECT logo_url FROM settings WHERE id=1`).then(r => { if (r.rows[0]?.logo_url) usedSet.add(r.rows[0].logo_url); }).catch(() => {});
 
-    // avatars + logo
-    await pool.query(`SELECT avatar FROM users WHERE avatar IS NOT NULL`).then(r => {
-      r.rows.forEach(x => usedSet.add(x.avatar));
-    }).catch(() => {});
-    await pool.query(`SELECT logo_url FROM settings WHERE id=1`).then(r => {
-      if (r.rows[0]?.logo_url) usedSet.add(r.rows[0].logo_url);
-    }).catch(() => {});
-
-    let out = items.map(x => ({
-      path: x.path,
-      size: x.size,
-      used: usedSet.has(x.path)
-    }));
+    let out = raw.map(x => ({ path: x.path, size: x.size, used: usedSet.has(x.path) }));
 
     if (type === 'image') out = out.filter(x => ['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(path.extname(x.path).toLowerCase()));
     if (type === 'video') out = out.filter(x => ['.mp4', '.webm', '.mov', '.mkv'].includes(path.extname(x.path).toLowerCase()));
@@ -1483,7 +1605,6 @@ router.get('/media', requireAdmin, async (req, res) => {
     if (unused === 'false') out = out.filter(x => x.used);
 
     out = out.slice(0, limit);
-
     res.json({ items: out });
   } catch (e) {
     console.error(e);
@@ -1521,14 +1642,11 @@ router.post('/security/revoke-sessions', requireAdmin, async (req, res) => {
     const userId = String(req.body?.userId || '').trim();
     if (!userId) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-    // connect-pg-simple default columns: sid, sess (json), expire
-    // remove sessions where sess->'user'->>'id' = userId
     await pool.query(
       `DELETE FROM session
        WHERE (sess->'user'->>'id') = $1`,
       [userId]
     ).catch(async () => {
-      // fallback if sess is text
       await pool.query(`DELETE FROM session WHERE sess::text ILIKE $1`, [`%"id":"${userId}"%`]).catch(() => {});
     });
 

@@ -64,6 +64,23 @@ app.use(session({
   }
 }));
 
+// PUBLIC: Categories for normal users
+app.get('/api/categories', async (req, res) => {
+  try {
+    const pool = req.app.get('pool');
+    const r = await pool.query(`
+      SELECT id, name, active
+      FROM categories
+      WHERE COALESCE(active,true) = true
+      ORDER BY COALESCE(ord,0) ASC, created_at DESC
+    `);
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
 /* -------------------- Admin Routes -------------------- */
 
 app.set('pool', pool);              // مهم باش admin.routes يلقا pool

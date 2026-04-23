@@ -283,42 +283,48 @@ let categoriesLoaded = false;
    GET /api/categories
    IMPORTANT: لازم يرجّع id الحقيقي (uuid أو text) اللي كيوافق ads.category_id
 ========================= */
+
 async function loadCategories(){
   try{
     const res = await fetch('/api/categories', { credentials:'include' });
-    if(!res.ok) throw new Error('categories api failed');
+
+    if(!res.ok){
+      const text = await res.text();
+      console.error('Categories API error:', text);
+      throw new Error('API failed');
+    }
+
     const cats = await res.json();
+    console.log('Categories loaded:', cats);
 
     categorySelect.innerHTML = '<option value="">اختر التصنيف</option>';
 
-    (Array.isArray(cats) ? cats : []).forEach(c=>{
-      if(c && (c.active === undefined || c.active === true)){
-        const val = (c.id ?? c.key ?? '').toString().trim();
-        const label = (c.name ?? val).toString();
-        if(!val) return;
-
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = label;
-        categorySelect.appendChild(opt);
-      }
-    });
-
-    // إذا ما كاين حتى اختيار حقيقي
-    if(categorySelect.options.length <= 1){
+    if(!Array.isArray(cats) || !cats.length){
+      categorySelect.innerHTML = '<option value="">لا توجد تصنيفات</option>';
       categoriesLoaded = false;
-      categorySelect.innerHTML = '<option value="">لا توجد تصنيفات (دخل للأدمن وزيد تصنيفات)</option>';
-    }else{
-      categoriesLoaded = true;
+      return;
     }
 
+    cats.forEach(c=>{
+      if(!c || !c.id) return;
+
+      const opt = document.createElement('option');
+      opt.value = String(c.id);
+      opt.textContent = c.name || 'بدون اسم';
+      categorySelect.appendChild(opt);
+    });
+
+    categoriesLoaded = true;
+
   }catch(e){
+    console.error('Failed loading categories:', e);
     categoriesLoaded = false;
-    // ❌ ما نزيدوش fallback بقيم phones/cars (كتطيح UUID)
-    categorySelect.innerHTML = '<option value="">فشل تحميل التصنيفات — حاول تحديث الصفحة</option>';
+    categorySelect.innerHTML = '<option value="">فشل تحميل التصنيفات</option>';
   }
 }
+
 loadCategories();
+
 
 /* =========================
    ✅ IMAGES (append + remove)

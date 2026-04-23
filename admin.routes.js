@@ -679,11 +679,24 @@ router.post('/categories', requireAdmin, async (req, res) => {
     const name = String(b.name || '').trim();
     if (!name) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'name required' });
 
-    // ✅ إذا categories.id UUID: كنولدو UUID
-    // وإذا كانت TEXT: نقدر نستعمل b.id إلا كان جا
-    let id = (b.id !== undefined && b.id !== null) ? String(b.id).trim() : '';
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
-    if (!id || !isUuid) id = crypto.randomUUID();
+    // واش id ديال categories UUID ولا TEXT؟
+    const col = await pool.query(
+      `SELECT udt_name, data_type
+       FROM information_schema.columns
+       WHERE table_name='categories' AND column_name='id'
+       LIMIT 1`
+    );
+    const idIsUuid = (col.rows[0]?.udt_name === 'uuid');
+
+    // id: إلا كان UUID كنولّدو من السيرفر
+    // إلا كان TEXT كنستعملو id لي جاي من الأدمن
+    let id = String(b.id || '').trim();
+    if (idIsUuid) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+      id = isUuid ? id : crypto.randomUUID();
+    } else {
+      if (!id) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'id required' });
+    }
 
     const hasImageUrl = await hasColumn(pool, 'categories', 'image_url').catch(() => false);
     const hasOrd = await hasColumn(pool, 'categories', 'ord').catch(() => false);
@@ -705,11 +718,13 @@ router.post('/categories', requireAdmin, async (req, res) => {
     await audit(req, 'categories.create', id, { name });
     res.json({ ok: true, id });
   } catch (e) {
-    console.error('ADMIN CREATE CATEGORY ERROR:', e);
+    console.error(e);
+    if (String(e.message || '').toLowerCase().includes('duplicate')) {
+      return res.status(409).json({ error: 'ALREADY_EXISTS' });
+    }
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });
-
 router.put('/categories/:id', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);

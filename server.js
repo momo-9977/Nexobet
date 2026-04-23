@@ -65,54 +65,6 @@ app.use(session({
 }));
 
 
-  async (req, res) => {
-    try{
-      const r = await pool.query(`
-  SELECT id, name, active
-  FROM categories
-  WHERE COALESCE(active,true) = true
-  ORDER BY COALESCE(ord,0) ASC, created_at DESC
-`);
-
-      const title = String(req.body.title || '').trim();
-      const description = String(req.body.description || '').trim();
-      const price = Number(req.body.price || 0);
-      const city = String(req.body.city || '').trim();
-      const category = String(req.body.category || '').trim(); // 👈 نفس اسم الصفحة
-
-      if(!title || !description || !city || !category){
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Missing required fields' });
-      }
-
-      // ✅ لازم category تكون موجودة فـ categories (باش ما يطيحش FK/UUID)
-      const catCheck = await pool.query(`SELECT id FROM categories WHERE id=$1 AND COALESCE(active,true)=true`, [category]);
-      if(!catCheck.rows[0]){
-        return res.status(400).json({ error: 'BAD_CATEGORY', message: 'Category not found/disabled' });
-      }
-
-      const userId = req.session.user.id;
-
-      // files
-      const imgs = (req.files?.images || []).map(f => '/uploads/' + f.filename);
-      const videoFile = (req.files?.video || [])[0];
-      const videoUrl = videoFile ? ('/uploads/' + videoFile.filename) : null;
-
-      const adId = crypto.randomUUID();
-
-      // ✅ ads table عندك فيه: category, images, video ... حسب صورك
-      await pool.query(`
-        INSERT INTO ads (id, title, description, price, city, category, images, video, status, featured, views, created_at)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending',false,0,NOW())
-      `, [adId, title, description, price, city, category, imgs, videoUrl]);
-
-      return res.json({ ok:true, id: adId });
-
-    }catch(e){
-      console.error(e);
-      return res.status(500).json({ error:'SERVER_ERROR', message: String(e.message || e) });
-    }
-  };
-
 /* -------------------- Admin Routes -------------------- */
 
 app.set('pool', pool);              // مهم باش admin.routes يلقا pool

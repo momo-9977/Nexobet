@@ -270,6 +270,166 @@ async function audit(req, type, targetId = null, meta = null) {
     );
   } catch (_) {}
 }
+/* ============================
+   CATEGORIES CRUD (UUID SAFE)
+   - categories.id = UUID
+   - categories.key = TEXT (phones, cars...) إذا ما كانش كنزيدوه
+============================ */
+
+// ensure columns key/ord/active/image_url/created_at exist if table categories exists
+async function ensureCategoriesShape(pool){
+  const exists = await hasTable(pool, 'categories').catch(()=>false);
+  if(!exists) return;
+
+  const addCol = async (col, sql) => {
+    const ok = await hasColumn(pool, 'categories', col).catch(()=>false);
+    if(!ok) await pool.query(sql);
+  };
+
+  await addCol('key', `ALTER TABLE categories ADD COLUMN key TEXT UNIQUE`);
+  await addCol('description', `ALTER TABLE categories ADD COLUMN description TEXT`);
+  await addCol('image_url', `ALTER TABLE categories ADD COLUMN image_url TEXT`);
+  await addCol('ord', `ALTER TABLE categories ADD COLUMN ord INT DEFAULT 0`);
+  await addCol('active', `ALTER TABLE categories ADD COLUMN active BOOLEAN DEFAULT true`);
+  await addCol('created_at', `ALTER TABLE categories ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW()`);
+  await addCol('updated_at', `ALTER TABLE categories ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW()`);
+}
+
+router.get('/categories', requireAdmin, async (req, res) => {
+  try {
+    await ensureSchema(req);
+    const pool = getPool(req);
+    await ensureCategoriesShape(pool);
+
+    const r = await pool.query(`
+      SELECT id, key, name, description, image_url, ord, active
+      FROM categories
+      ORDER BY ord ASC, created_at DESC
+    `);
+
+    res.json({
+      items: r.rows.map(c => ({
+        id: c.key || c.id,          // باش admin UI يبقى يخدم
+        dbId: c.id,                 // الحقيقي فـ DB
+        key: c.key || '',
+        name: c.name || '',
+        description: c.description || '',
+        image: c.image_url || '',
+        order: c.ord ?? 0,
+        active: c.active !== false
+      }))
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
+router.post('/categories', requireAdmin, async (req, res) => {
+  try {
+    await ensureSchema(req);
+    const pool = getPool(req);
+    await ensureCategoriesShape(pool);
+
+    const b = req.body || {};
+    const key = String(b.id || b.key || '').trim();   // اللي كيدخل فـ اللوحة (phones)
+    const name = String(b.name || '').trim();
+    if (!key || !name) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+    const id = crypto.randomUUID();
+
+    await pool.query(
+      `INSERT INTO categories(id, key, name, description, image_url, ord, active, created_at, updated_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,NOW(),NOW())`,
+      [
+        id,
+        key,
+        name,
+        String(b.description || ''),
+        String(b.image || '') || null,
+        toInt(b.order, 0),
+        toBool(b.active)
+      ]
+    );
+
+    await audit(req, 'categories.create', id, { key, name });
+    res.json({ ok: true, id: key, dbId: id });
+  } catch (e) {
+    console.error(e);
+    if (String(e.message || '').toLowerCase().includes('duplicate')) {
+      return res.status(409).json({ error: 'ALREADY_EXISTS' });
+    }
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
+router.put('/categories/:id', requireAdmin, async (req, res) => {
+  try {
+    await ensureSchema(req);
+    const pool = getPool(req);
+    await ensureCategoriesShape(pool);
+
+    const keyOrId = String(req.params.id || '').trim(); // ممكن يكون key
+    const b = req.body || {};
+
+    // نجيب row حسب key أو حسب id
+    const row = await pool.query(
+      `SELECT id FROM categories WHERE key=$1 OR id::text=$1 LIMIT 1`,
+      [keyOrId]
+    );
+    const dbId = row.rows[0]?.id;
+    if (!dbId) return res.status(404).json({ error: 'NOT_FOUND' });
+
+    await pool.query(
+      `UPDATE categories SET
+        name = COALESCE($2, name),
+        description = COALESCE($3, description),
+        image_url = COALESCE($4, image_url),
+        ord = COALESCE($5, ord),
+        active = COALESCE($6, active),
+        updated_at = NOW()
+       WHERE id=$1`,
+      [
+        dbId,
+        b.name !== undefined ? String(b.name).trim() : null,
+        b.description !== undefined ? String(b.description) : null,
+        b.image !== undefined ? (String(b.image) || null) : null,
+        b.order !== undefined ? toInt(b.order, 0) : null,
+        b.active !== undefined ? toBool(b.active) : null
+      ]
+    );
+
+    await audit(req, 'categories.update', dbId, { keyOrId });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
+router.delete('/categories/:id', requireAdmin, async (req, res) => {
+  try {
+    await ensureSchema(req);
+    const pool = getPool(req);
+    await ensureCategoriesShape(pool);
+
+    const keyOrId = String(req.params.id || '').trim();
+    const row = await pool.query(
+      `SELECT id FROM categories WHERE key=$1 OR id::text=$1 LIMIT 1`,
+      [keyOrId]
+    );
+    const dbId = row.rows[0]?.id;
+    if (!dbId) return res.json({ ok: true });
+
+    await pool.query(`DELETE FROM categories WHERE id=$1`, [dbId]);
+
+    await audit(req, 'categories.delete', dbId, { keyOrId });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
 
 /* ============================
    PING

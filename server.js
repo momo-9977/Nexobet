@@ -64,40 +64,7 @@ app.use(session({
   }
 }));
 
-// PUBLIC: Categories for normal users
-app.get('/api/categories', async (req, res) => {
-  try {
-    const pool = req.app.get('pool');
-    const r = await pool.query(`
-      SELECT id, name, active
-      FROM categories
-      WHERE COALESCE(active,true) = true
-      ORDER BY COALESCE(ord,0) ASC, created_at DESC
-    `);
-    res.json(r.rows);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR' });
-  }
-});
 
-// limits: images 10MB each, video 1GB
-const uploadAd = multer({
-  storage,
-  limits: { fileSize: 1024 * 1024 * 1024 }, // 1GB (overall per file)
-});
-
-function requireAuth(req, res, next){
-  if(!req.session || !req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
-  next();
-}
-
-app.post('/api/ads',
-  requireAuth,
-  uploadAd.fields([
-    { name: 'images', maxCount: 6 },
-    { name: 'video', maxCount: 1 }
-  ]),
   async (req, res) => {
     try{
       const r = await pool.query(`
@@ -144,8 +111,7 @@ app.post('/api/ads',
       console.error(e);
       return res.status(500).json({ error:'SERVER_ERROR', message: String(e.message || e) });
     }
-  }
-);
+  };
 
 /* -------------------- Admin Routes -------------------- */
 

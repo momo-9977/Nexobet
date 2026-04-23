@@ -81,15 +81,6 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase();
-    cb(null, Date.now() + '-' + Math.round(Math.random() * 1e9) + ext);
-  }
-});
-
 // limits: images 10MB each, video 1GB
 const uploadAd = multer({
   storage,

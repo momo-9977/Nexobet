@@ -328,6 +328,40 @@ app.get('/api/ads/:id', async (req, res) => {
     createdAt: ad.created_at
   });
 });
+// ================= PUBLIC CATEGORIES =================
+app.get('/api/categories', async (req, res) => {
+  try {
+    const pool = req.app.get('pool');
+    if (!pool) return res.status(500).json({ error: 'POOL_MISSING' });
+
+    const hasActive = await pool.query(
+      `SELECT 1 FROM information_schema.columns 
+       WHERE table_name='categories' AND column_name='active'`
+    ).then(r => !!r.rows[0]).catch(() => false);
+
+    const hasOrd = await pool.query(
+      `SELECT 1 FROM information_schema.columns 
+       WHERE table_name='categories' AND column_name='ord'`
+    ).then(r => !!r.rows[0]).catch(() => false);
+
+    const hasCreatedAt = await pool.query(
+      `SELECT 1 FROM information_schema.columns 
+       WHERE table_name='categories' AND column_name='created_at'`
+    ).then(r => !!r.rows[0]).catch(() => false);
+
+    const result = await pool.query(`
+      SELECT id, name
+      FROM categories
+      ${hasActive ? 'WHERE COALESCE(active,true)=true' : ''}
+      ORDER BY ${hasOrd ? 'ord ASC,' : ''} ${hasCreatedAt ? 'created_at DESC' : 'id ASC'}
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
 
 /* =========================================================
    AUTH API (FIXED for your DB schema)

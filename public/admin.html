@@ -1649,7 +1649,7 @@
     qs('#createCatBtn').addEventListener('click', async ()=>{
       try{
         await api('/categories', apiOpts('POST', {
-          id: qs('#catId').value.trim(),
+          ...(qs('#catId').value.trim() ? { id: qs('#catId').value.trim() } : {}),
           name: qs('#catName').value.trim(),
           description: qs('#catDesc').value.trim(),
           image: qs('#catImage').value.trim(),

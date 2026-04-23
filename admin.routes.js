@@ -676,9 +676,14 @@ router.post('/categories', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const b = req.body || {};
 
-    const id = String(b.id || '').trim();
     const name = String(b.name || '').trim();
-    if (!id || !name) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+    if (!name) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'name required' });
+
+    // ✅ إذا categories.id UUID: كنولدو UUID
+    // وإذا كانت TEXT: نقدر نستعمل b.id إلا كان جا
+    let id = (b.id !== undefined && b.id !== null) ? String(b.id).trim() : '';
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+    if (!id || !isUuid) id = crypto.randomUUID();
 
     const hasImageUrl = await hasColumn(pool, 'categories', 'image_url').catch(() => false);
     const hasOrd = await hasColumn(pool, 'categories', 'ord').catch(() => false);
@@ -697,12 +702,11 @@ router.post('/categories', requireAdmin, async (req, res) => {
 
     await pool.query(`INSERT INTO categories(${cols.join(',')}) VALUES(${ph})`, vals);
 
-    await audit(req, 'categories.create', id, b);
+    await audit(req, 'categories.create', id, { name });
     res.json({ ok: true, id });
   } catch (e) {
-    console.error(e);
-    if (String(e.message || '').toLowerCase().includes('duplicate')) return res.status(409).json({ error: 'ALREADY_EXISTS' });
-    res.status(500).json({ error: 'SERVER_ERROR' });
+    console.error('ADMIN CREATE CATEGORY ERROR:', e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });
 

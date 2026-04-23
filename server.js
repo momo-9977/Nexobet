@@ -80,15 +80,6 @@ app.get('/api/categories', async (req, res) => {
     res.status(500).json({ error: 'SERVER_ERROR' });
   }
 });
-// ========== ADS CREATE (PUBLIC) ==========
-const path = require('path');
-const fs = require('fs');
-const multer = require('multer');
-const crypto = require('crypto');
-
-const PUBLIC_DIR = path.join(__dirname, 'public');
-const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // storage
 const storage = multer.diskStorage({
@@ -118,7 +109,12 @@ app.post('/api/ads',
   ]),
   async (req, res) => {
     try{
-      const pool = req.app.get('pool');
+      const r = await pool.query(`
+  SELECT id, name, active
+  FROM categories
+  WHERE COALESCE(active,true) = true
+  ORDER BY COALESCE(ord,0) ASC, created_at DESC
+`);
 
       const title = String(req.body.title || '').trim();
       const description = String(req.body.description || '').trim();

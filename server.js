@@ -21,10 +21,10 @@ const adminRoutes = require('./admin.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/* -------------------- Env -------------------- */
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 /* -------------------- Directories -------------------- */
+
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
 
@@ -33,11 +33,13 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 }
 
 /* -------------------- Middlewares -------------------- */
+
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('dev'));
 
-const BASE_URL = (process.env.BASE_URL || '').trim();
-const CORS_ORIGIN = IS_PROD ? (BASE_URL || false) : true;
+const CORS_ORIGIN = IS_PROD
+  ? (process.env.BASE_URL && process.env.BASE_URL.trim() ? process.env.BASE_URL.trim() : true)
+  : true;
 
 app.use(cors({
   origin: CORS_ORIGIN,
@@ -45,21 +47,31 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Railway/Proxy
 app.set('trust proxy', 1);
 
-/* -------------------- Sessions -------------------- */
-// ما نطيحوش السيرفر نهائيا، غير نلزم secret فـ prod
-if (IS_PROD && !process.env.SESSION_SECRET) {
-  console.error('❌ SESSION_SECRET is required in production');
-  process.exit(1);
+/* -------------------- Sessions (NO CRASH) -------------------- */
+
+// باش ما يطيحش السيرفر فـ Railway إذا نسيتي SESSION_SECRET
+// (الأفضل ديرها فـ Railway Variables، ولكن هاد الشي كيخليه يخدم)
+const SESSION_SECRET =
+  process.env.SESSION_SECRET && process.env.SESSION_SECRET.trim()
+    ? process.env.SESSION_SECRET.trim()
+    : crypto.randomBytes(32).toString('hex');
+
+if (IS_PROD && !(process.env.SESSION_SECRET && process.env.SESSION_SECRET.trim())) {
+  console.warn('⚠️ SESSION_SECRET missing in production. Using random secret (sessions reset on restart).');
 }
 
 app.use(session({
-  store: new pgSession({ pool, tableName: 'session' }),
-  secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
+  store: new pgSession({
+    pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -74,10 +86,12 @@ app.use(session({
 app.set('pool', pool);
 
 /* -------------------- Static -------------------- */
+
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(PUBLIC_DIR));
 
 /* -------------------- Helpers: DB/Schema -------------------- */
+
 async function ensureCoreSettings() {
   await q(`
     CREATE TABLE IF NOT EXISTS settings(
@@ -96,6 +110,7 @@ async function ensureCoreSettings() {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
+
   await q(`INSERT INTO settings(id) VALUES (1) ON CONFLICT (id) DO NOTHING;`);
 }
 
@@ -108,10 +123,7 @@ async function getSettings() {
 async function hasColumn(table, column) {
   try {
     const r = await q(
-      `SELECT 1
-       FROM information_schema.columns
-       WHERE table_name=$1 AND column_name=$2
-       LIMIT 1`,
+      `SELECT 1 FROM information_schema.columns WHERE table_name=$1 AND column_name=$2 LIMIT 1`,
       [table, column]
     );
     return !!r.rows[0];
@@ -133,14 +145,16 @@ async function hasTable(table) {
 }
 
 /* -------------------- Auto-fix DB Shape (safe) -------------------- */
+
 let schemaReady = false;
+
 async function ensureDbShape() {
   if (schemaReady) return;
 
-  // extensions
-  await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`).catch(() => {});
+  // settings
+  await ensureCoreSettings();
 
-  // categories extras (key/ord/active...)
+  // categories extras
   if (await hasTable('categories')) {
     await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS key TEXT`).catch(() => {});
     await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS description TEXT`).catch(() => {});
@@ -151,14 +165,15 @@ async function ensureDbShape() {
     await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`).catch(() => {});
   }
 
-  // ads required columns
+  // ads columns
   if (await hasTable('ads')) {
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false`).catch(() => {});
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
+    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS status TEXT`).catch(() => {});
   }
 
-  // ad_images table (needed for images)
+  // ad_images
   await q(`
     CREATE TABLE IF NOT EXISTS ad_images(
       id BIGSERIAL PRIMARY KEY,
@@ -168,7 +183,21 @@ async function ensureDbShape() {
     );
   `).catch(() => {});
 
-  // ensure ads.id has default if uuid
+  // home slides (public hero)
+  await q(`
+    CREATE TABLE IF NOT EXISTS home_slides(
+      id UUID PRIMARY KEY,
+      image_url TEXT NOT NULL,
+      link_url TEXT,
+      ord INT NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `).catch(() => {});
+
+  // pgcrypto (uuid default)
+  await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`).catch(() => {});
+
+  // ensure ads.id default if uuid
   const idInfo = await q(`
     SELECT udt_name, column_default
     FROM information_schema.columns
@@ -185,6 +214,7 @@ async function ensureDbShape() {
 }
 
 /* -------------------- Auth Helpers -------------------- */
+
 function safeUserRow(u) {
   if (!u) return null;
   return {
@@ -214,10 +244,12 @@ function requireAuthApi(req, res, next) {
   if (!req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
   next();
 }
+
 function requireAuthPage(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
   next();
 }
+
 function requireAdminPage(req, res, next) {
   const u = req.session.user;
   if (!u) return res.redirect('/login');
@@ -229,9 +261,11 @@ function toInt(v, d = 0) {
   const n = parseInt(String(v ?? ''), 10);
   return Number.isFinite(n) ? n : d;
 }
+
 function toBool(v) {
   return v === true || v === 'true' || v === '1' || v === 1;
 }
+
 function safeFilenameUrl(file) {
   if (!file) return null;
   return '/uploads/' + file.filename;
@@ -260,6 +294,7 @@ async function resolveCategoryId(input) {
 }
 
 /* -------------------- Upload -------------------- */
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
@@ -277,6 +312,7 @@ const upload = multer({
 /* =========================================================
    Pages
    ========================================================= */
+
 app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 app.get('/categories', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'categories.html')));
 app.get('/ad', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'ad.html')));
@@ -292,8 +328,10 @@ app.get('/admin', requireAdminPage, (req, res) => res.sendFile(path.join(PUBLIC_
 /* =========================================================
    PUBLIC API
    ========================================================= */
+
 app.get('/api/settings', async (req, res) => {
-  try{
+  try {
+    await ensureDbShape();
     const s = await getSettings();
     if (!s) return res.json({});
     res.json({
@@ -310,20 +348,21 @@ app.get('/api/settings', async (req, res) => {
         maxVideoMb: s.max_video_mb
       }
     });
-  }catch(e){
-    console.error(e);
-    res.status(500).json({ error:'SERVER_ERROR' });
+  } catch (e) {
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });
 
 app.get('/api/categories', async (req, res) => {
   try {
+    await ensureDbShape();
+
     const hasActive = await hasColumn('categories', 'active');
     const hasOrd = await hasColumn('categories', 'ord');
     const hasCreatedAt = await hasColumn('categories', 'created_at');
 
     const result = await q(`
-      SELECT id, name
+      SELECT id, name, key
       FROM categories
       ${hasActive ? 'WHERE COALESCE(active,true)=true' : ''}
       ORDER BY
@@ -338,27 +377,16 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// ✅ Latest ads + image (first image from ad_images)
-app.get('/api/ads', async (req, res) => {
+// ✅ Public hero slides (for homepage)
+app.get('/api/home/slides', async (req, res) => {
   try {
-    const lim = Math.min(toInt(req.query.limit, 20), 50);
-
+    await ensureDbShape();
     const r = await q(`
-      SELECT 
-        a.*,
-        (
-          SELECT url
-          FROM ad_images
-          WHERE ad_id = a.id
-          ORDER BY ord ASC
-          LIMIT 1
-        ) as image
-      FROM ads a
-      WHERE a.status='published'
-      ORDER BY a.created_at DESC
-      LIMIT ${lim}
+      SELECT id, image_url as "imageUrl", COALESCE(link_url,'') as "linkUrl", ord
+      FROM home_slides
+      ORDER BY ord ASC, created_at DESC
+      LIMIT 20
     `);
-
     res.json(r.rows);
   } catch (e) {
     console.error(e);
@@ -366,13 +394,58 @@ app.get('/api/ads', async (req, res) => {
   }
 });
 
-// ✅ Featured ads MUST also return image (same as /api/ads)
-app.get('/api/ads/featured', async (req, res) => {
+// ✅ Ads list (supports ?featured=true&limit=..&q=..&category=..&city=..)
+app.get('/api/ads', async (req, res) => {
   try {
-    const lim = Math.min(toInt(req.query.limit, 10), 50);
+    await ensureDbShape();
+
+    const { q: query, category, city, limit, featured } = req.query;
+
+    const lim = Math.min(parseInt(limit || '20', 10), 50);
+
+    const where = [`a.status='published'`];
+    const params = [];
+    let i = 1;
+
+    // search
+    if (query) {
+      const hasDesc = await hasColumn('ads', 'description');
+      where.push(`(a.title ILIKE $${i}${hasDesc ? ` OR a.description ILIKE $${i}` : ''})`);
+      params.push(`%${String(query)}%`);
+      i++;
+    }
+
+    // featured filter
+    if (String(featured || '').trim() === 'true') {
+      where.push(`COALESCE(a.featured,false)=true`);
+    }
+
+    // category filter
+    if (category) {
+      const hasCategoryId = await hasColumn('ads', 'category_id');
+      if (hasCategoryId) {
+        const catId = await resolveCategoryId(category);
+        if (catId) {
+          where.push(`a.category_id::text = $${i}`);
+          params.push(String(catId));
+          i++;
+        }
+      } else if (await hasColumn('ads', 'category')) {
+        where.push(`a.category = $${i}`);
+        params.push(String(category));
+        i++;
+      }
+    }
+
+    // city filter
+    if (city) {
+      where.push(`a.city ILIKE $${i}`);
+      params.push(`%${String(city)}%`);
+      i++;
+    }
 
     const r = await q(`
-      SELECT 
+      SELECT
         a.*,
         (
           SELECT url
@@ -382,96 +455,115 @@ app.get('/api/ads/featured', async (req, res) => {
           LIMIT 1
         ) as image
       FROM ads a
-      WHERE a.status='published'
-        AND COALESCE(a.featured,false) = true
+      WHERE ${where.join(' AND ')}
       ORDER BY a.created_at DESC
       LIMIT ${lim}
-    `);
+    `, params);
 
     res.json(r.rows);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR' });
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
+});
+
+// ✅ Featured endpoint (optional) – كيخدم حتى بلاه
+app.get('/api/ads/featured', async (req, res) => {
+  req.query.featured = 'true';
+  return app._router.handle(req, res, () => {});
 });
 
 /* =========================================================
    AUTH API
    ========================================================= */
+
 app.get('/api/auth/me', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
-  const u = await loadUser(req.session.user.id);
-  if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
-  res.json(safeUserRow(u));
+  try {
+    await ensureDbShape();
+    if (!req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
+    const u = await loadUser(req.session.user.id);
+    if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
+    res.json(safeUserRow(u));
+  } catch (e) {
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
 });
 
 app.post('/api/auth/register', async (req, res) => {
-  const s = await getSettings();
-  if (!s || s.allow_register !== true) {
-    return res.status(403).json({ error: 'REGISTER_DISABLED' });
+  try {
+    await ensureDbShape();
+
+    const s = await getSettings();
+    if (!s || s.allow_register !== true) {
+      return res.status(403).json({ error: 'REGISTER_DISABLED' });
+    }
+
+    const schema = z.object({
+      name: z.string().min(2),
+      email: z.string().email(),
+      password: z.string().min(6)
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+    const { name, email, password } = parsed.data;
+
+    const exists = await q('SELECT id FROM users WHERE lower(email)=lower($1)', [email.trim()]);
+    if (exists.rows[0]) return res.status(409).json({ error: 'EMAIL_EXISTS' });
+
+    const hash = await bcrypt.hash(password, 10);
+    const id = crypto.randomUUID();
+
+    await q(`
+      INSERT INTO users (id,name,email,password,disabled,is_admin,created_at)
+      VALUES ($1,$2,$3,$4,false,false,now())
+    `, [id, name, email.toLowerCase(), hash]);
+
+    req.session.user = { id, is_admin: false };
+
+    const u = await loadUser(id);
+    res.json(safeUserRow(u));
+  } catch (e) {
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
-
-  const schema = z.object({
-    name: z.string().min(2),
-    email: z.string().email(),
-    password: z.string().min(6)
-  });
-
-  const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
-
-  const { name, email, password } = parsed.data;
-
-  const exists = await q(
-    'SELECT id FROM users WHERE lower(email)=lower($1)',
-    [email.trim()]
-  );
-  if (exists.rows[0]) return res.status(409).json({ error: 'EMAIL_EXISTS' });
-
-  const hash = await bcrypt.hash(password, 10);
-  const id = crypto.randomUUID();
-
-  await q(`
-    INSERT INTO users (id,name,email,password,disabled,is_admin,created_at)
-    VALUES ($1,$2,$3,$4,false,false,now())
-  `, [id, name, email.toLowerCase(), hash]);
-
-  req.session.user = { id, is_admin: false };
-
-  const u = await loadUser(id);
-  res.json(safeUserRow(u));
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const schema = z.object({
-    email: z.string().email(),
-    password: z.string().min(1)
-  });
+  try {
+    await ensureDbShape();
 
-  const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+    const schema = z.object({
+      email: z.string().email(),
+      password: z.string().min(1)
+    });
 
-  const { email, password } = parsed.data;
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-  const r = await q(
-    `SELECT id,password,disabled,is_admin
-     FROM users
-     WHERE lower(email)=lower($1)
-     LIMIT 1`,
-    [email.trim()]
-  );
+    const { email, password } = parsed.data;
 
-  const u = r.rows[0];
-  if (!u) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
-  if (u.disabled) return res.status(403).json({ error: 'ACCOUNT_DISABLED' });
+    const r = await q(`
+      SELECT id,password,disabled,is_admin
+      FROM users
+      WHERE lower(email)=lower($1)
+      LIMIT 1
+    `, [email.trim()]);
 
-  const ok = await bcrypt.compare(password, u.password);
-  if (!ok) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+    const u = r.rows[0];
+    if (!u) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+    if (u.disabled) return res.status(403).json({ error: 'ACCOUNT_DISABLED' });
 
-  req.session.user = { id: u.id, is_admin: !!u.is_admin };
+    const ok = await bcrypt.compare(password, u.password);
+    if (!ok) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
 
-  const full = await loadUser(u.id);
-  res.json(safeUserRow(full));
+    req.session.user = { id: u.id, is_admin: !!u.is_admin };
+
+    const full = await loadUser(u.id);
+    res.json(safeUserRow(full));
+  } catch (e) {
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -482,17 +574,20 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 /* =========================================================
-   ADS API (Create/MyAds/Delete)
+   ADS API (my ads / create / delete)
+   - مهم: featured كيبدأ false (مايبانش "مميز" حتى تديرو من الادمين)
    ========================================================= */
+
 app.get('/api/my/ads', requireAuthApi, async (req, res) => {
   try {
-    const userId = String(req.session.user.id);
+    await ensureDbShape();
 
+    const userId = String(req.session.user.id);
     const hasUserId = await hasColumn('ads', 'user_id');
     if (!hasUserId) return res.json([]);
 
     const r = await q(`
-      SELECT 
+      SELECT
         a.*,
         (
           SELECT url
@@ -518,8 +613,9 @@ app.post('/api/ads', requireAuthApi, upload.fields([
   { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    const s = await getSettings();
+    await ensureDbShape();
 
+    const s = await getSettings();
     const maxImages = toInt(s?.max_images, 6);
     const maxImageMb = toInt(s?.max_image_mb, 10);
     const maxVideoMb = toInt(s?.max_video_mb, 1024);
@@ -575,19 +671,27 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 
       let adRes;
 
-      // ✅ featured ALWAYS false at creation (باش مايبانش مميز)
+      // ✅ featured starts FALSE always
       if (hasCategoryId) {
         const cols = ['user_id','title','description','price','city','category_id','status','featured'];
         const vals = [userId, title, description, price, city, categoryId, 'published', false];
         if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
+
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
-        adRes = await client.query(`INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`, vals);
+        adRes = await client.query(
+          `INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`,
+          vals
+        );
       } else if (hasCategory) {
         const cols = ['user_id','title','description','price','city','category','status','featured'];
         const vals = [userId, title, description, price, city, String(category), 'published', false];
         if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
+
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
-        adRes = await client.query(`INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`, vals);
+        adRes = await client.query(
+          `INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`,
+          vals
+        );
       } else {
         await client.query('rollback');
         return res.status(500).json({ error: 'ADS_CATEGORY_COLUMN_MISSING' });
@@ -605,6 +709,7 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 
       await client.query('commit');
       res.json({ ok: true, ad: { id: adId } });
+
     } catch (e) {
       await client.query('rollback');
       console.error(e);
@@ -612,6 +717,7 @@ app.post('/api/ads', requireAuthApi, upload.fields([
     } finally {
       client.release();
     }
+
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
@@ -620,6 +726,8 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 
 app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
   try {
+    await ensureDbShape();
+
     const adId = req.params.id;
     const userId = String(req.session.user.id);
 
@@ -629,9 +737,7 @@ app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
     const r = await q('SELECT id,user_id FROM ads WHERE id=$1', [adId]);
     if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
 
-    if (String(r.rows[0].user_id) !== userId) {
-      return res.status(403).json({ error: 'FORBIDDEN' });
-    }
+    if (String(r.rows[0].user_id) !== userId) return res.status(403).json({ error: 'FORBIDDEN' });
 
     await q('DELETE FROM ad_images WHERE ad_id=$1', [adId]).catch(() => {});
     await q('DELETE FROM ads WHERE id=$1', [adId]);
@@ -646,6 +752,7 @@ app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
 /* =========================================================
    Health
    ========================================================= */
+
 app.get('/api/health', async (req, res) => {
   try {
     await q('SELECT 1');
@@ -658,19 +765,23 @@ app.get('/api/health', async (req, res) => {
 /* =========================================================
    Admin Routes
    ========================================================= */
+
 app.use('/api/admin', adminRoutes);
 
 /* =========================================================
    Start
    ========================================================= */
+
 async function start() {
   try {
     await ensureDbShape();
-    await ensureCoreSettings();
-    app.listen(PORT, () => console.log(`✅ Samsar server running on http://localhost:${PORT}`));
+    app.listen(PORT, () => {
+      console.log(`✅ Samsar server running on http://localhost:${PORT}`);
+    });
   } catch (err) {
     console.error('Startup failed:', err);
     process.exit(1);
   }
 }
+
 start();

@@ -41,7 +41,7 @@ const CORS_ORIGIN =
     : true;
 
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: IS_PROD ? process.env.BASE_URL : true,
   credentials: true
 }));
 
@@ -55,17 +55,22 @@ app.set('trust proxy', 1);
 
 const IS_PROD = process.env.NODE_ENV === 'production';
 
+// تأكد أن SESSION_SECRET موجود في production
+if (IS_PROD && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET is required in production');
+}
+
 app.use(session({
   store: new pgSession({
     pool,
     tableName: 'session'
   }),
-  secret: process.env.SESSION_SECRET || 'change_me',
+  secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: IS_PROD,          // true فـ production
+    secure: IS_PROD,
     sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 14
   }
@@ -155,6 +160,7 @@ async function ensureDbShape() {
 
   // ads.user_id + updated_at (هذا هو سبب الخطأ ديالك)
   if (await hasTable('ads')) {
+    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false`).catch(() => {});
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
   }
@@ -329,7 +335,7 @@ app.get('/api/settings', async (req, res) => {
 
 app.get('/api/categories', async (req, res) => {
   try {
-    await ensureDbShape();
+    
 
     const hasActive = await hasColumn('categories', 'active');
     const hasOrd = await hasColumn('categories', 'ord');
@@ -394,40 +400,6 @@ app.get('/api/ads', async (req, res) => {
   }
 });
 
-    if (category) {
-      // إذا عندك category_id
-      const hasCategoryId = await hasColumn('ads', 'category_id');
-      if (hasCategoryId) {
-        const catId = await resolveCategoryId(category);
-        if (catId) {
-          where.push(`a.category_id::text = $${i}`);
-          params.push(String(catId));
-          i++;
-        }
-      } else if (await hasColumn('ads', 'category')) {
-        where.push(`a.category = $${i}`);
-        params.push(String(category));
-        i++;
-      }
-    }
-
-    if (city) {
-      where.push(`a.city ILIKE $${i}`);
-      params.push(`%${city}%`);
-      i++;
-    }
-
-    const r = await q(`
-      SELECT a.*
-      FROM ads a
-      WHERE ${where.join(' AND ')}
-      ORDER BY a.created_at DESC
-      LIMIT ${lim}
-    `, params);
-
-    res.json(r.rows); (e) 
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
 
 /* =========================================================
    AUTH API
@@ -523,7 +495,7 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('/api/my/ads', requireAuthApi, async (req, res) => {
   try {
-    await ensureDbShape();
+    
 
     const userId = req.session.user.id;
 
@@ -550,7 +522,7 @@ app.post('/api/ads', requireAuthApi, upload.fields([
   { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    await ensureDbShape();
+    
 
     const s = await getSettings();
 
@@ -689,7 +661,7 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 
 app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
   try {
-    await ensureDbShape();
+    
 
     const adId = req.params.id;
     const userId = String(req.session.user.id);
@@ -740,9 +712,18 @@ app.use('/api/admin', adminRoutes);
 /* =========================================================
    Start
    ========================================================= */
+async function start() {
+  try {
+    await ensureDbShape();
+    await ensureCoreSettings(); // مهم كذلك
 
-ensureDbShape().catch(console.error);
+    app.listen(PORT, () => {
+      console.log(`✅ Samsar server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Startup failed:', err);
+    process.exit(1);
+  }
+}
 
-app.listen(PORT, () => {
-  console.log(`✅ Samsar server running on http://localhost:${PORT}`);
-});
+start();

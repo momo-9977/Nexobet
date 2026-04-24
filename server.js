@@ -21,8 +21,10 @@ const adminRoutes = require('./admin.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/* -------------------- Directories -------------------- */
+/* -------------------- Env -------------------- */
+const IS_PROD = process.env.NODE_ENV === 'production';
 
+/* -------------------- Directories -------------------- */
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
 
@@ -31,17 +33,14 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 }
 
 /* -------------------- Middlewares -------------------- */
-
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('dev'));
 
-const CORS_ORIGIN =
-  process.env.BASE_URL && process.env.BASE_URL.trim()
-    ? process.env.BASE_URL.trim()
-    : true;
+const BASE_URL = (process.env.BASE_URL || '').trim();
+const CORS_ORIGIN = IS_PROD ? (BASE_URL || false) : true;
 
 app.use(cors({
-  origin: IS_PROD ? process.env.BASE_URL : true,
+  origin: CORS_ORIGIN,
   credentials: true
 }));
 
@@ -52,19 +51,14 @@ app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
 
 /* -------------------- Sessions -------------------- */
-
-const IS_PROD = process.env.NODE_ENV === 'production';
-
-// تأكد أن SESSION_SECRET موجود في production
+// ما نطيحوش السيرفر نهائيا، غير نلزم secret فـ prod
 if (IS_PROD && !process.env.SESSION_SECRET) {
-  throw new Error('SESSION_SECRET is required in production');
+  console.error('❌ SESSION_SECRET is required in production');
+  process.exit(1);
 }
 
 app.use(session({
-  store: new pgSession({
-    pool,
-    tableName: 'session'
-  }),
+  store: new pgSession({ pool, tableName: 'session' }),
   secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
   resave: false,
   saveUninitialized: false,
@@ -80,12 +74,10 @@ app.use(session({
 app.set('pool', pool);
 
 /* -------------------- Static -------------------- */
-
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(PUBLIC_DIR));
 
 /* -------------------- Helpers: DB/Schema -------------------- */
-
 async function ensureCoreSettings() {
   await q(`
     CREATE TABLE IF NOT EXISTS settings(
@@ -141,11 +133,12 @@ async function hasTable(table) {
 }
 
 /* -------------------- Auto-fix DB Shape (safe) -------------------- */
-
 let schemaReady = false;
-
 async function ensureDbShape() {
   if (schemaReady) return;
+
+  // extensions
+  await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`).catch(() => {});
 
   // categories extras (key/ord/active...)
   if (await hasTable('categories')) {
@@ -158,14 +151,14 @@ async function ensureDbShape() {
     await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`).catch(() => {});
   }
 
-  // ads.user_id + updated_at (هذا هو سبب الخطأ ديالك)
+  // ads required columns
   if (await hasTable('ads')) {
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false`).catch(() => {});
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
     await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
   }
 
-  // ad_images table if missing
+  // ad_images table (needed for images)
   await q(`
     CREATE TABLE IF NOT EXISTS ad_images(
       id BIGSERIAL PRIMARY KEY,
@@ -175,28 +168,23 @@ async function ensureDbShape() {
     );
   `).catch(() => {});
 
-  // make sure pgcrypto exists (for gen_random_uuid)
-await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`).catch(() => {});
+  // ensure ads.id has default if uuid
+  const idInfo = await q(`
+    SELECT udt_name, column_default
+    FROM information_schema.columns
+    WHERE table_name='ads' AND column_name='id'
+    LIMIT 1
+  `).catch(() => ({ rows: [] }));
 
-// ensure ads.id has default if it's UUID
-const idInfo = await q(`
-  SELECT data_type, udt_name, column_default
-  FROM information_schema.columns
-  WHERE table_name='ads' AND column_name='id'
-  LIMIT 1
-`).catch(() => ({ rows: [] }));
-
-const idRow = idInfo.rows[0];
-
-if (idRow && idRow.udt_name === 'uuid' && !idRow.column_default) {
-  await q(`ALTER TABLE ads ALTER COLUMN id SET DEFAULT gen_random_uuid()`).catch(() => {});
-}
+  const idRow = idInfo.rows[0];
+  if (idRow && idRow.udt_name === 'uuid' && !idRow.column_default) {
+    await q(`ALTER TABLE ads ALTER COLUMN id SET DEFAULT gen_random_uuid()`).catch(() => {});
+  }
 
   schemaReady = true;
 }
 
 /* -------------------- Auth Helpers -------------------- */
-
 function safeUserRow(u) {
   if (!u) return null;
   return {
@@ -226,12 +214,10 @@ function requireAuthApi(req, res, next) {
   if (!req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
   next();
 }
-
 function requireAuthPage(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
   next();
 }
-
 function requireAdminPage(req, res, next) {
   const u = req.session.user;
   if (!u) return res.redirect('/login');
@@ -243,11 +229,9 @@ function toInt(v, d = 0) {
   const n = parseInt(String(v ?? ''), 10);
   return Number.isFinite(n) ? n : d;
 }
-
 function toBool(v) {
   return v === true || v === 'true' || v === '1' || v === 1;
 }
-
 function safeFilenameUrl(file) {
   if (!file) return null;
   return '/uploads/' + file.filename;
@@ -258,15 +242,12 @@ async function resolveCategoryId(input) {
   const v = String(input || '').trim();
   if (!v) return null;
 
-  // UUID؟
   const isUuid =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
   if (isUuid) return v;
 
-  // int؟
   if (/^\d+$/.test(v)) return parseInt(v, 10);
 
-  // حاول key أو name (إذا الكولون موجودة)
   const hasKey = await hasColumn('categories', 'key');
   const r = await q(
     `SELECT id
@@ -279,7 +260,6 @@ async function resolveCategoryId(input) {
 }
 
 /* -------------------- Upload -------------------- */
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
@@ -297,7 +277,6 @@ const upload = multer({
 /* =========================================================
    Pages
    ========================================================= */
-
 app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 app.get('/categories', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'categories.html')));
 app.get('/ad', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'ad.html')));
@@ -313,30 +292,32 @@ app.get('/admin', requireAdminPage, (req, res) => res.sendFile(path.join(PUBLIC_
 /* =========================================================
    PUBLIC API
    ========================================================= */
-
 app.get('/api/settings', async (req, res) => {
-  const s = await getSettings();
-  if (!s) return res.json({});
-  res.json({
-    platformName: s.platform_name,
-    subtitle: s.subtitle,
-    logoUrl: s.logo_url,
-    supportWhatsapp: s.support_whatsapp,
-    supportEmail: s.support_email,
-    supportTelegram: s.support_telegram,
-    allowRegister: s.allow_register,
-    uploads: {
-      maxImages: s.max_images,
-      maxImageMb: s.max_image_mb,
-      maxVideoMb: s.max_video_mb
-    }
-  });
+  try{
+    const s = await getSettings();
+    if (!s) return res.json({});
+    res.json({
+      platformName: s.platform_name,
+      subtitle: s.subtitle,
+      logoUrl: s.logo_url,
+      supportWhatsapp: s.support_whatsapp,
+      supportEmail: s.support_email,
+      supportTelegram: s.support_telegram,
+      allowRegister: s.allow_register,
+      uploads: {
+        maxImages: s.max_images,
+        maxImageMb: s.max_image_mb,
+        maxVideoMb: s.max_video_mb
+      }
+    });
+  }catch(e){
+    console.error(e);
+    res.status(500).json({ error:'SERVER_ERROR' });
+  }
 });
 
 app.get('/api/categories', async (req, res) => {
   try {
-    
-
     const hasActive = await hasColumn('categories', 'active');
     const hasOrd = await hasColumn('categories', 'ord');
     const hasCreatedAt = await hasColumn('categories', 'created_at');
@@ -357,8 +338,11 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
+// ✅ Latest ads + image (first image from ad_images)
 app.get('/api/ads', async (req, res) => {
   try {
+    const lim = Math.min(toInt(req.query.limit, 20), 50);
+
     const r = await q(`
       SELECT 
         a.*,
@@ -372,7 +356,7 @@ app.get('/api/ads', async (req, res) => {
       FROM ads a
       WHERE a.status='published'
       ORDER BY a.created_at DESC
-      LIMIT 20
+      LIMIT ${lim}
     `);
 
     res.json(r.rows);
@@ -382,15 +366,26 @@ app.get('/api/ads', async (req, res) => {
   }
 });
 
-    app.get('/api/ads/featured', async (req, res) => {
+// ✅ Featured ads MUST also return image (same as /api/ads)
+app.get('/api/ads/featured', async (req, res) => {
   try {
+    const lim = Math.min(toInt(req.query.limit, 10), 50);
+
     const r = await q(`
-      SELECT *
-      FROM ads
-      WHERE status='published'
-        AND featured = true
-      ORDER BY created_at DESC
-      LIMIT 10
+      SELECT 
+        a.*,
+        (
+          SELECT url
+          FROM ad_images
+          WHERE ad_id = a.id
+          ORDER BY ord ASC
+          LIMIT 1
+        ) as image
+      FROM ads a
+      WHERE a.status='published'
+        AND COALESCE(a.featured,false) = true
+      ORDER BY a.created_at DESC
+      LIMIT ${lim}
     `);
 
     res.json(r.rows);
@@ -399,12 +394,10 @@ app.get('/api/ads', async (req, res) => {
     res.status(500).json({ error: 'SERVER_ERROR' });
   }
 });
-
 
 /* =========================================================
    AUTH API
    ========================================================= */
-
 app.get('/api/auth/me', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
   const u = await loadUser(req.session.user.id);
@@ -433,7 +426,6 @@ app.post('/api/auth/register', async (req, res) => {
     'SELECT id FROM users WHERE lower(email)=lower($1)',
     [email.trim()]
   );
-
   if (exists.rows[0]) return res.status(409).json({ error: 'EMAIL_EXISTS' });
 
   const hash = await bcrypt.hash(password, 10);
@@ -490,25 +482,29 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 /* =========================================================
-   ADS API
+   ADS API (Create/MyAds/Delete)
    ========================================================= */
-
 app.get('/api/my/ads', requireAuthApi, async (req, res) => {
   try {
-    
+    const userId = String(req.session.user.id);
 
-    const userId = req.session.user.id;
-
-    // إذا ماكانش user_id فـ DB (نادر دابا حيت كنزيدوه) رجع []
     const hasUserId = await hasColumn('ads', 'user_id');
     if (!hasUserId) return res.json([]);
 
     const r = await q(`
-      SELECT *
-      FROM ads
-      WHERE user_id=$1
-      ORDER BY created_at DESC
-    `, [String(userId)]);
+      SELECT 
+        a.*,
+        (
+          SELECT url
+          FROM ad_images
+          WHERE ad_id = a.id
+          ORDER BY ord ASC
+          LIMIT 1
+        ) as image
+      FROM ads a
+      WHERE a.user_id=$1
+      ORDER BY a.created_at DESC
+    `, [userId]);
 
     res.json(r.rows);
   } catch (e) {
@@ -522,8 +518,6 @@ app.post('/api/ads', requireAuthApi, upload.fields([
   { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    
-
     const s = await getSettings();
 
     const maxImages = toInt(s?.max_images, 6);
@@ -548,16 +542,12 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 
     const maxImageBytes = maxImageMb * 1024 * 1024;
     for (const f of images) {
-      if (f.size > maxImageBytes) {
-        return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
-      }
+      if (f.size > maxImageBytes) return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
     }
 
     if (videoFile) {
       const maxVideoBytes = maxVideoMb * 1024 * 1024;
-      if (videoFile.size > maxVideoBytes) {
-        return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
-      }
+      if (videoFile.size > maxVideoBytes) return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
     }
 
     const userId = String(req.session.user.id);
@@ -566,17 +556,12 @@ app.post('/api/ads', requireAuthApi, upload.fields([
     const hasCategoryId = await hasColumn('ads', 'category_id');
     const hasCategory = await hasColumn('ads', 'category');
     const hasUserId = await hasColumn('ads', 'user_id');
-
-    if (!hasUserId) {
-      return res.status(500).json({ error: 'ADS_USER_ID_MISSING' });
-    }
+    if (!hasUserId) return res.status(500).json({ error: 'ADS_USER_ID_MISSING' });
 
     let categoryId = null;
     if (hasCategoryId) {
       categoryId = await resolveCategoryId(category);
-      if (!categoryId) {
-        return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
-      }
+      if (!categoryId) return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
     }
 
     const videoUrl = videoFile ? safeFilenameUrl(videoFile) : null;
@@ -585,46 +570,24 @@ app.post('/api/ads', requireAuthApi, upload.fields([
     const videoCol = hasVideoUrl ? 'video_url' : (hasVideo ? 'video' : null);
 
     const client = await pool.connect();
-
     try {
       await client.query('begin');
 
       let adRes;
 
+      // ✅ featured ALWAYS false at creation (باش مايبانش مميز)
       if (hasCategoryId) {
         const cols = ['user_id','title','description','price','city','category_id','status','featured'];
         const vals = [userId, title, description, price, city, categoryId, 'published', false];
-
-        if (videoCol) {
-          cols.push(videoCol);
-          vals.push(videoUrl);
-        }
-
+        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
-
-        adRes = await client.query(
-          `INSERT INTO ads(${cols.join(',')})
-           VALUES(${ph})
-           RETURNING id`,
-          vals
-        );
+        adRes = await client.query(`INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`, vals);
       } else if (hasCategory) {
         const cols = ['user_id','title','description','price','city','category','status','featured'];
         const vals = [userId, title, description, price, city, String(category), 'published', false];
-
-        if (videoCol) {
-          cols.push(videoCol);
-          vals.push(videoUrl);
-        }
-
+        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
-
-        adRes = await client.query(
-          `INSERT INTO ads(${cols.join(',')})
-           VALUES(${ph})
-           RETURNING id`,
-          vals
-        );
+        adRes = await client.query(`INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`, vals);
       } else {
         await client.query('rollback');
         return res.status(500).json({ error: 'ADS_CATEGORY_COLUMN_MISSING' });
@@ -635,16 +598,13 @@ app.post('/api/ads', requireAuthApi, upload.fields([
       for (let idx = 0; idx < images.length; idx++) {
         const url = safeFilenameUrl(images[idx]);
         await client.query(
-          `INSERT INTO ad_images (ad_id,url,ord)
-           VALUES ($1,$2,$3)`,
+          `INSERT INTO ad_images (ad_id,url,ord) VALUES ($1,$2,$3)`,
           [adId, url, idx]
         );
       }
 
       await client.query('commit');
-
       res.json({ ok: true, ad: { id: adId } });
-
     } catch (e) {
       await client.query('rollback');
       console.error(e);
@@ -652,7 +612,6 @@ app.post('/api/ads', requireAuthApi, upload.fields([
     } finally {
       client.release();
     }
-
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
@@ -661,19 +620,13 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 
 app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
   try {
-    
-
     const adId = req.params.id;
     const userId = String(req.session.user.id);
 
     const hasUserId = await hasColumn('ads', 'user_id');
     if (!hasUserId) return res.status(500).json({ error: 'ADS_USER_ID_MISSING' });
 
-    const r = await q(
-      'SELECT id,user_id FROM ads WHERE id=$1',
-      [adId]
-    );
-
+    const r = await q('SELECT id,user_id FROM ads WHERE id=$1', [adId]);
     if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
 
     if (String(r.rows[0].user_id) !== userId) {
@@ -693,7 +646,6 @@ app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
 /* =========================================================
    Health
    ========================================================= */
-
 app.get('/api/health', async (req, res) => {
   try {
     await q('SELECT 1');
@@ -706,7 +658,6 @@ app.get('/api/health', async (req, res) => {
 /* =========================================================
    Admin Routes
    ========================================================= */
-
 app.use('/api/admin', adminRoutes);
 
 /* =========================================================
@@ -715,15 +666,11 @@ app.use('/api/admin', adminRoutes);
 async function start() {
   try {
     await ensureDbShape();
-    await ensureCoreSettings(); // مهم كذلك
-
-    app.listen(PORT, () => {
-      console.log(`✅ Samsar server running on http://localhost:${PORT}`);
-    });
+    await ensureCoreSettings();
+    app.listen(PORT, () => console.log(`✅ Samsar server running on http://localhost:${PORT}`));
   } catch (err) {
     console.error('Startup failed:', err);
     process.exit(1);
   }
 }
-
 start();

@@ -353,20 +353,46 @@ app.get('/api/categories', async (req, res) => {
 
 app.get('/api/ads', async (req, res) => {
   try {
-    await ensureDbShape();
+    const r = await q(`
+      SELECT 
+        a.*,
+        (
+          SELECT url
+          FROM ad_images
+          WHERE ad_id = a.id
+          ORDER BY ord ASC
+          LIMIT 1
+        ) as image
+      FROM ads a
+      WHERE a.status='published'
+      ORDER BY a.created_at DESC
+      LIMIT 20
+    `);
 
-    const { q: query, category, city, limit } = req.query;
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
 
-    const lim = Math.min(parseInt(limit || '20', 10), 50);
-    const where = [`a.status='published'`];
-    const params = [];
-    let i = 1;
+    app.get('/api/ads/featured', async (req, res) => {
+  try {
+    const r = await q(`
+      SELECT *
+      FROM ads
+      WHERE status='published'
+        AND featured = true
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
 
-    if (query) {
-      where.push(`(a.title ILIKE $${i} OR a.description ILIKE $${i})`);
-      params.push(`%${query}%`);
-      i++;
-    }
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
 
     if (category) {
       // إذا عندك category_id
@@ -399,12 +425,9 @@ app.get('/api/ads', async (req, res) => {
       LIMIT ${lim}
     `, params);
 
-    res.json(r.rows);
-  } catch (e) {
+    res.json(r.rows); (e) 
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
-});
 
 /* =========================================================
    AUTH API

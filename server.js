@@ -540,23 +540,29 @@ app.post('/api/ads', requireAuthApi, upload.fields([
       description: z.string().min(3),
       price: z.coerce.number().min(0),
       city: z.string().min(1),
-      category: z.string().min(1) // UI value
+      category: z.string().min(1)
     });
 
     const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
+    }
 
     const images = (req.files?.images || []).slice(0, maxImages);
     const videoFile = (req.files?.video && req.files.video[0]) ? req.files.video[0] : null;
 
     const maxImageBytes = maxImageMb * 1024 * 1024;
     for (const f of images) {
-      if (f.size > maxImageBytes) return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
+      if (f.size > maxImageBytes) {
+        return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
+      }
     }
 
     if (videoFile) {
       const maxVideoBytes = maxVideoMb * 1024 * 1024;
-      if (videoFile.size > maxVideoBytes) return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
+      if (videoFile.size > maxVideoBytes) {
+        return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
+      }
     }
 
     const userId = String(req.session.user.id);
@@ -573,40 +579,55 @@ app.post('/api/ads', requireAuthApi, upload.fields([
     let categoryId = null;
     if (hasCategoryId) {
       categoryId = await resolveCategoryId(category);
-      if (!categoryId) return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
+      if (!categoryId) {
+        return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
+      }
     }
 
     const videoUrl = videoFile ? safeFilenameUrl(videoFile) : null;
     const hasVideoUrl = await hasColumn('ads', 'video_url');
     const hasVideo = await hasColumn('ads', 'video');
+    const videoCol = hasVideoUrl ? 'video_url' : (hasVideo ? 'video' : null);
 
     const client = await pool.connect();
+
     try {
       await client.query('begin');
 
       let adRes;
 
-      // video column choose
-      const videoCol = hasVideoUrl ? 'video_url' : (hasVideo ? 'video' : null);
-
       if (hasCategoryId) {
-        const cols = ['id','user_id','title','description','price','city','category_id','status','featured'];
-const vals = [adId, userId, title, description, price, city, categoryId, 'published', false];
-        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
+        const cols = ['user_id','title','description','price','city','category_id','status','featured'];
+        const vals = [userId, title, description, price, city, categoryId, 'published', false];
+
+        if (videoCol) {
+          cols.push(videoCol);
+          vals.push(videoUrl);
+        }
 
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
+
         adRes = await client.query(
-          `INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`,
+          `INSERT INTO ads(${cols.join(',')})
+           VALUES(${ph})
+           RETURNING id`,
           vals
         );
       } else if (hasCategory) {
-        const cols = ['id','user_id','title','description','price','city','category','status','featured'];
-const vals = [adId, userId, title, description, price, city, String(category), 'published', false];
-        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
+        const cols = ['user_id','title','description','price','city','category','status','featured'];
+        const vals = [userId, title, description, price, city, String(category), 'published', false];
+
+        if (videoCol) {
+          cols.push(videoCol);
+          vals.push(videoUrl);
+        }
 
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
+
         adRes = await client.query(
-          `INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`,
+          `INSERT INTO ads(${cols.join(',')})
+           VALUES(${ph})
+           RETURNING id`,
           vals
         );
       } else {
@@ -616,17 +637,19 @@ const vals = [adId, userId, title, description, price, city, String(category), '
 
       const adId = adRes.rows[0].id;
 
-      // images table
       for (let idx = 0; idx < images.length; idx++) {
         const url = safeFilenameUrl(images[idx]);
         await client.query(
-          `INSERT INTO ad_images (ad_id,url,ord) VALUES ($1,$2,$3)`,
+          `INSERT INTO ad_images (ad_id,url,ord)
+           VALUES ($1,$2,$3)`,
           [adId, url, idx]
         );
       }
 
       await client.query('commit');
+
       res.json({ ok: true, ad: { id: adId } });
+
     } catch (e) {
       await client.query('rollback');
       console.error(e);
@@ -634,6 +657,7 @@ const vals = [adId, userId, title, description, price, city, String(category), '
     } finally {
       client.release();
     }
+
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });

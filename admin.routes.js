@@ -255,6 +255,16 @@ async function ensureSchema(req) {
     );
   `);
 
+  // Ensure ads.user_id exists (needed by server.js)
+  const adsExists = await pool.query(
+    `SELECT 1 FROM information_schema.tables WHERE table_name='ads' LIMIT 1`
+  ).then(r => !!r.rows[0]).catch(() => false);
+
+  if (adsExists) {
+    await pool.query(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
+    await pool.query(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
+  }
+  
   schemaReady = true;
 }
 

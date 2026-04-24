@@ -204,6 +204,30 @@ async function resolveCategoryId(input) {
   );
   return r.rows[0]?.id ?? null;
 }
+/* -------------------- DB Shape (Auto-fix) -------------------- */
+let adsShapeReady = false;
+
+async function ensureAdsShape() {
+  if (adsShapeReady) return;
+// Run once on boot
+ensureAdsShape().catch(console.error);
+  // تأكد جدول ads موجود
+  const t = await q(
+    `SELECT 1 FROM information_schema.tables WHERE table_name='ads' LIMIT 1`
+  );
+  if (!t.rows[0]) {
+    adsShapeReady = true;
+    return;
+  }
+
+  // زيد user_id إذا ما كانش
+  await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
+
+  // (اختياري) زيد updated_at إذا كتستعملو فـ UPDATE
+  await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
+
+  adsShapeReady = true;
+}
 
 /* -------------------- Upload -------------------- */
 

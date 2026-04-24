@@ -391,14 +391,13 @@ function absUrlMaybe(u){
   return v.startsWith('/') ? v : ('/' + v);
 }
 
-  // ✅ supports many shapes:
-  // - { images: ["/uploads/x.jpg"] }
-  // - { image: "/uploads/x.jpg" }  (server adds "image" subquery)
-  // - { image_url: "..."} / { imageUrl: "..."}
-  // - { images: "..." } (rare)
-  function firstImage(ad){
-  if(ad && ad.image) return ad.image; // ✅ جاي من API
+ function firstImage(ad){
+  // ✅ server كيرجع image (أول صورة) فـ field سميتو image
+  if (ad && ad.image) return ad.image;
+
+  // ✅ إلا كنت كترجع images array فشي صفحات أخرى
   if(ad && Array.isArray(ad.images) && ad.images.length) return ad.images[0];
+
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
       <rect width="100%" height="100%" fill="#0b1222"/>

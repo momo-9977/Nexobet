@@ -63,27 +63,12 @@ body{
 }
 .logo-img img{width:100%;height:100%;object-fit:cover;display:block}
 
-.brand-text{
-  text-align:right;
-}
-
-.brand-text h1{
-  margin:0;
-  font-size:20px;
-}
-
-.brand-text p{
-  margin:0;
-  font-size:13px;
-  color:var(--muted);
-}
+.brand-text{ text-align:right; }
+.brand-text h1{ margin:0; font-size:20px; }
+.brand-text p{ margin:0; font-size:13px; color:var(--muted); }
 
 /* ✅ Premium Support Icon */
-.header-actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
+.header-actions{ display:flex; align-items:center; gap:10px; }
 .support-btn{
   width:44px;height:44px;
   border-radius:14px;
@@ -106,9 +91,7 @@ body{
   color:rgba(255,255,255,.65);
   display:none;
 }
-@media(min-width:900px){
-  .support-btn::after{display:block}
-}
+@media(min-width:900px){ .support-btn::after{display:block} }
 .support-btn .badge{
   position:absolute;
   top:-8px;
@@ -131,7 +114,6 @@ body{
   border-radius:18px;
   overflow:hidden;
 }
-
 .hero-slide{
   position:absolute;
   inset:0;
@@ -140,16 +122,14 @@ body{
   opacity:0;
   transition:opacity .6s ease;
 }
-
 .hero-slide.active{opacity:1}
-
 .hero::after{
   content:"";
   position:absolute;
   inset:0;
   background:linear-gradient(180deg,transparent,rgba(0,0,0,.5));
+  pointer-events:none;
 }
-
 .hero-dots{
   position:absolute;
   bottom:15px;
@@ -159,27 +139,16 @@ body{
   gap:8px;
   z-index:5;
 }
-
 .hero-dots span{
-  width:10px;
-  height:10px;
-  border-radius:50%;
+  width:10px;height:10px;border-radius:50%;
   background:rgba(255,255,255,.4);
   cursor:pointer;
 }
-
-.hero-dots span.active{
-  background:white;
-}
+.hero-dots span.active{ background:#fff; }
 
 /* ================= SEARCH ================= */
 
-.search-box{
-  margin-top:25px;
-  display:flex;
-  gap:10px;
-}
-
+.search-box{ margin-top:25px; display:flex; gap:10px; }
 .search-box input{
   flex:1;
   padding:14px;
@@ -188,7 +157,6 @@ body{
   background:rgba(255,255,255,.05);
   color:white;
 }
-
 .search-box button{
   padding:14px 18px;
   border:none;
@@ -196,31 +164,20 @@ body{
   background:linear-gradient(135deg,var(--accent),var(--accent-2));
   color:white;
   font-weight:700;
+  cursor:pointer;
 }
 
 /* ================= SECTION ================= */
 
-.section{
-  margin-top:35px;
-}
-
+.section{ margin-top:35px; }
 .section-header{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-bottom:18px;
 }
-
-.section-header h2{
-  margin:0;
-  font-size:18px;
-}
-
-.section-header a{
-  color:var(--accent);
-  text-decoration:none;
-  font-size:14px;
-}
+.section-header h2{ margin:0; font-size:18px; }
+.section-header a{ color:var(--accent); text-decoration:none; font-size:14px; }
 
 /* ================= ADS GRID ================= */
 
@@ -229,7 +186,6 @@ body{
   grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
   gap:18px;
 }
-
 .ad-card{
   background:var(--card-bg);
   border-radius:16px;
@@ -240,20 +196,15 @@ body{
   color:inherit;
   display:block;
 }
-
 .ad-card:hover{transform:translateY(-6px)}
-
 .ad-image{
   width:100%;
   height:180px;
   object-fit:cover;
   background:rgba(255,255,255,.04);
 }
-
 .ad-content{padding:14px}
-
 .ad-title{font-size:15px;margin:0 0 6px}
-
 .ad-price{font-weight:800}
 
 .premium-badge{
@@ -275,7 +226,6 @@ body{
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
   gap:14px;
 }
-
 .category{
   background:rgba(255,255,255,.05);
   padding:18px;
@@ -284,18 +234,13 @@ body{
   cursor:pointer;
   transition:.3s;
 }
-
-.category:hover{
-  background:rgba(255,255,255,.08);
-}
+.category:hover{ background:rgba(255,255,255,.08); }
 
 /* ================= NAV (UNCHANGED) ================= */
 
 .modern-flat-nav{
   position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
+  bottom:0; left:0; right:0;
   height:70px;
   background:#ffffff;
   border-top:1px solid #e5e7eb;
@@ -304,7 +249,6 @@ body{
   align-items:center;
   z-index:999;
 }
-
 .modern-flat-item{
   flex:1;
   text-align:center;
@@ -318,19 +262,10 @@ body{
   justify-content:center;
   gap:4px;
 }
+.modern-flat-nav svg{ width:22px !important; height:22px !important; }
+.modern-flat-item.active{ color:#16a34a; }
 
-.modern-flat-nav svg{
-  width:22px !important;
-  height:22px !important;
-}
-
-.modern-flat-item.active{
-  color:#16a34a;
-}
-
-@media(max-width:700px){
-  .hero{height:240px}
-}
+@media(max-width:700px){ .hero{height:240px} }
 </style>
 </head>
 
@@ -338,7 +273,6 @@ body{
 
 <div class="page">
 
-<!-- HEADER -->
 <header class="home-brand-bar">
   <div class="logo-area">
     <div class="logo-img" id="logoBox">LM</div>
@@ -348,11 +282,9 @@ body{
     </div>
   </div>
 
-  <!-- ✅ Support icon premium -->
   <div class="header-actions">
     <a class="support-btn" href="/support" title="الدعم">
       <span class="badge">★</span>
-      <!-- headset icon -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22">
         <path d="M4 12a8 8 0 0 1 16 0"/>
         <path d="M4 12v4a2 2 0 0 0 2 2h2v-6H6a2 2 0 0 0-2 2z"/>
@@ -365,7 +297,6 @@ body{
 
 <!-- HERO -->
 <div class="hero" id="hero">
-  <!-- slides injected -->
   <div class="hero-dots" id="heroDots"></div>
 </div>
 
@@ -375,27 +306,21 @@ body{
   <button id="searchBtn">بحث</button>
 </div>
 
-<!-- PREMIUM ADS -->
+<!-- FEATURED -->
 <div class="section">
   <div class="section-header">
     <h2>إعلانات مميزة</h2>
   </div>
-
-  <div class="ads-grid" id="featuredGrid">
-    <!-- filled from API -->
-  </div>
+  <div class="ads-grid" id="featuredGrid"></div>
 </div>
 
-<!-- LATEST ADS -->
+<!-- LATEST -->
 <div class="section">
   <div class="section-header">
     <h2>أحدث الإعلانات</h2>
     <a href="/categories">عرض الكل</a>
   </div>
-
-  <div class="ads-grid" id="latestGrid">
-    <!-- filled from API -->
-  </div>
+  <div class="ads-grid" id="latestGrid"></div>
 </div>
 
 <!-- CATEGORIES -->
@@ -403,15 +328,11 @@ body{
   <div class="section-header">
     <h2>الأقسام</h2>
   </div>
-
-  <div class="categories" id="catsGrid">
-    <!-- filled from API -->
-  </div>
+  <div class="categories" id="catsGrid"></div>
 </div>
 
 </div>
 
-<!-- NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
 
   <a href="/" class="modern-flat-item active">
@@ -447,7 +368,7 @@ body{
 
 <script>
 /* ===========================
-   API helpers
+   helpers
 =========================== */
 async function jget(url){
   const res = await fetch(url, { credentials:'include' });
@@ -455,16 +376,28 @@ async function jget(url){
   if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
   return data;
 }
-
 function safeText(s){ return String(s || '').trim(); }
-
 function formatPrice(p){
   const n = Number(p);
   if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
   return (p ? String(p) + ' د.م' : '');
 }
+function absUrlMaybe(u){
+  const v = safeText(u);
+  if(!v) return '';
+  // already absolute or data:
+  if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
+  // ensure leading slash
+  return v.startsWith('/') ? v : ('/' + v);
+}
 
-function firstImage(ad){
+  // ✅ supports many shapes:
+  // - { images: ["/uploads/x.jpg"] }
+  // - { image: "/uploads/x.jpg" }  (server adds "image" subquery)
+  // - { image_url: "..."} / { imageUrl: "..."}
+  // - { images: "..." } (rare)
+  function firstImage(ad){
+  if(ad && ad.image) return ad.image; // ✅ جاي من API
   if(ad && Array.isArray(ad.images) && ad.images.length) return ad.images[0];
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
@@ -473,14 +406,11 @@ function firstImage(ad){
     </svg>`
   );
 }
-
 function renderAdCard(ad, showBadge){
   const id = ad.id;
   const img = firstImage(ad);
   const title = safeText(ad.title);
   const price = formatPrice(ad.price);
-
-  // صفحة الإعلان عندك: /ad (وكتخدم بـ query غالبا). نخليه id فـ query باش ما نكسروش routing ديالك.
   const href = '/ad?id=' + encodeURIComponent(id);
 
   return `
@@ -498,12 +428,11 @@ function renderAdCard(ad, showBadge){
 }
 
 /* ===========================
-   1) Settings -> Name/Sub/Logo
+   1) Brand
 =========================== */
 async function loadBrand(){
   try{
     const s = await jget('/api/settings');
-
     const name = safeText(s.platformName) || 'Le Marché';
     const sub  = safeText(s.subtitle) || 'Vendre et acheter facilement';
     const logo = safeText(s.logoUrl);
@@ -513,39 +442,37 @@ async function loadBrand(){
 
     const logoBox = document.getElementById('logoBox');
     if(logo){
-      logoBox.innerHTML = `<img src="${logo}" alt="logo">`;
+      logoBox.innerHTML = `<img src="${absUrlMaybe(logo)}" alt="logo">`;
     }else{
-      // fallback initials
       logoBox.textContent = (name.split(' ').map(x=>x[0]).join('').slice(0,2) || 'LM').toUpperCase();
     }
-  }catch(e){
-    // نخلي defaults
-  }
+  }catch(_){}
 }
 
 /* ===========================
-   2) Hero slides from /api/home/slides
+   2) Hero slides
+   - expects server: GET /api/home/slides -> [{imageUrl, linkUrl, order}]
 =========================== */
 let heroTimer = null;
 function startHero(slides, intervalMs){
   const hero = document.getElementById('hero');
   const dotsWrap = document.getElementById('heroDots');
 
-  // remove old slides
   hero.querySelectorAll('.hero-slide').forEach(x=>x.remove());
   dotsWrap.innerHTML = '';
 
   if(!slides.length){
-    // fallback slide
-    slides = [{
-      imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop'
-    }];
+    slides = [{ imageUrl:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop' }];
   }
 
   slides.forEach((sl, i)=>{
-    const d = document.createElement('div');
+    const d = document.createElement('a');
     d.className = 'hero-slide' + (i===0 ? ' active' : '');
-    d.style.backgroundImage = `url('${sl.imageUrl}')`;
+    d.style.backgroundImage = `url('${absUrlMaybe(sl.imageUrl)}')`;
+    d.href = sl.linkUrl ? sl.linkUrl : '#';
+    d.style.display = 'block';
+    d.style.textDecoration = 'none';
+    if(!sl.linkUrl) d.style.pointerEvents = 'none';
     hero.insertBefore(d, dotsWrap);
 
     const dot = document.createElement('span');
@@ -566,13 +493,9 @@ function startHero(slides, intervalMs){
     dots[current].classList.add('active');
   }
 
-  // expose for clicks
-  window.__heroGoTo = goTo;
-
   if(heroTimer) clearInterval(heroTimer);
   heroTimer = setInterval(()=>{
-    const next = (current + 1) % heroSlides.length;
-    goTo(next);
+    goTo((current+1) % heroSlides.length);
   }, Math.max(1500, intervalMs || 4000));
 }
 
@@ -580,30 +503,31 @@ async function loadHero(){
   try{
     const rows = await jget('/api/home/slides');
     const slides = (Array.isArray(rows) ? rows : []).map(x=>({
-      imageUrl: x.imageUrl,
-      linkUrl: x.linkUrl || ''
+      imageUrl: x.imageUrl || x.image_url || '',
+      linkUrl: x.linkUrl || x.link_url || ''
     })).filter(x=>x.imageUrl);
-
     startHero(slides, 4000);
-  }catch(e){
+  }catch(_){
     startHero([], 4000);
   }
 }
 
 /* ===========================
    3) Ads
-   - featured: /api/ads?featured=true
-   - latest:   /api/ads?limit=12
-   NOTE: server يعرض غير status='published'
+   - Featured should ONLY show featured=true
+   - Latest shows all published
 =========================== */
 async function loadFeatured(){
   const grid = document.getElementById('featuredGrid');
   grid.innerHTML = '';
   try{
-    const ads = await jget('/api/ads?featured=true&limit=8');
+    // ✅ الأفضل: endpoint خاص بالمميز
+    const ads = await jget('/api/ads/featured');
     const items = Array.isArray(ads) ? ads : [];
-    grid.innerHTML = items.map(a=>renderAdCard(a, true)).join('') || `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات مميزة</div>`;
-  }catch(e){
+    grid.innerHTML =
+      items.map(a=>renderAdCard(a, true)).join('') ||
+      `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات مميزة</div>`;
+  }catch(_){
     grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل الإعلانات المميزة</div>`;
   }
 }
@@ -612,10 +536,12 @@ async function loadLatest(){
   const grid = document.getElementById('latestGrid');
   grid.innerHTML = '';
   try{
-    const ads = await jget('/api/ads?limit=12');
+    const ads = await jget('/api/ads');
     const items = Array.isArray(ads) ? ads : [];
-    grid.innerHTML = items.map(a=>renderAdCard(a, false)).join('') || `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات</div>`;
-  }catch(e){
+    grid.innerHTML =
+      items.map(a=>renderAdCard(a, false)).join('') ||
+      `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات</div>`;
+  }catch(_){
     grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل أحدث الإعلانات</div>`;
   }
 }
@@ -629,18 +555,17 @@ async function loadCats(){
   try{
     const cats = await jget('/api/categories');
     const items = Array.isArray(cats) ? cats : [];
-    grid.innerHTML = items.slice(0, 12).map(c=>{
+    grid.innerHTML = items.slice(0,12).map(c=>{
       const name = safeText(c.name) || '—';
-      // categories page عندك: /categories (وتقدر تدير filter لاحقاً)
       return `<div class="category" data-id="${c.id}">${name}</div>`;
     }).join('') || `<div style="color:rgba(255,255,255,.65)">لا توجد أقسام</div>`;
-  }catch(e){
+  }catch(_){
     grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل الأقسام</div>`;
   }
 }
 
 /* ===========================
-   Search -> go to categories with q
+   Search
 =========================== */
 document.getElementById('searchBtn').addEventListener('click', ()=>{
   const q = document.getElementById('searchInput').value.trim();
@@ -649,7 +574,7 @@ document.getElementById('searchBtn').addEventListener('click', ()=>{
 });
 
 /* ===========================
-   Start
+   Init
 =========================== */
 (async function init(){
   await loadBrand();

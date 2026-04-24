@@ -278,9 +278,10 @@ router.get('/ping', requireAdmin, async (req, res) => {
 });
 
 /* ============================
-   CATEGORIES (FIXED)
+   CATEGORIES (FIXED) ✅
    - Admin UI sends: { id:"phones", name, description, image, order, active }
-   - DB can be UUID id => store admin id in categories.key (TEXT UNIQUE)
+   - We store UI id into categories.key (TEXT UNIQUE)
+   - DB categories.id could be INTEGER (serial) OR UUID => we auto-detect
 ============================ */
 async function ensureCategoriesShape(pool) {
   const exists = await hasTable(pool, 'categories').catch(() => false);
@@ -291,7 +292,6 @@ async function ensureCategoriesShape(pool) {
     if (!ok) await pool.query(sql);
   };
 
-  // key for admin
   await addCol('key', `ALTER TABLE categories ADD COLUMN key TEXT UNIQUE`);
   await addCol('description', `ALTER TABLE categories ADD COLUMN description TEXT`);
   await addCol('image_url', `ALTER TABLE categories ADD COLUMN image_url TEXT`);
@@ -299,9 +299,24 @@ async function ensureCategoriesShape(pool) {
   await addCol('active', `ALTER TABLE categories ADD COLUMN active BOOLEAN DEFAULT true`);
   await addCol('created_at', `ALTER TABLE categories ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW()`);
   await addCol('updated_at', `ALTER TABLE categories ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW()`);
+}
 
-  // ensure name exists (some DBs have it already)
-  await addCol('name', `ALTER TABLE categories ADD COLUMN name TEXT`);
+async function getCategoriesIdType(pool) {
+  const r = await pool.query(
+    `SELECT data_type, udt_name
+     FROM information_schema.columns
+     WHERE table_name='categories' AND column_name='id'
+     LIMIT 1`
+  );
+  const row = r.rows[0] || {};
+  // udt_name for uuid is usually "uuid"
+  const isUuid = String(row.udt_name || '').toLowerCase() === 'uuid';
+  // integers: integer, int4, int8, bigint, serial...
+  const isIntLike =
+    ['integer', 'bigint'].includes(String(row.data_type || '').toLowerCase()) ||
+    ['int4', 'int8'].includes(String(row.udt_name || '').toLowerCase());
+
+  return { isUuid, isIntLike, raw: row };
 }
 
 router.get('/categories', requireAdmin, async (req, res) => {
@@ -318,7 +333,8 @@ router.get('/categories', requireAdmin, async (req, res) => {
 
     res.json({
       items: r.rows.map(c => ({
-        id: c.key || String(c.id), // what admin UI uses
+        // admin UI uses "id" as the category key string
+        id: c.key || String(c.id),
         dbId: c.id,
         key: c.key || '',
         name: c.name || '',
@@ -341,8 +357,12 @@ router.post('/categories', requireAdmin, async (req, res) => {
     await ensureCategoriesShape(pool);
 
     const b = req.body || {};
-    const key = String(b.id || b.key || '').trim(); // phones
+    const key = String(b.id || b.key || '').trim(); // Category ID (key) from admin UI
     const name = String(b.name || '').trim();
+    const description = String(b.description || '');
+    const image = String(b.image || '') || null;
+    const ord = toInt(b.order, 0);
+    const active = (b.active === undefined) ? true : toBool(b.active);
 
     if (!key || !name) {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'id(key) + name required' });
@@ -352,26 +372,47 @@ router.post('/categories', requireAdmin, async (req, res) => {
     const ex = await pool.query(`SELECT 1 FROM categories WHERE key=$1 LIMIT 1`, [key]);
     if (ex.rows[0]) return res.status(409).json({ error: 'ALREADY_EXISTS' });
 
-    const dbId = crypto.randomUUID();
+    const { isUuid, isIntLike } = await getCategoriesIdType(pool);
 
-    await pool.query(
-      `INSERT INTO categories(id, key, name, description, image_url, ord, active, created_at, updated_at)
-       VALUES($1,$2,$3,$4,$5,$6,$7,NOW(),NOW())`,
-      [
-        dbId,
-        key,
-        name,
-        String(b.description || ''),
-        String(b.image || '') || null,
-        toInt(b.order, 0),
-        (b.active === undefined) ? true : toBool(b.active)
-      ]
-    );
+    let dbId = null;
 
-    await audit(req, 'categories.create', dbId, { key, name });
+    if (isUuid) {
+      // categories.id is UUID
+      dbId = crypto.randomUUID();
+      await pool.query(
+        `INSERT INTO categories(id, key, name, description, image_url, ord, active, created_at, updated_at)
+         VALUES($1,$2,$3,$4,$5,$6,$7,NOW(),NOW())
+         RETURNING id`,
+        [dbId, key, name, description, image, ord, active]
+      );
+    } else if (isIntLike) {
+      // categories.id is INTEGER/SERIAL => DO NOT pass id, let DB generate it
+      const ins = await pool.query(
+        `INSERT INTO categories(key, name, description, image_url, ord, active, created_at, updated_at)
+         VALUES($1,$2,$3,$4,$5,$6,NOW(),NOW())
+         RETURNING id`,
+        [key, name, description, image, ord, active]
+      );
+      dbId = ins.rows[0]?.id ?? null;
+    } else {
+      // fallback: try insert without id (most compatible)
+      const ins = await pool.query(
+        `INSERT INTO categories(key, name, description, image_url, ord, active, created_at, updated_at)
+         VALUES($1,$2,$3,$4,$5,$6,NOW(),NOW())
+         RETURNING id`,
+        [key, name, description, image, ord, active]
+      );
+      dbId = ins.rows[0]?.id ?? null;
+    }
+
+    await audit(req, 'categories.create', String(dbId ?? key), { key, name });
     res.json({ ok: true, id: key, dbId });
   } catch (e) {
     console.error(e);
+    // duplicate key or duplicate unique index
+    if (String(e.message || '').toLowerCase().includes('duplicate')) {
+      return res.status(409).json({ error: 'ALREADY_EXISTS' });
+    }
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });
@@ -385,6 +426,7 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
     const keyOrId = String(req.params.id || '').trim();
     const b = req.body || {};
 
+    // find row by key OR id (works for uuid/int)
     const row = await pool.query(
       `SELECT id FROM categories WHERE key=$1 OR id::text=$1 LIMIT 1`,
       [keyOrId]
@@ -406,7 +448,7 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
 
     await pool.query(`UPDATE categories SET ${sets.join(', ')} WHERE id=$1`, params);
 
-    await audit(req, 'categories.update', dbId, { keyOrId });
+    await audit(req, 'categories.update', String(dbId), { keyOrId });
     res.json({ ok: true });
   } catch (e) {
     console.error(e);
@@ -430,7 +472,7 @@ router.delete('/categories/:id', requireAdmin, async (req, res) => {
 
     await pool.query(`DELETE FROM categories WHERE id=$1`, [dbId]);
 
-    await audit(req, 'categories.delete', dbId, { keyOrId });
+    await audit(req, 'categories.delete', String(dbId), { keyOrId });
     res.json({ ok: true });
   } catch (e) {
     console.error(e);

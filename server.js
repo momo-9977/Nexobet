@@ -166,6 +166,44 @@ function safeFilenameUrl(file) {
   if (!file) return null;
   return '/uploads/' + file.filename;
 }
+async function hasColumn(table, column) {
+  try {
+    const r = await q(
+      `SELECT 1
+       FROM information_schema.columns
+       WHERE table_name=$1 AND column_name=$2
+       LIMIT 1`,
+      [table, column]
+    );
+    return !!r.rows[0];
+  } catch {
+    return false;
+  }
+}
+
+// يحول category اللي جاية من UI (key/name/id/uuid) إلى id ديال categories الحقيقي
+async function resolveCategoryId(input) {
+  const v = String(input || '').trim();
+  if (!v) return null;
+
+  // إذا جا رقم (id int)
+  if (/^\d+$/.test(v)) return parseInt(v, 10);
+
+  // إذا جا UUID
+  const isUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+  if (isUuid) return v;
+
+  // غير ذلك: نقلب عليه فـ categories.key أو categories.name
+  const r = await q(
+    `SELECT id
+     FROM categories
+     WHERE key=$1 OR lower(name)=lower($1)
+     LIMIT 1`,
+    [v]
+  );
+  return r.rows[0]?.id ?? null;
+}
 
 /* -------------------- Upload -------------------- */
 
@@ -378,15 +416,11 @@ app.get('/api/my/ads', requireAuthApi, async (req, res) => {
 
   res.json(r.rows);
 });
-
-app.post('/api/ads',
-  requireAuthApi,
-  upload.fields([
-    { name: 'images', maxCount: 6 },
-    { name: 'video', maxCount: 1 }
-  ]),
-  async (req, res) => {
-
+app.post('/api/ads', requireAuthApi, upload.fields([
+  { name: 'images', maxCount: 6 },
+  { name: 'video', maxCount: 1 }
+]), async (req, res) => {
+  try {
     const s = await getSettings();
 
     const maxImages = toInt(s?.max_images, 6);
@@ -398,80 +432,82 @@ app.post('/api/ads',
       description: z.string().min(3),
       price: z.coerce.number().min(0),
       city: z.string().min(1),
-      category: z.string().min(1)
+      category: z.string().min(1) // جاي من UI (key/name/...)
     });
 
     const parsed = schema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: 'VALIDATION_ERROR' });
-    }
+    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
 
     const images = (req.files?.images || []).slice(0, maxImages);
-    const videoFile =
-      (req.files?.video && req.files.video[0])
-        ? req.files.video[0]
-        : null;
+    const videoFile = (req.files?.video && req.files.video[0]) ? req.files.video[0] : null;
 
     const maxImageBytes = maxImageMb * 1024 * 1024;
     for (const f of images) {
-      if (f.size > maxImageBytes) {
-        return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
-      }
+      if (f.size > maxImageBytes) return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
     }
 
     if (videoFile) {
       const maxVideoBytes = maxVideoMb * 1024 * 1024;
-      if (videoFile.size > maxVideoBytes) {
-        return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
-      }
+      if (videoFile.size > maxVideoBytes) return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
     }
 
     const userId = req.session.user.id;
     const { title, description, price, city, category } = parsed.data;
 
+    // ✅ هنا الإصلاح: نحولو category -> category_id الحقيقي
+    const categoryId = await resolveCategoryId(category);
+    if (!categoryId) return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
+
+    // شنو كاين فـ ads؟ category_id ولا category؟
+    const hasCategoryId = await hasColumn('ads', 'category_id');
+    const hasCategory = await hasColumn('ads', 'category');
+
     const client = await pool.connect();
     try {
-      await client.query('BEGIN');
+      await client.query('begin');
 
-      const adRes = await client.query(`
-        INSERT INTO ads
-          (user_id,title,description,price,city,category_id,status,featured,video_url)
-        VALUES
-          ($1,$2,$3,$4,$5,$6,'published',false,$7)
-        RETURNING id
-      `, [
-        userId,
-        title,
-        description,
-        price,
-        city,
-        category,
-        videoFile ? safeFilenameUrl(videoFile) : null
-      ]);
+      // نبنيو INSERT حسب الأعمدة المتوفرة
+      let adRes;
+      if (hasCategoryId) {
+        adRes = await client.query(`
+          insert into ads (user_id,title,description,price,city,category_id,status,featured,video_url)
+          values ($1,$2,$3,$4,$5,$6,'published',false,$7)
+          returning id
+        `, [userId, title, description, price, city, categoryId, videoFile ? safeFilenameUrl(videoFile) : null]);
+      } else if (hasCategory) {
+        adRes = await client.query(`
+          insert into ads (user_id,title,description,price,city,category,status,featured,video_url)
+          values ($1,$2,$3,$4,$5,$6,'published',false,$7)
+          returning id
+        `, [userId, title, description, price, city, String(category), videoFile ? safeFilenameUrl(videoFile) : null]);
+      } else {
+        return res.status(500).json({ error: 'ADS_CATEGORY_COLUMN_MISSING' });
+      }
 
       const adId = adRes.rows[0].id;
 
       for (let idx = 0; idx < images.length; idx++) {
+        const url = safeFilenameUrl(images[idx]);
         await client.query(
-          `INSERT INTO ad_images (ad_id,url,ord)
-           VALUES ($1,$2,$3)`,
-          [adId, safeFilenameUrl(images[idx]), idx]
+          `insert into ad_images (ad_id,url,ord) values ($1,$2,$3)`,
+          [adId, url, idx]
         );
       }
 
-      await client.query('COMMIT');
-
+      await client.query('commit');
       res.json({ ok: true, ad: { id: adId } });
-
     } catch (e) {
-      await client.query('ROLLBACK');
+      await client.query('rollback');
       console.error(e);
-      res.status(500).json({ error: 'SERVER_ERROR' });
+      res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
     } finally {
       client.release();
     }
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
-);
+});
 
 app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
   const adId = req.params.id;

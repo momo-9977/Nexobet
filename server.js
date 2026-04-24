@@ -169,6 +169,23 @@ async function ensureDbShape() {
     );
   `).catch(() => {});
 
+  // make sure pgcrypto exists (for gen_random_uuid)
+await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`).catch(() => {});
+
+// ensure ads.id has default if it's UUID
+const idInfo = await q(`
+  SELECT data_type, udt_name, column_default
+  FROM information_schema.columns
+  WHERE table_name='ads' AND column_name='id'
+  LIMIT 1
+`).catch(() => ({ rows: [] }));
+
+const idRow = idInfo.rows[0];
+
+if (idRow && idRow.udt_name === 'uuid' && !idRow.column_default) {
+  await q(`ALTER TABLE ads ALTER COLUMN id SET DEFAULT gen_random_uuid()`).catch(() => {});
+}
+
   schemaReady = true;
 }
 
@@ -573,8 +590,8 @@ app.post('/api/ads', requireAuthApi, upload.fields([
       const videoCol = hasVideoUrl ? 'video_url' : (hasVideo ? 'video' : null);
 
       if (hasCategoryId) {
-        const cols = ['user_id','title','description','price','city','category_id','status','featured'];
-        const vals = [userId, title, description, price, city, categoryId, 'published', false];
+        const cols = ['id','user_id','title','description','price','city','category_id','status','featured'];
+const vals = [adId, userId, title, description, price, city, categoryId, 'published', false];
         if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
 
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
@@ -583,8 +600,8 @@ app.post('/api/ads', requireAuthApi, upload.fields([
           vals
         );
       } else if (hasCategory) {
-        const cols = ['user_id','title','description','price','city','category','status','featured'];
-        const vals = [userId, title, description, price, city, String(category), 'published', false];
+        const cols = ['id','user_id','title','description','price','city','category','status','featured'];
+const vals = [adId, userId, title, description, price, city, String(category), 'published', false];
         if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
 
         const ph = cols.map((_, idx) => `$${idx+1}`).join(',');

@@ -48,9 +48,12 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Railway/Proxy
 app.set('trust proxy', 1);
 
 /* -------------------- Sessions -------------------- */
+
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 app.use(session({
   store: new pgSession({
@@ -62,12 +65,13 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false,
+    secure: IS_PROD,          // true فـ production
     sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 14
   }
 }));
 
+// مهم ل admin.routes
 app.set('pool', pool);
 
 /* -------------------- Static -------------------- */
@@ -75,7 +79,7 @@ app.set('pool', pool);
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(PUBLIC_DIR));
 
-/* -------------------- Core Settings -------------------- */
+/* -------------------- Helpers: DB/Schema -------------------- */
 
 async function ensureCoreSettings() {
   await q(`
@@ -95,7 +99,6 @@ async function ensureCoreSettings() {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
-
   await q(`INSERT INTO settings(id) VALUES (1) ON CONFLICT (id) DO NOTHING;`);
 }
 
@@ -105,12 +108,68 @@ async function getSettings() {
   return r.rows[0] || null;
 }
 
-async function hasColumn(table, col) {
-  const r = await q(
-    `SELECT 1 FROM information_schema.columns WHERE table_name=$1 AND column_name=$2 LIMIT 1`,
-    [table, col]
-  );
-  return !!r.rows[0];
+async function hasColumn(table, column) {
+  try {
+    const r = await q(
+      `SELECT 1
+       FROM information_schema.columns
+       WHERE table_name=$1 AND column_name=$2
+       LIMIT 1`,
+      [table, column]
+    );
+    return !!r.rows[0];
+  } catch {
+    return false;
+  }
+}
+
+async function hasTable(table) {
+  try {
+    const r = await q(
+      `SELECT 1 FROM information_schema.tables WHERE table_name=$1 LIMIT 1`,
+      [table]
+    );
+    return !!r.rows[0];
+  } catch {
+    return false;
+  }
+}
+
+/* -------------------- Auto-fix DB Shape (safe) -------------------- */
+
+let schemaReady = false;
+
+async function ensureDbShape() {
+  if (schemaReady) return;
+
+  // categories extras (key/ord/active...)
+  if (await hasTable('categories')) {
+    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS key TEXT`).catch(() => {});
+    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS description TEXT`).catch(() => {});
+    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url TEXT`).catch(() => {});
+    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS ord INT DEFAULT 0`).catch(() => {});
+    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT true`).catch(() => {});
+    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`).catch(() => {});
+    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`).catch(() => {});
+  }
+
+  // ads.user_id + updated_at (هذا هو سبب الخطأ ديالك)
+  if (await hasTable('ads')) {
+    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
+    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
+  }
+
+  // ad_images table if missing
+  await q(`
+    CREATE TABLE IF NOT EXISTS ad_images(
+      id BIGSERIAL PRIMARY KEY,
+      ad_id UUID,
+      url TEXT,
+      ord INT DEFAULT 0
+    );
+  `).catch(() => {});
+
+  schemaReady = true;
 }
 
 /* -------------------- Auth Helpers -------------------- */
@@ -162,71 +221,38 @@ function toInt(v, d = 0) {
   return Number.isFinite(n) ? n : d;
 }
 
+function toBool(v) {
+  return v === true || v === 'true' || v === '1' || v === 1;
+}
+
 function safeFilenameUrl(file) {
   if (!file) return null;
   return '/uploads/' + file.filename;
 }
-async function hasColumn(table, column) {
-  try {
-    const r = await q(
-      `SELECT 1
-       FROM information_schema.columns
-       WHERE table_name=$1 AND column_name=$2
-       LIMIT 1`,
-      [table, column]
-    );
-    return !!r.rows[0];
-  } catch {
-    return false;
-  }
-}
 
-// يحول category اللي جاية من UI (key/name/id/uuid) إلى id ديال categories الحقيقي
+// تحويل category اللي جاية من UI إلى categories.id الحقيقي
 async function resolveCategoryId(input) {
   const v = String(input || '').trim();
   if (!v) return null;
 
-  // إذا جا رقم (id int)
-  if (/^\d+$/.test(v)) return parseInt(v, 10);
-
-  // إذا جا UUID
+  // UUID؟
   const isUuid =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
   if (isUuid) return v;
 
-  // غير ذلك: نقلب عليه فـ categories.key أو categories.name
+  // int؟
+  if (/^\d+$/.test(v)) return parseInt(v, 10);
+
+  // حاول key أو name (إذا الكولون موجودة)
+  const hasKey = await hasColumn('categories', 'key');
   const r = await q(
     `SELECT id
      FROM categories
-     WHERE key=$1 OR lower(name)=lower($1)
+     WHERE ${hasKey ? 'key=$1 OR ' : ''} lower(name)=lower($1)
      LIMIT 1`,
     [v]
   );
   return r.rows[0]?.id ?? null;
-}
-/* -------------------- DB Shape (Auto-fix) -------------------- */
-let adsShapeReady = false;
-
-async function ensureAdsShape() {
-  if (adsShapeReady) return;
-// Run once on boot
-ensureAdsShape().catch(console.error);
-  // تأكد جدول ads موجود
-  const t = await q(
-    `SELECT 1 FROM information_schema.tables WHERE table_name='ads' LIMIT 1`
-  );
-  if (!t.rows[0]) {
-    adsShapeReady = true;
-    return;
-  }
-
-  // زيد user_id إذا ما كانش
-  await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
-
-  // (اختياري) زيد updated_at إذا كتستعملو فـ UPDATE
-  await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
-
-  adsShapeReady = true;
 }
 
 /* -------------------- Upload -------------------- */
@@ -244,6 +270,7 @@ const upload = multer({
   storage,
   limits: { fileSize: 1024 * 1024 * 1024 * 2 }
 });
+
 /* =========================================================
    Pages
    ========================================================= */
@@ -284,57 +311,82 @@ app.get('/api/settings', async (req, res) => {
 });
 
 app.get('/api/categories', async (req, res) => {
-  const hasActive = await hasColumn('categories', 'active');
-  const hasOrd = await hasColumn('categories', 'ord');
-  const hasCreatedAt = await hasColumn('categories', 'created_at');
+  try {
+    await ensureDbShape();
 
-  const result = await q(`
-    SELECT id, name
-    FROM categories
-    ${hasActive ? 'WHERE COALESCE(active,true)=true' : ''}
-    ORDER BY
-      ${hasOrd ? 'ord ASC,' : ''}
-      ${hasCreatedAt ? 'created_at DESC' : 'id ASC'}
-  `);
+    const hasActive = await hasColumn('categories', 'active');
+    const hasOrd = await hasColumn('categories', 'ord');
+    const hasCreatedAt = await hasColumn('categories', 'created_at');
 
-  res.json(result.rows);
+    const result = await q(`
+      SELECT id, name
+      FROM categories
+      ${hasActive ? 'WHERE COALESCE(active,true)=true' : ''}
+      ORDER BY
+        ${hasOrd ? 'ord ASC,' : ''}
+        ${hasCreatedAt ? 'created_at DESC' : 'id ASC'}
+    `);
+
+    res.json(result.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
 });
 
 app.get('/api/ads', async (req, res) => {
-  const { q: query, category, city, limit } = req.query;
+  try {
+    await ensureDbShape();
 
-  const lim = Math.min(parseInt(limit || '20', 10), 50);
-  const where = [`a.status='published'`];
-  const params = [];
-  let i = 1;
+    const { q: query, category, city, limit } = req.query;
 
-  if (query) {
-    where.push(`(a.title ILIKE $${i} OR a.description ILIKE $${i})`);
-    params.push(`%${query}%`);
-    i++;
+    const lim = Math.min(parseInt(limit || '20', 10), 50);
+    const where = [`a.status='published'`];
+    const params = [];
+    let i = 1;
+
+    if (query) {
+      where.push(`(a.title ILIKE $${i} OR a.description ILIKE $${i})`);
+      params.push(`%${query}%`);
+      i++;
+    }
+
+    if (category) {
+      // إذا عندك category_id
+      const hasCategoryId = await hasColumn('ads', 'category_id');
+      if (hasCategoryId) {
+        const catId = await resolveCategoryId(category);
+        if (catId) {
+          where.push(`a.category_id::text = $${i}`);
+          params.push(String(catId));
+          i++;
+        }
+      } else if (await hasColumn('ads', 'category')) {
+        where.push(`a.category = $${i}`);
+        params.push(String(category));
+        i++;
+      }
+    }
+
+    if (city) {
+      where.push(`a.city ILIKE $${i}`);
+      params.push(`%${city}%`);
+      i++;
+    }
+
+    const r = await q(`
+      SELECT a.*
+      FROM ads a
+      WHERE ${where.join(' AND ')}
+      ORDER BY a.created_at DESC
+      LIMIT ${lim}
+    `, params);
+
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
-
-  if (category) {
-    where.push(`a.category_id=$${i}`);
-    params.push(category);
-    i++;
-  }
-
-  if (city) {
-    where.push(`a.city ILIKE $${i}`);
-    params.push(city);
-    i++;
-  }
-
-  const r = await q(`
-    SELECT a.*
-    FROM ads a
-    WHERE ${where.join(' AND ')}
-    ORDER BY a.created_at DESC
-    LIMIT ${lim}
-  `, params);
-
-  res.json(r.rows);
 });
 
 /* =========================================================
@@ -424,27 +476,42 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ ok: true });
   });
 });
+
 /* =========================================================
    ADS API
    ========================================================= */
 
 app.get('/api/my/ads', requireAuthApi, async (req, res) => {
-  const userId = req.session.user.id;
+  try {
+    await ensureDbShape();
 
-  const r = await q(`
-    SELECT *
-    FROM ads
-    WHERE user_id=$1
-    ORDER BY created_at DESC
-  `, [userId]);
+    const userId = req.session.user.id;
 
-  res.json(r.rows);
+    // إذا ماكانش user_id فـ DB (نادر دابا حيت كنزيدوه) رجع []
+    const hasUserId = await hasColumn('ads', 'user_id');
+    if (!hasUserId) return res.json([]);
+
+    const r = await q(`
+      SELECT *
+      FROM ads
+      WHERE user_id=$1
+      ORDER BY created_at DESC
+    `, [String(userId)]);
+
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
 });
+
 app.post('/api/ads', requireAuthApi, upload.fields([
   { name: 'images', maxCount: 6 },
   { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
   try {
+    await ensureDbShape();
+
     const s = await getSettings();
 
     const maxImages = toInt(s?.max_images, 6);
@@ -456,7 +523,7 @@ app.post('/api/ads', requireAuthApi, upload.fields([
       description: z.string().min(3),
       price: z.coerce.number().min(0),
       city: z.string().min(1),
-      category: z.string().min(1) // جاي من UI (key/name/...)
+      category: z.string().min(1) // UI value
     });
 
     const parsed = schema.safeParse(req.body);
@@ -475,45 +542,68 @@ app.post('/api/ads', requireAuthApi, upload.fields([
       if (videoFile.size > maxVideoBytes) return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
     }
 
-    const userId = req.session.user.id;
+    const userId = String(req.session.user.id);
     const { title, description, price, city, category } = parsed.data;
 
-    // ✅ هنا الإصلاح: نحولو category -> category_id الحقيقي
-    const categoryId = await resolveCategoryId(category);
-    if (!categoryId) return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
-
-    // شنو كاين فـ ads؟ category_id ولا category؟
     const hasCategoryId = await hasColumn('ads', 'category_id');
     const hasCategory = await hasColumn('ads', 'category');
+    const hasUserId = await hasColumn('ads', 'user_id');
+
+    if (!hasUserId) {
+      return res.status(500).json({ error: 'ADS_USER_ID_MISSING' });
+    }
+
+    let categoryId = null;
+    if (hasCategoryId) {
+      categoryId = await resolveCategoryId(category);
+      if (!categoryId) return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
+    }
+
+    const videoUrl = videoFile ? safeFilenameUrl(videoFile) : null;
+    const hasVideoUrl = await hasColumn('ads', 'video_url');
+    const hasVideo = await hasColumn('ads', 'video');
 
     const client = await pool.connect();
     try {
       await client.query('begin');
 
-      // نبنيو INSERT حسب الأعمدة المتوفرة
       let adRes;
+
+      // video column choose
+      const videoCol = hasVideoUrl ? 'video_url' : (hasVideo ? 'video' : null);
+
       if (hasCategoryId) {
-        adRes = await client.query(`
-          insert into ads (user_id,title,description,price,city,category_id,status,featured,video_url)
-          values ($1,$2,$3,$4,$5,$6,'published',false,$7)
-          returning id
-        `, [userId, title, description, price, city, categoryId, videoFile ? safeFilenameUrl(videoFile) : null]);
+        const cols = ['user_id','title','description','price','city','category_id','status','featured'];
+        const vals = [userId, title, description, price, city, categoryId, 'published', false];
+        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
+
+        const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
+        adRes = await client.query(
+          `INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`,
+          vals
+        );
       } else if (hasCategory) {
-        adRes = await client.query(`
-          insert into ads (user_id,title,description,price,city,category,status,featured,video_url)
-          values ($1,$2,$3,$4,$5,$6,'published',false,$7)
-          returning id
-        `, [userId, title, description, price, city, String(category), videoFile ? safeFilenameUrl(videoFile) : null]);
+        const cols = ['user_id','title','description','price','city','category','status','featured'];
+        const vals = [userId, title, description, price, city, String(category), 'published', false];
+        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
+
+        const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
+        adRes = await client.query(
+          `INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`,
+          vals
+        );
       } else {
+        await client.query('rollback');
         return res.status(500).json({ error: 'ADS_CATEGORY_COLUMN_MISSING' });
       }
 
       const adId = adRes.rows[0].id;
 
+      // images table
       for (let idx = 0; idx < images.length; idx++) {
         const url = safeFilenameUrl(images[idx]);
         await client.query(
-          `insert into ad_images (ad_id,url,ord) values ($1,$2,$3)`,
+          `INSERT INTO ad_images (ad_id,url,ord) VALUES ($1,$2,$3)`,
           [adId, url, idx]
         );
       }
@@ -534,24 +624,34 @@ app.post('/api/ads', requireAuthApi, upload.fields([
 });
 
 app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
-  const adId = req.params.id;
-  const userId = req.session.user.id;
+  try {
+    await ensureDbShape();
 
-  const r = await q(
-    'SELECT id,user_id FROM ads WHERE id=$1',
-    [adId]
-  );
+    const adId = req.params.id;
+    const userId = String(req.session.user.id);
 
-  if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
+    const hasUserId = await hasColumn('ads', 'user_id');
+    if (!hasUserId) return res.status(500).json({ error: 'ADS_USER_ID_MISSING' });
 
-  if (String(r.rows[0].user_id) !== String(userId)) {
-    return res.status(403).json({ error: 'FORBIDDEN' });
+    const r = await q(
+      'SELECT id,user_id FROM ads WHERE id=$1',
+      [adId]
+    );
+
+    if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
+
+    if (String(r.rows[0].user_id) !== userId) {
+      return res.status(403).json({ error: 'FORBIDDEN' });
+    }
+
+    await q('DELETE FROM ad_images WHERE ad_id=$1', [adId]).catch(() => {});
+    await q('DELETE FROM ads WHERE id=$1', [adId]);
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
-
-  await q('DELETE FROM ad_images WHERE ad_id=$1', [adId]);
-  await q('DELETE FROM ads WHERE id=$1', [adId]);
-
-  res.json({ ok: true });
 });
 
 /* =========================================================
@@ -568,10 +668,16 @@ app.get('/api/health', async (req, res) => {
 });
 
 /* =========================================================
-   Start
+   Admin Routes
    ========================================================= */
 
 app.use('/api/admin', adminRoutes);
+
+/* =========================================================
+   Start
+   ========================================================= */
+
+ensureDbShape().catch(console.error);
 
 app.listen(PORT, () => {
   console.log(`✅ Samsar server running on http://localhost:${PORT}`);

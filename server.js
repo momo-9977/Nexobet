@@ -15,18 +15,17 @@ const multer = require('multer');
 const { z } = require('zod');
 const crypto = require('crypto');
 
-const { pool, q } = require('./db');
+const { pool, q } = require('./db'); // db.js فيه pool و q()
+
 const adminRoutes = require('./admin.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const IS_PROD = process.env.NODE_ENV === 'production';
 
 /* -------------------- Directories -------------------- */
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
-
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -36,186 +35,50 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('dev'));
 
-const CORS_ORIGIN = IS_PROD
-  ? (process.env.BASE_URL && process.env.BASE_URL.trim() ? process.env.BASE_URL.trim() : true)
-  : true;
-
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: process.env.BASE_URL || true,
   credentials: true
 }));
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// Railway/Proxy
+// مهم للـ Railway
 app.set('trust proxy', 1);
 
-/* -------------------- Sessions (NO CRASH) -------------------- */
-
-// ما نخليش Railway يطيح إلا ماكانش SESSION_SECRET
-// الأفضل دير SESSION_SECRET فـ Railway Variables (باش تبقى sessions ثابتة)
-// ولكن هاد fallback كيخلي السيرفر يخدم
-const SESSION_SECRET =
-  process.env.SESSION_SECRET && process.env.SESSION_SECRET.trim()
-    ? process.env.SESSION_SECRET.trim()
-    : crypto.randomBytes(32).toString('hex');
-
-if (IS_PROD && !(process.env.SESSION_SECRET && process.env.SESSION_SECRET.trim())) {
-  console.warn('⚠️ SESSION_SECRET missing in production. Using random secret (sessions reset on restart).');
-}
+/* -------------------- Sessions -------------------- */
 
 app.use(session({
   store: new pgSession({
-    pool,
-    tableName: 'session',
-    createTableIfMissing: true
+    pool,               // جاية من ./db
+    tableName: 'session'
   }),
-  secret: SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'change_me',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: IS_PROD,
+    secure: false,      // خليه false دابا
     sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 14
   }
 }));
 
-// مهم ل admin.routes
-app.set('pool', pool);
+
+/* -------------------- Admin Routes -------------------- */
+
+app.set('pool', pool);              // مهم باش admin.routes يلقا pool
+app.use('/api/admin', adminRoutes);
 
 /* -------------------- Static -------------------- */
 
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(PUBLIC_DIR));
-
-/* -------------------- Helpers: DB/Schema -------------------- */
-
-async function ensureCoreSettings() {
-  await q(`
-    CREATE TABLE IF NOT EXISTS settings(
-      id INT PRIMARY KEY,
-      platform_name TEXT,
-      subtitle TEXT,
-      logo_url TEXT,
-      support_whatsapp TEXT,
-      support_email TEXT,
-      support_telegram TEXT,
-      allow_register BOOLEAN DEFAULT true,
-      max_images INT DEFAULT 6,
-      max_image_mb INT DEFAULT 10,
-      max_video_mb INT DEFAULT 1024,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    );
-  `);
-  await q(`INSERT INTO settings(id) VALUES (1) ON CONFLICT (id) DO NOTHING;`);
-}
-
+/* -------------------- Helpers -------------------- */
 async function getSettings() {
-  await ensureCoreSettings();
-  const r = await q('SELECT * FROM settings WHERE id=1');
-  return r.rows[0] || null;
+  const r = await q('select * from settings where id=1');
+  return r.rows[0];
 }
-
-async function hasColumn(table, column) {
-  try {
-    const r = await q(
-      `SELECT 1 FROM information_schema.columns WHERE table_name=$1 AND column_name=$2 LIMIT 1`,
-      [table, column]
-    );
-    return !!r.rows[0];
-  } catch {
-    return false;
-  }
-}
-
-async function hasTable(table) {
-  try {
-    const r = await q(
-      `SELECT 1 FROM information_schema.tables WHERE table_name=$1 LIMIT 1`,
-      [table]
-    );
-    return !!r.rows[0];
-  } catch {
-    return false;
-  }
-}
-
-/* -------------------- Auto-fix DB Shape -------------------- */
-
-let schemaReady = false;
-
-async function ensureDbShape() {
-  if (schemaReady) return;
-
-  // settings
-  await ensureCoreSettings().catch(() => {});
-
-  // pgcrypto for uuid default
-  await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`).catch(() => {});
-
-  // categories extras
-  if (await hasTable('categories')) {
-    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS key TEXT`).catch(() => {});
-    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS description TEXT`).catch(() => {});
-    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url TEXT`).catch(() => {});
-    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS ord INT DEFAULT 0`).catch(() => {});
-    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT true`).catch(() => {});
-    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`).catch(() => {});
-    await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`).catch(() => {});
-  }
-
-  // ads columns
-  if (await hasTable('ads')) {
-    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false`).catch(() => {});
-    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
-    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
-    await q(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS status TEXT`).catch(() => {});
-    await q(`ALTER TABLE ads ALTER COLUMN featured SET DEFAULT false`).catch(() => {});
-    await q(`UPDATE ads SET featured=false WHERE featured IS NULL`).catch(() => {});
-    await q(`UPDATE ads SET status='published' WHERE status IS NULL`).catch(() => {});
-  }
-
-  // ad_images
-  await q(`
-    CREATE TABLE IF NOT EXISTS ad_images(
-      id BIGSERIAL PRIMARY KEY,
-      ad_id UUID,
-      url TEXT,
-      ord INT DEFAULT 0
-    );
-  `).catch(() => {});
-
-  // home slides (hero)
-  await q(`
-    CREATE TABLE IF NOT EXISTS home_slides(
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      image_url TEXT NOT NULL,
-      link_url TEXT,
-      ord INT NOT NULL DEFAULT 0,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-  `).catch(() => {});
-
-  // ensure ads.id default if uuid
-  const idInfo = await q(`
-    SELECT udt_name, column_default
-    FROM information_schema.columns
-    WHERE table_name='ads' AND column_name='id'
-    LIMIT 1
-  `).catch(() => ({ rows: [] }));
-
-  const idRow = idInfo.rows[0];
-  if (idRow && idRow.udt_name === 'uuid' && !idRow.column_default) {
-    await q(`ALTER TABLE ads ALTER COLUMN id SET DEFAULT gen_random_uuid()`).catch(() => {});
-  }
-
-  schemaReady = true;
-}
-
-/* -------------------- Auth Helpers -------------------- */
 
 function safeUserRow(u) {
   if (!u) return null;
@@ -235,8 +98,8 @@ function safeUserRow(u) {
 
 async function loadUser(userId) {
   const r = await q(
-    `SELECT id,name,email,phone,city,bio,avatar,disabled,is_admin,created_at
-     FROM users WHERE id=$1`,
+    `select id,name,email,phone,city,bio,avatar,disabled,is_admin,created_at
+     from users where id=$1`,
     [userId]
   );
   return r.rows[0] || null;
@@ -252,6 +115,14 @@ function requireAuthPage(req, res, next) {
   next();
 }
 
+function requireAdmin(req, res, next) {
+  const u = req.session.user;
+  if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
+  if (!u.is_admin) return res.status(403).json({ error: 'FORBIDDEN' });
+  next();
+}
+
+// حماية صفحة /admin (page)
 function requireAdminPage(req, res, next) {
   const u = req.session.user;
   if (!u) return res.redirect('/login');
@@ -259,9 +130,17 @@ function requireAdminPage(req, res, next) {
   next();
 }
 
+function pickId(row) {
+  return row?.id || row?._id || row?.uuid || null;
+}
+
 function toInt(v, d = 0) {
   const n = parseInt(String(v ?? ''), 10);
   return Number.isFinite(n) ? n : d;
+}
+
+function toBool(v) {
+  return v === true || v === 'true' || v === '1' || v === 1;
 }
 
 function safeFilenameUrl(file) {
@@ -269,30 +148,7 @@ function safeFilenameUrl(file) {
   return '/uploads/' + file.filename;
 }
 
-// تحويل category اللي جاية من UI إلى categories.id الحقيقي
-async function resolveCategoryId(input) {
-  const v = String(input || '').trim();
-  if (!v) return null;
-
-  const isUuid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
-  if (isUuid) return v;
-
-  if (/^\d+$/.test(v)) return parseInt(v, 10);
-
-  const hasKey = await hasColumn('categories', 'key');
-  const r = await q(
-    `SELECT id
-     FROM categories
-     WHERE ${hasKey ? 'key=$1 OR ' : ''} lower(name)=lower($1)
-     LIMIT 1`,
-    [v]
-  );
-  return r.rows[0]?.id ?? null;
-}
-
-/* -------------------- Upload -------------------- */
-
+/* -------------------- Upload (Multer) -------------------- */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
@@ -304,13 +160,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 1024 * 1024 * 1024 * 2 }
+  limits: { fileSize: 1024 * 1024 * 1024 * 2 } // سقف كبير، كنراقبو per-route
 });
 
 /* =========================================================
-   Pages
+   Pages (Routes بدون .html)
    ========================================================= */
 
+// Public pages
 app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 app.get('/categories', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'categories.html')));
 app.get('/ad', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'ad.html')));
@@ -318,9 +175,12 @@ app.get('/support', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'support.ht
 app.get('/login', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'login.html')));
 app.get('/register', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'register.html')));
 
+// Protected pages
 app.get('/post-ad', requireAuthPage, (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'post-ad.html')));
 app.get('/profile', requireAuthPage, (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'profile.html')));
 app.get('/edit-ad', requireAuthPage, (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'edit-ad.html')));
+
+// Admin page (protected)
 app.get('/admin', requireAdminPage, (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'admin.html')));
 
 /* =========================================================
@@ -328,239 +188,233 @@ app.get('/admin', requireAdminPage, (req, res) => res.sendFile(path.join(PUBLIC_
    ========================================================= */
 
 app.get('/api/settings', async (req, res) => {
-  try {
-    await ensureDbShape();
-    const s = await getSettings();
-    if (!s) return res.json({});
-    res.json({
-      platformName: s.platform_name,
-      subtitle: s.subtitle,
-      logoUrl: s.logo_url,
-      supportWhatsapp: s.support_whatsapp,
-      supportEmail: s.support_email,
-      supportTelegram: s.support_telegram,
-      allowRegister: s.allow_register,
-      uploads: {
-        maxImages: s.max_images,
-        maxImageMb: s.max_image_mb,
-        maxVideoMb: s.max_video_mb
-      }
-    });
-  } catch (e) {
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
+  const s = await getSettings();
+  res.json({
+    platformName: s.platform_name,
+    subtitle: s.subtitle,
+    logoUrl: s.logo_url,
+    supportWhatsapp: s.support_whatsapp,
+    supportEmail: s.support_email,
+    allowRegister: s.allow_register,
+    uploads: { maxImages: s.max_images, maxImageMb: s.max_image_mb, maxVideoMb: s.max_video_mb }
+  });
+});
+
+app.get('/api/home/slides', async (req, res) => {
+  const r = await q('select id,image_url,link_url,ord from home_slides order by ord asc, created_at desc');
+  res.json(r.rows.map(x => ({
+    id: x.id,
+    imageUrl: x.image_url,
+    linkUrl: x.link_url,
+    order: x.ord
+  })));
+});
+
+app.get('/api/support/settings', async (req, res) => {
+  const s = await getSettings();
+  res.json({ whatsapp: s.support_whatsapp, email: s.support_email });
+});
+
+app.get('/api/support/faq', async (req, res) => {
+  const r = await q('select * from support_faq where active=true order by ord asc');
+  res.json(r.rows);
 });
 
 app.get('/api/categories', async (req, res) => {
-  try {
-    await ensureDbShape();
+  const r = await q(`
+    select c.id, c.name, c.description, c.image_url, c.ord, c.active,
+      (select count(*)::int from ads a where a.category_id=c.id and a.status='published') as ads_count
+    from categories c
+    order by c.ord asc, c.created_at desc
+  `);
 
-    const hasActive = await hasColumn('categories', 'active');
-    const hasOrd = await hasColumn('categories', 'ord');
-    const hasCreatedAt = await hasColumn('categories', 'created_at');
-    const hasKey = await hasColumn('categories', 'key');
-
-    const result = await q(`
-      SELECT id, name ${hasKey ? ', key' : ''}
-      FROM categories
-      ${hasActive ? 'WHERE COALESCE(active,true)=true' : ''}
-      ORDER BY
-        ${hasOrd ? 'ord ASC,' : ''}
-        ${hasCreatedAt ? 'created_at DESC' : 'id ASC'}
-    `);
-
-    res.json(result.rows);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
+  res.json(r.rows.map(c => ({
+    id: c.id,
+    name: c.name,
+    description: c.description,
+    image: c.image_url,
+    order: c.ord,
+    active: c.active,
+    adsCount: c.ads_count
+  })));
 });
 
-// hero slides for homepage
-app.get('/api/home/slides', async (req, res) => {
-  try {
-    await ensureDbShape();
-    const r = await q(`
-      SELECT id,
-             image_url as "imageUrl",
-             COALESCE(link_url,'') as "linkUrl",
-             ord
-      FROM home_slides
-      ORDER BY ord ASC, created_at DESC
-      LIMIT 20
-    `);
-    res.json(r.rows);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR' });
-  }
-});
-
-// ads list: supports q, category, city, featured, limit
 app.get('/api/ads', async (req, res) => {
-  try {
-    await ensureDbShape();
+  const { q: query, category, city, featured, limit } = req.query;
 
-    const { q: query, category, city, limit, featured } = req.query;
+  const lim = Math.min(parseInt(limit || '20', 10), 50);
+  const where = [`a.status='published'`];
+  const params = [];
+  let i = 1;
 
-    const lim = Math.min(parseInt(limit || '20', 10), 50);
+  if (query) { where.push(`(a.title ilike $${i} or a.description ilike $${i})`); params.push(`%${query}%`); i++; }
+  if (category) { where.push(`a.category_id=$${i}`); params.push(category); i++; }
+  if (city) { where.push(`a.city ilike $${i}`); params.push(city); i++; }
+  if (featured === 'true') where.push(`a.featured=true`);
+  if (featured === 'false') where.push(`a.featured=false`);
 
-    const where = [`COALESCE(a.status,'published')='published'`];
-    const params = [];
-    let i = 1;
+  const r = await q(`
+    select a.*, u.name as owner_name, u.email as owner_email, u.phone as owner_phone
+    from ads a
+    left join users u on u.id=a.user_id
+    where ${where.join(' and ')}
+    order by a.featured desc, a.created_at desc
+    limit ${lim}
+  `, params);
 
-    if (query) {
-      const hasDesc = await hasColumn('ads', 'description');
-      where.push(`(a.title ILIKE $${i}${hasDesc ? ` OR a.description ILIKE $${i}` : ''})`);
-      params.push(`%${String(query)}%`);
-      i++;
-    }
+  const ads = r.rows;
+  const ids = ads.map(a => a.id);
 
-    if (String(featured || '').trim() === 'true') {
-      where.push(`COALESCE(a.featured,false)=true`);
-    }
-
-    if (category) {
-      const hasCategoryId = await hasColumn('ads', 'category_id');
-      if (hasCategoryId) {
-        const catId = await resolveCategoryId(category);
-        if (catId) {
-          where.push(`a.category_id::text = $${i}`);
-          params.push(String(catId));
-          i++;
-        }
-      } else if (await hasColumn('ads', 'category')) {
-        where.push(`a.category = $${i}`);
-        params.push(String(category));
-        i++;
-      }
-    }
-
-    if (city) {
-      where.push(`a.city ILIKE $${i}`);
-      params.push(`%${String(city)}%`);
-      i++;
-    }
-
-    const r = await q(`
-      SELECT
-        a.*,
-        (
-          SELECT url
-          FROM ad_images
-          WHERE ad_id = a.id
-          ORDER BY ord ASC
-          LIMIT 1
-        ) as image
-      FROM ads a
-      WHERE ${where.join(' AND ')}
-      ORDER BY a.created_at DESC
-      LIMIT ${lim}
-    `, params);
-
-    res.json(r.rows);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  let imagesByAd = {};
+  if (ids.length) {
+    const im = await q(
+      `select ad_id,url,ord from ad_images where ad_id = any($1::uuid[]) order by ord asc`,
+      [ids]
+    );
+    imagesByAd = im.rows.reduce((acc, row) => {
+      acc[row.ad_id] = acc[row.ad_id] || [];
+      acc[row.ad_id].push(row.url);
+      return acc;
+    }, {});
   }
+
+  res.json(ads.map(a => ({
+    id: a.id,
+    title: a.title,
+    description: a.description,
+    price: a.price,
+    city: a.city,
+    category: a.category_id,
+    status: a.status,
+    featured: a.featured,
+    createdAt: a.created_at,
+    images: imagesByAd[a.id] || [],
+    video: a.video_url || null,
+    owner_name: a.owner_name || '',
+    owner_email: a.owner_email || '',
+    owner_phone: a.owner_phone || ''
+  })));
 });
 
-// featured shortcut (same as /api/ads?featured=true)
-app.get('/api/ads/featured', async (req, res) => {
-  req.query.featured = 'true';
-  req.query.limit = req.query.limit || '10';
-  return app._router.handle(req, res, () => {});
+app.get('/api/ads/:id', async (req, res) => {
+  const adId = req.params.id;
+
+  const r = await q(`
+    select a.*, u.name as owner_name, u.email as owner_email, u.phone as owner_phone
+    from ads a
+    left join users u on u.id=a.user_id
+    where a.id=$1
+  `, [adId]);
+
+  if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
+
+  const ad = r.rows[0];
+  const im = await q(`select url from ad_images where ad_id=$1 order by ord asc`, [adId]);
+
+  res.json({
+    id: ad.id,
+    title: ad.title,
+    description: ad.description,
+    price: ad.price,
+    city: ad.city,
+    category: ad.category_id,
+    status: ad.status,
+    featured: ad.featured,
+    images: im.rows.map(x => x.url),
+    video: ad.video_url,
+    owner_name: ad.owner_name || '',
+    owner_email: ad.owner_email || '',
+    owner_phone: ad.owner_phone || '',
+    createdAt: ad.created_at
+  });
 });
 
 /* =========================================================
-   AUTH API
+   AUTH API (FIXED for your DB schema)
+   users columns:
+   id(text), name, email, password(text=bcrypt hash), phone, city, bio, avatar,
+   disabled(boolean), created_at, is_admin(boolean)
    ========================================================= */
 
 app.get('/api/auth/me', async (req, res) => {
-  try {
-    await ensureDbShape();
-    if (!req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
-    const u = await loadUser(req.session.user.id);
-    if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
-    res.json(safeUserRow(u));
-  } catch (e) {
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
+  if (!req.session.user) return res.status(401).json({ error: 'UNAUTHORIZED' });
+  const u = await loadUser(req.session.user.id);
+  if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
+  res.json(safeUserRow(u));
 });
 
+// Register
 app.post('/api/auth/register', async (req, res) => {
-  try {
-    await ensureDbShape();
+  const s = await getSettings();
+console.log("DEBUG SETTINGS:", s);
 
-    const s = await getSettings();
-    if (!s || s.allow_register !== true) return res.status(403).json({ error: 'REGISTER_DISABLED' });
+  if (!s || s.allow_register !== true) {
+  return res.status(403).json({ error: 'REGISTER_DISABLED', debug: s });
+}
+  const schema = z.object({
+    name: z.string().min(2),
+    email: z.string().email(),
+    password: z.string().min(6),
+    phone: z.string().optional().nullable()
+  });
 
-    const schema = z.object({
-      name: z.string().min(2),
-      email: z.string().email(),
-      password: z.string().min(6)
-    });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
 
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+  const { name, email, password, phone } = parsed.data;
 
-    const { name, email, password } = parsed.data;
+  const exists = await q('select id from users where lower(email)=lower($1)', [email.trim()]);
+  if (exists.rows[0]) return res.status(409).json({ error: 'EMAIL_EXISTS' });
 
-    const exists = await q('SELECT id FROM users WHERE lower(email)=lower($1)', [email.trim()]);
-    if (exists.rows[0]) return res.status(409).json({ error: 'EMAIL_EXISTS' });
+  const hash = await bcrypt.hash(password, 10);
+  const id = crypto.randomUUID();
 
-    const hash = await bcrypt.hash(password, 10);
-    const id = crypto.randomUUID();
+  const r = await q(`
+    insert into users (id,name,email,password,phone,disabled,is_admin,created_at)
+    values ($1,$2,$3,$4,$5,false,false,now())
+    returning id
+  `, [id, name, email.toLowerCase(), hash, phone || null]);
 
-    await q(`
-      INSERT INTO users (id,name,email,password,disabled,is_admin,created_at)
-      VALUES ($1,$2,$3,$4,false,false,now())
-    `, [id, name, email.toLowerCase(), hash]);
+  const userId = r.rows[0].id;
 
-    req.session.user = { id, is_admin: false };
+  // session
+  req.session.user = { id: userId, is_admin: false };
 
-    const u = await loadUser(id);
-    res.json(safeUserRow(u));
-  } catch (e) {
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
+  const u = await loadUser(userId);
+  res.json(safeUserRow(u));
 });
 
+// Login (normal) -> returns is_admin, frontend can redirect to /admin
 app.post('/api/auth/login', async (req, res) => {
-  try {
-    await ensureDbShape();
+  const schema = z.object({
+    email: z.string().email(),
+    password: z.string().min(1)
+  });
 
-    const schema = z.object({
-      email: z.string().email(),
-      password: z.string().min(1)
-    });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
 
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+  const { email, password } = parsed.data;
 
-    const { email, password } = parsed.data;
+  const r = await q(
+    `select id,email,password,disabled,is_admin
+     from users
+     where lower(email)=lower($1)
+     limit 1`,
+    [email.trim()]
+  );
 
-    const r = await q(`
-      SELECT id,password,disabled,is_admin
-      FROM users
-      WHERE lower(email)=lower($1)
-      LIMIT 1
-    `, [email.trim()]);
+  const u = r.rows[0];
+  if (!u) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+  if (u.disabled) return res.status(403).json({ error: 'ACCOUNT_DISABLED' });
 
-    const u = r.rows[0];
-    if (!u) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
-    if (u.disabled) return res.status(403).json({ error: 'ACCOUNT_DISABLED' });
+  const ok = await bcrypt.compare(password, u.password);
+  if (!ok) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
 
-    const ok = await bcrypt.compare(password, u.password);
-    if (!ok) return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+  req.session.user = { id: u.id, is_admin: !!u.is_admin };
 
-    req.session.user = { id: u.id, is_admin: !!u.is_admin };
-
-    const full = await loadUser(u.id);
-    res.json(safeUserRow(full));
-  } catch (e) {
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
+  const full = await loadUser(u.id);
+  res.json(safeUserRow(full));
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -570,199 +424,466 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
+// Change password
+app.patch('/api/auth/password', requireAuthApi, async (req, res) => {
+  const schema = z.object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(6)
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+  const { currentPassword, newPassword } = parsed.data;
+
+  const r = await q('select id,password from users where id=$1', [req.session.user.id]);
+  const u = r.rows[0];
+  if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
+
+  const ok = await bcrypt.compare(currentPassword, u.password);
+  if (!ok) return res.status(401).json({ error: 'WRONG_PASSWORD' });
+
+  const hash = await bcrypt.hash(newPassword, 10);
+  await q('update users set password=$1 where id=$2', [hash, req.session.user.id]);
+
+  res.json({ ok: true });
+});
+
 /* =========================================================
-   ADS API (my ads / create / delete)
+   USER API (Profile)
+   ========================================================= */
+
+app.put('/api/users/:id', requireAuthApi, async (req, res) => {
+  const userId = req.params.id;
+
+  const isAdmin = !!req.session.user.is_admin;
+  if (!isAdmin && String(req.session.user.id) !== String(userId)) {
+    return res.status(403).json({ error: 'FORBIDDEN' });
+  }
+
+  const schema = z.object({
+    phone: z.string().optional().nullable(),
+    city: z.string().optional().nullable(),
+    bio: z.string().optional().nullable()
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+  await q(
+    'update users set phone=$1, city=$2, bio=$3 where id=$4',
+    [parsed.data.phone ?? null, parsed.data.city ?? null, parsed.data.bio ?? null, userId]
+  );
+
+  const u = await loadUser(userId);
+  res.json(safeUserRow(u));
+});
+
+app.put('/api/users/:id/avatar', requireAuthApi, upload.single('avatar'), async (req, res) => {
+  const userId = req.params.id;
+
+  const isAdmin = !!req.session.user.is_admin;
+  if (!isAdmin && String(req.session.user.id) !== String(userId)) {
+    return res.status(403).json({ error: 'FORBIDDEN' });
+  }
+
+  const url = safeFilenameUrl(req.file);
+  if (!url) return res.status(400).json({ error: 'NO_FILE' });
+
+  await q('update users set avatar=$1 where id=$2', [url, userId]);
+  res.json({ ok: true, avatar: url });
+});
+
+/* =========================================================
+   ADS API (Create/Edit/Delete/MyAds)
    ========================================================= */
 
 app.get('/api/my/ads', requireAuthApi, async (req, res) => {
-  try {
-    await ensureDbShape();
+  const userId = req.session.user.id;
+  const r = await q(`
+    select a.*
+    from ads a
+    where a.user_id=$1
+    order by a.created_at desc
+  `, [userId]);
 
-    const userId = String(req.session.user.id);
-    const hasUserId = await hasColumn('ads', 'user_id');
-    if (!hasUserId) return res.json([]);
+  const ads = r.rows;
+  const ids = ads.map(a => a.id);
 
-    const r = await q(`
-      SELECT
-        a.*,
-        (
-          SELECT url
-          FROM ad_images
-          WHERE ad_id = a.id
-          ORDER BY ord ASC
-          LIMIT 1
-        ) as image
-      FROM ads a
-      WHERE a.user_id=$1
-      ORDER BY a.created_at DESC
-    `, [userId]);
-
-    res.json(r.rows);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  let imagesByAd = {};
+  if (ids.length) {
+    const im = await q(`select ad_id,url,ord from ad_images where ad_id = any($1::uuid[]) order by ord asc`, [ids]);
+    imagesByAd = im.rows.reduce((acc, row) => {
+      acc[row.ad_id] = acc[row.ad_id] || [];
+      acc[row.ad_id].push(row.url);
+      return acc;
+    }, {});
   }
+
+  res.json(ads.map(a => ({
+    id: a.id,
+    title: a.title,
+    description: a.description,
+    price: a.price,
+    city: a.city,
+    category: a.category_id,
+    status: a.status,
+    featured: a.featured,
+    createdAt: a.created_at,
+    images: imagesByAd[a.id] || [],
+    video: a.video_url || null
+  })));
 });
 
 app.post('/api/ads', requireAuthApi, upload.fields([
   { name: 'images', maxCount: 6 },
   { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
+  const s = await getSettings();
+
+  const maxImages = toInt(s.max_images, 6);
+  const maxImageMb = toInt(s.max_image_mb, 10);
+  const maxVideoMb = toInt(s.max_video_mb, 1024);
+
+  const schema = z.object({
+    title: z.string().min(2),
+    description: z.string().min(3),
+    price: z.coerce.number().min(0),
+    city: z.string().min(1),
+    category: z.string().min(1)
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
+
+  const images = (req.files?.images || []).slice(0, maxImages);
+  const videoFile = (req.files?.video && req.files.video[0]) ? req.files.video[0] : null;
+
+  const maxImageBytes = maxImageMb * 1024 * 1024;
+  for (const f of images) {
+    if (f.size > maxImageBytes) return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
+  }
+
+  if (videoFile) {
+    const maxVideoBytes = maxVideoMb * 1024 * 1024;
+    if (videoFile.size > maxVideoBytes) return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
+  }
+
+  const userId = req.session.user.id;
+  const { title, description, price, city, category } = parsed.data;
+
+  const client = await pool.connect();
   try {
-    await ensureDbShape();
+    await client.query('begin');
 
-    const s = await getSettings();
-    const maxImages = toInt(s?.max_images, 6);
-    const maxImageMb = toInt(s?.max_image_mb, 10);
-    const maxVideoMb = toInt(s?.max_video_mb, 1024);
+    const adRes = await client.query(`
+      insert into ads (user_id,title,description,price,city,category_id,status,featured,video_url)
+      values ($1,$2,$3,$4,$5,$6,'published',false,$7)
+      returning id
+    `, [userId, title, description, price, city, category, videoFile ? safeFilenameUrl(videoFile) : null]);
 
-    const schema = z.object({
-      title: z.string().min(2),
-      description: z.string().min(3),
-      price: z.coerce.number().min(0),
-      city: z.string().min(1),
-      category: z.string().min(1)
-    });
+    const adId = adRes.rows[0].id;
 
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
-
-    const images = (req.files?.images || []).slice(0, maxImages);
-    const videoFile = (req.files?.video && req.files.video[0]) ? req.files.video[0] : null;
-
-    const maxImageBytes = maxImageMb * 1024 * 1024;
-    for (const f of images) if (f.size > maxImageBytes) return res.status(400).json({ error: 'IMAGE_TOO_LARGE' });
-
-    if (videoFile) {
-      const maxVideoBytes = maxVideoMb * 1024 * 1024;
-      if (videoFile.size > maxVideoBytes) return res.status(400).json({ error: 'VIDEO_TOO_LARGE' });
+    for (let idx = 0; idx < images.length; idx++) {
+      const url = safeFilenameUrl(images[idx]);
+      await client.query(
+        `insert into ad_images (ad_id,url,ord) values ($1,$2,$3)`,
+        [adId, url, idx]
+      );
     }
 
-    const userId = String(req.session.user.id);
-    const { title, description, price, city, category } = parsed.data;
-
-    const hasCategoryId = await hasColumn('ads', 'category_id');
-    const hasCategory = await hasColumn('ads', 'category');
-    const hasUserId = await hasColumn('ads', 'user_id');
-    if (!hasUserId) return res.status(500).json({ error: 'ADS_USER_ID_MISSING' });
-
-    let categoryId = null;
-    if (hasCategoryId) {
-      categoryId = await resolveCategoryId(category);
-      if (!categoryId) return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
-    }
-
-    const videoUrl = videoFile ? safeFilenameUrl(videoFile) : null;
-    const hasVideoUrl = await hasColumn('ads', 'video_url');
-    const hasVideo = await hasColumn('ads', 'video');
-    const videoCol = hasVideoUrl ? 'video_url' : (hasVideo ? 'video' : null);
-
-    const client = await pool.connect();
-    try {
-      await client.query('begin');
-
-      let adRes;
-
-      // ✅ featured ALWAYS false on create (باش مايبانش مميز حتى تديرو من admin)
-      if (hasCategoryId) {
-        const cols = ['user_id','title','description','price','city','category_id','status','featured'];
-        const vals = [userId, title, description, price, city, categoryId, 'published', false];
-        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
-
-        const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
-        adRes = await client.query(`INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`, vals);
-      } else if (hasCategory) {
-        const cols = ['user_id','title','description','price','city','category','status','featured'];
-        const vals = [userId, title, description, price, city, String(category), 'published', false];
-        if (videoCol) { cols.push(videoCol); vals.push(videoUrl); }
-
-        const ph = cols.map((_, idx) => `$${idx+1}`).join(',');
-        adRes = await client.query(`INSERT INTO ads(${cols.join(',')}) VALUES(${ph}) RETURNING id`, vals);
-      } else {
-        await client.query('rollback');
-        return res.status(500).json({ error: 'ADS_CATEGORY_COLUMN_MISSING' });
-      }
-
-      const adId = adRes.rows[0].id;
-
-      for (let idx = 0; idx < images.length; idx++) {
-        const url = safeFilenameUrl(images[idx]);
-        await client.query(`INSERT INTO ad_images (ad_id,url,ord) VALUES ($1,$2,$3)`, [adId, url, idx]);
-      }
-
-      await client.query('commit');
-      res.json({ ok: true, ad: { id: adId } });
-    } catch (e) {
-      await client.query('rollback');
-      console.error(e);
-      res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-    } finally {
-      client.release();
-    }
+    await client.query('commit');
+    res.json({ ok: true, ad: { id: adId } });
   } catch (e) {
+    await client.query('rollback');
     console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  } finally {
+    client.release();
+  }
+});
+
+app.put('/api/ads/:id', requireAuthApi, upload.fields([
+  { name: 'images', maxCount: 6 },
+  { name: 'video', maxCount: 1 }
+]), async (req, res) => {
+  const adId = req.params.id;
+  const userId = req.session.user.id;
+  const isAdmin = !!req.session.user.is_admin;
+
+  const schema = z.object({
+    title: z.string().min(2),
+    description: z.string().optional(),
+    price: z.coerce.number().min(0).optional(),
+    city: z.string().optional(),
+    category: z.string().optional()
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+  const ownerRes = await q('select id,user_id from ads where id=$1', [adId]);
+  const adRow = ownerRes.rows[0];
+  if (!adRow) return res.status(404).json({ error: 'NOT_FOUND' });
+
+  if (!isAdmin && String(adRow.user_id) !== String(userId)) {
+    return res.status(403).json({ error: 'FORBIDDEN' });
+  }
+
+  const images = (req.files?.images || []);
+  const videoFile = (req.files?.video && req.files.video[0]) ? req.files.video[0] : null;
+
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+
+    const upd = parsed.data;
+    await client.query(`
+      update ads set
+        title=$2,
+        description=$3,
+        price=$4,
+        city=$5,
+        category_id=$6,
+        video_url = coalesce($7, video_url),
+        updated_at = now()
+      where id=$1
+    `, [
+      adId,
+      upd.title,
+      upd.description ?? '',
+      (upd.price ?? 0),
+      upd.city ?? '',
+      upd.category ?? null,
+      videoFile ? safeFilenameUrl(videoFile) : null
+    ]);
+
+    if (images.length) {
+      await client.query('delete from ad_images where ad_id=$1', [adId]);
+      for (let idx = 0; idx < images.length; idx++) {
+        await client.query(
+          `insert into ad_images (ad_id,url,ord) values ($1,$2,$3)`,
+          [adId, safeFilenameUrl(images[idx]), idx]
+        );
+      }
+    }
+
+    await client.query('commit');
+    res.json({ ok: true });
+  } catch (e) {
+    await client.query('rollback');
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  } finally {
+    client.release();
   }
 });
 
 app.delete('/api/ads/:id', requireAuthApi, async (req, res) => {
-  try {
-    await ensureDbShape();
+  const adId = req.params.id;
+  const userId = req.session.user.id;
+  const isAdmin = !!req.session.user.is_admin;
 
-    const adId = req.params.id;
-    const userId = String(req.session.user.id);
+  const r = await q('select id,user_id from ads where id=$1', [adId]);
+  if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
 
-    const hasUserId = await hasColumn('ads', 'user_id');
-    if (!hasUserId) return res.status(500).json({ error: 'ADS_USER_ID_MISSING' });
-
-    const r = await q('SELECT id,user_id FROM ads WHERE id=$1', [adId]);
-    if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
-
-    if (String(r.rows[0].user_id) !== userId) return res.status(403).json({ error: 'FORBIDDEN' });
-
-    await q('DELETE FROM ad_images WHERE ad_id=$1', [adId]).catch(() => {});
-    await q('DELETE FROM ads WHERE id=$1', [adId]);
-
-    res.json({ ok: true });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  if (!isAdmin && String(r.rows[0].user_id) !== String(userId)) {
+    return res.status(403).json({ error: 'FORBIDDEN' });
   }
+
+  await q('delete from ad_images where ad_id=$1', [adId]);
+  await q('delete from ads where id=$1', [adId]);
+
+  res.json({ ok: true });
+});
+
+app.patch('/api/ads/:id/visibility', requireAuthApi, async (req, res) => {
+  const adId = req.params.id;
+  const userId = req.session.user.id;
+  const isAdmin = !!req.session.user.is_admin;
+
+  const schema = z.object({ status: z.enum(['published', 'hidden']) });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+  const r = await q('select id,user_id from ads where id=$1', [adId]);
+  if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
+
+  if (!isAdmin && String(r.rows[0].user_id) !== String(userId)) {
+    return res.status(403).json({ error: 'FORBIDDEN' });
+  }
+
+  await q('update ads set status=$1, updated_at=now() where id=$2', [parsed.data.status, adId]);
+  res.json({ ok: true });
+});
+
+app.patch('/api/ads/:id/sold', requireAuthApi, async (req, res) => {
+  const adId = req.params.id;
+  const userId = req.session.user.id;
+  const isAdmin = !!req.session.user.is_admin;
+
+  const r = await q('select id,user_id from ads where id=$1', [adId]);
+  if (!r.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
+
+  if (!isAdmin && String(r.rows[0].user_id) !== String(userId)) {
+    return res.status(403).json({ error: 'FORBIDDEN' });
+  }
+
+  await q(`update ads set status='sold', updated_at=now() where id=$1`, [adId]);
+  res.json({ ok: true });
 });
 
 /* =========================================================
-   Health
+   Favorites / Reports
+   ========================================================= */
+
+app.post('/api/favorites', requireAuthApi, async (req, res) => {
+  const schema = z.object({ adId: z.string().min(1) });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+  const userId = req.session.user.id;
+  const adId = parsed.data.adId;
+
+  await q(`
+    insert into favorites (user_id, ad_id)
+    values ($1,$2)
+    on conflict (user_id, ad_id) do nothing
+  `, [userId, adId]);
+
+  res.json({ ok: true });
+});
+
+app.get('/api/favorites', requireAuthApi, async (req, res) => {
+  const userId = req.session.user.id;
+
+  const r = await q(`
+    select f.id, f.ad_id, a.title, a.price, a.city
+    from favorites f
+    join ads a on a.id=f.ad_id
+    where f.user_id=$1
+    order by f.created_at desc
+  `, [userId]);
+
+  res.json(r.rows.map(x => ({
+    id: x.id,
+    adId: x.ad_id,
+    title: x.title,
+    price: x.price,
+    city: x.city
+  })));
+});
+
+app.delete('/api/favorites/:id', requireAuthApi, async (req, res) => {
+  const userId = req.session.user.id;
+  const favId = req.params.id;
+
+  await q('delete from favorites where id=$1 and user_id=$2', [favId, userId]);
+  res.json({ ok: true });
+});
+
+app.get('/api/ads/:id/favorite', requireAuthApi, async (req, res) => {
+  const userId = req.session.user.id;
+  const adId = req.params.id;
+
+  const r = await q('select 1 from favorites where user_id=$1 and ad_id=$2', [userId, adId]);
+  res.json({ favorite: !!r.rows[0] });
+});
+
+app.post('/api/reports', requireAuthApi, async (req, res) => {
+  const schema = z.object({
+    adId: z.string().min(1),
+    reason: z.string().min(2)
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+  const userId = req.session.user.id;
+  await q(`
+    insert into reports (user_id, ad_id, reason)
+    values ($1,$2,$3)
+  `, [userId, parsed.data.adId, parsed.data.reason]);
+
+  res.json({ ok: true });
+});
+
+/* =========================================================
+   Premium
+   ========================================================= */
+
+app.post('/api/premium/buy', requireAuthApi, async (req, res) => {
+  const schema = z.object({
+    adId: z.string().min(1),
+    plan: z.enum(['featured_1d', 'featured_7d', 'featured_30d'])
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+  const userId = req.session.user.id;
+
+  await q(`
+    insert into premium_orders (user_id, ad_id, plan, status)
+    values ($1,$2,$3,'pending')
+  `, [userId, parsed.data.adId, parsed.data.plan]);
+
+  res.json({ ok: true });
+});
+
+app.get('/api/premium/history', requireAuthApi, async (req, res) => {
+  const userId = req.session.user.id;
+  const r = await q(`
+    select * from premium_orders
+    where user_id=$1
+    order by created_at desc
+    limit 100
+  `, [userId]);
+
+  res.json(r.rows);
+});
+
+/* =========================================================
+   Notifications
+   ========================================================= */
+
+app.get('/api/notifications', requireAuthApi, async (req, res) => {
+  const userId = req.session.user.id;
+  const r = await q(`
+    select id,title,body,read,created_at
+    from notifications
+    where user_id=$1
+    order by created_at desc
+    limit 100
+  `, [userId]);
+
+  res.json(r.rows.map(n => ({
+    id: n.id,
+    title: n.title,
+    body: n.body,
+    read: n.read,
+    createdAt: n.created_at
+  })));
+});
+
+app.post('/api/notifications/read-all', requireAuthApi, async (req, res) => {
+  const userId = req.session.user.id;
+  await q(`update notifications set read=true where user_id=$1`, [userId]);
+  res.json({ ok: true });
+});
+
+
+/* =========================================================
+   Health + Start
    ========================================================= */
 
 app.get('/api/health', async (req, res) => {
   try {
-    await q('SELECT 1');
+    await q('select 1 as ok');
     res.json({ ok: true });
-  } catch {
+  } catch (e) {
     res.status(500).json({ ok: false });
   }
 });
 
-/* =========================================================
-   Admin Routes
-   ========================================================= */
-
-app.use('/api/admin', adminRoutes);
-
-/* =========================================================
-   Start
-   ========================================================= */
-
-async function start() {
-  try {
-    await ensureDbShape();
-    app.listen(PORT, () => {
-      console.log(`✅ Samsar server running on http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    console.error('Startup failed:', err);
-    process.exit(1);
-  }
-}
-
-start();
+app.listen(PORT, () => {
+  console.log(`✅ Samsar server running on http://localhost:${PORT}`);
+});

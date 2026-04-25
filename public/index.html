@@ -391,11 +391,11 @@ function absUrlMaybe(u){
   return v.startsWith('/') ? v : ('/' + v);
 }
 
- function firstImage(ad){
-  // ✅ server كيرجع image (أول صورة) فـ field سميتو image
-  if (ad && ad.image) return ad.image;
+function firstImage(ad){
+  // ✅ server returns "image" (first image url)
+  if(ad && ad.image) return ad.image;
 
-  // ✅ إلا كنت كترجع images array فشي صفحات أخرى
+  // fallback if you ever return images array somewhere
   if(ad && Array.isArray(ad.images) && ad.images.length) return ad.images[0];
 
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
@@ -405,6 +405,7 @@ function absUrlMaybe(u){
     </svg>`
   );
 }
+
 function renderAdCard(ad, showBadge){
   const id = ad.id;
   const img = firstImage(ad);

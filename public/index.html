@@ -17,9 +17,7 @@
   --accent-2:#60a5fa;
   --premium:#fbbf24;
 }
-
 *{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:Inter,Arial,sans-serif;
@@ -29,11 +27,9 @@ body{
   color:var(--text);
   padding-bottom:90px;
 }
-
 .page{max-width:1200px;margin:20px auto;padding:18px}
 
 /* ================= HEADER ================= */
-
 .home-brand-bar{
   display:flex;
   justify-content:space-between;
@@ -43,44 +39,26 @@ body{
   background:rgba(255,255,255,0.04);
   border:1px solid var(--card-border);
 }
-
-.logo-area{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
+.logo-area{display:flex;align-items:center;gap:14px;}
 .logo-img{
-  width:54px;
-  height:54px;
-  border-radius:14px;
+  width:54px;height:54px;border-radius:14px;
   background:linear-gradient(135deg,#043b66,#0b7bd6);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:800;
-  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;overflow:hidden;
 }
 .logo-img img{width:100%;height:100%;object-fit:cover;display:block}
-
 .brand-text{ text-align:right; }
 .brand-text h1{ margin:0; font-size:20px; }
 .brand-text p{ margin:0; font-size:13px; color:var(--muted); }
 
-/* ✅ Premium Support Icon */
 .header-actions{ display:flex; align-items:center; gap:10px; }
 .support-btn{
-  width:44px;height:44px;
-  border-radius:14px;
+  width:44px;height:44px;border-radius:14px;
   border:1px solid rgba(255,255,255,.10);
   background:rgba(255,255,255,.04);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-decoration:none;
-  color:var(--text);
-  position:relative;
-  transition:.2s;
+  display:flex;align-items:center;justify-content:center;
+  text-decoration:none;color:var(--text);
+  position:relative;transition:.2s;
 }
 .support-btn:hover{transform:translateY(-2px); box-shadow:0 14px 28px rgba(0,0,0,.25)}
 .support-btn::after{
@@ -93,20 +71,14 @@ body{
 }
 @media(min-width:900px){ .support-btn::after{display:block} }
 .support-btn .badge{
-  position:absolute;
-  top:-8px;
-  left:-8px;
-  background:var(--premium);
-  color:#111;
-  font-weight:900;
-  font-size:11px;
-  padding:4px 8px;
-  border-radius:999px;
+  position:absolute;top:-8px;left:-8px;
+  background:var(--premium);color:#111;
+  font-weight:900;font-size:11px;
+  padding:4px 8px;border-radius:999px;
   box-shadow:0 12px 24px rgba(251,191,36,.22);
 }
 
 /* ================= HERO SLIDER ================= */
-
 .hero{
   margin-top:20px;
   position:relative;
@@ -147,7 +119,6 @@ body{
 .hero-dots span.active{ background:#fff; }
 
 /* ================= SEARCH ================= */
-
 .search-box{ margin-top:25px; display:flex; gap:10px; }
 .search-box input{
   flex:1;
@@ -168,7 +139,6 @@ body{
 }
 
 /* ================= SECTION ================= */
-
 .section{ margin-top:35px; }
 .section-header{
   display:flex;
@@ -180,7 +150,6 @@ body{
 .section-header a{ color:var(--accent); text-decoration:none; font-size:14px; }
 
 /* ================= ADS GRID ================= */
-
 .ads-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
@@ -206,7 +175,6 @@ body{
 .ad-content{padding:14px}
 .ad-title{font-size:15px;margin:0 0 6px}
 .ad-price{font-weight:800}
-
 .premium-badge{
   position:absolute;
   top:10px;
@@ -220,7 +188,6 @@ body{
 }
 
 /* ================= CATEGORIES ================= */
-
 .categories{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
@@ -237,7 +204,6 @@ body{
 .category:hover{ background:rgba(255,255,255,.08); }
 
 /* ================= NAV (UNCHANGED) ================= */
-
 .modern-flat-nav{
   position:fixed;
   bottom:0; left:0; right:0;
@@ -334,7 +300,6 @@ body{
 </div>
 
 <nav class="modern-flat-nav">
-
   <a href="/" class="modern-flat-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
@@ -363,40 +328,53 @@ body{
     </svg>
     <span>بروفايل</span>
   </a>
-
 </nav>
 
 <script>
 /* ===========================
    helpers
 =========================== */
+function safeText(s){ return String(s || '').trim(); }
+
+function absUrlMaybe(u){
+  const v = safeText(u);
+  if(!v) return '';
+  if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
+  return v.startsWith('/') ? v : ('/' + v);
+}
+
+// cache-bust for fresh images (helps after upload)
+function withCacheBust(u){
+  const v = absUrlMaybe(u);
+  if(!v || v.startsWith('data:')) return v;
+  const sep = v.includes('?') ? '&' : '?';
+  return v + sep + 'v=' + Date.now();
+}
+
 async function jget(url){
-  const res = await fetch(url, { credentials:'include' });
+  // ✅ no-store باش متبقاش تشوف نتائج قديمة بعد نشر إعلان
+  const res = await fetch(url, {
+    credentials:'include',
+    cache: 'no-store',
+    headers: { 'Accept': 'application/json' }
+  });
   const data = await res.json().catch(()=> ({}));
   if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
   return data;
 }
-function safeText(s){ return String(s || '').trim(); }
+
 function formatPrice(p){
   const n = Number(p);
   if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
   return (p ? String(p) + ' د.م' : '');
 }
-function absUrlMaybe(u){
-  const v = safeText(u);
-  if(!v) return '';
-  // already absolute or data:
-  if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
-  // ensure leading slash
-  return v.startsWith('/') ? v : ('/' + v);
-}
 
 function firstImage(ad){
-  // ✅ server returns "image" (first image url)
-  if(ad && ad.image) return ad.image;
+  // ✅ server returns "image" already (first image url)
+  if(ad && ad.image) return withCacheBust(ad.image);
 
-  // fallback if you ever return images array somewhere
-  if(ad && Array.isArray(ad.images) && ad.images.length) return ad.images[0];
+  // fallback: if server ever returns images array
+  if(ad && Array.isArray(ad.images) && ad.images.length) return withCacheBust(ad.images[0]);
 
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
@@ -406,6 +384,11 @@ function firstImage(ad){
   );
 }
 
+function isFeatured(ad){
+  // ✅ ما نعتبرش الإعلان "مميز" إلا إذا featured=true فعلاً
+  return ad && (ad.featured === true || ad.featured === 'true' || ad.featured === 1);
+}
+
 function renderAdCard(ad, showBadge){
   const id = ad.id;
   const img = firstImage(ad);
@@ -413,11 +396,15 @@ function renderAdCard(ad, showBadge){
   const price = formatPrice(ad.price);
   const href = '/ad?id=' + encodeURIComponent(id);
 
+  // badge الحقيقي: في featured section كيبقى showBadge=true
+  // ولكن كنزيد شرط featured الحقيقي باش ما يبانش بالغلط
+  const badgeHtml = (showBadge && isFeatured(ad)) ? `<div class="premium-badge">مميز</div>` : ``;
+
   return `
     <a class="ad-card" href="${href}">
       <div style="position:relative">
-        <img class="ad-image" src="${img}" alt="">
-        ${showBadge ? `<div class="premium-badge">مميز</div>` : ``}
+        <img class="ad-image" src="${img}" alt="" loading="lazy">
+        ${badgeHtml}
       </div>
       <div class="ad-content">
         <div class="ad-title">${title || '—'}</div>
@@ -442,7 +429,7 @@ async function loadBrand(){
 
     const logoBox = document.getElementById('logoBox');
     if(logo){
-      logoBox.innerHTML = `<img src="${absUrlMaybe(logo)}" alt="logo">`;
+      logoBox.innerHTML = `<img src="${withCacheBust(logo)}" alt="logo">`;
     }else{
       logoBox.textContent = (name.split(' ').map(x=>x[0]).join('').slice(0,2) || 'LM').toUpperCase();
     }
@@ -451,9 +438,9 @@ async function loadBrand(){
 
 /* ===========================
    2) Hero slides
-   - expects server: GET /api/home/slides -> [{imageUrl, linkUrl, order}]
 =========================== */
 let heroTimer = null;
+
 function startHero(slides, intervalMs){
   const hero = document.getElementById('hero');
   const dotsWrap = document.getElementById('heroDots');
@@ -514,16 +501,15 @@ async function loadHero(){
 
 /* ===========================
    3) Ads
-   - Featured should ONLY show featured=true
-   - Latest shows all published
 =========================== */
 async function loadFeatured(){
   const grid = document.getElementById('featuredGrid');
   grid.innerHTML = '';
   try{
-    // ✅ الأفضل: endpoint خاص بالمميز
+    // ✅ لازم هذا يرجع غير featured=true (من السيرفر)
     const ads = await jget('/api/ads/featured');
-    const items = Array.isArray(ads) ? ads : [];
+    const items = (Array.isArray(ads) ? ads : []).filter(isFeatured);
+
     grid.innerHTML =
       items.map(a=>renderAdCard(a, true)).join('') ||
       `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات مميزة</div>`;
@@ -536,8 +522,11 @@ async function loadLatest(){
   const grid = document.getElementById('latestGrid');
   grid.innerHTML = '';
   try{
+    // ✅ latest: كيجبد آخر 20 published من السيرفر
     const ads = await jget('/api/ads');
     const items = Array.isArray(ads) ? ads : [];
+
+    // ✅ ما نخليوش featured يطلع فـ latest section كـ badge
     grid.innerHTML =
       items.map(a=>renderAdCard(a, false)).join('') ||
       `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات</div>`;
@@ -582,6 +571,13 @@ document.getElementById('searchBtn').addEventListener('click', ()=>{
   await loadFeatured();
   await loadLatest();
   await loadCats();
+
+  // ✅ auto refresh خفيف باش إذا نشر إعلان من جهاز آخر يبان
+  // (اختياري، تقدر تحيدها)
+  setInterval(()=>{
+    loadFeatured();
+    loadLatest();
+  }, 30000);
 })();
 </script>
 

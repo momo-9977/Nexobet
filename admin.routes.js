@@ -263,6 +263,11 @@ async function ensureSchema(req) {
   if (adsExists) {
     await pool.query(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS user_id TEXT`).catch(() => {});
     await pool.query(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
+
+    // ✅ مهمين باش featured/status يخدمو فالأدمن والسيرفر
+    await pool.query(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false`).catch(() => {});
+    await pool.query(`ALTER TABLE ads ADD COLUMN IF NOT EXISTS status TEXT`).catch(() => {});
+    await pool.query(`UPDATE ads SET status='published' WHERE status IS NULL`).catch(() => {});
   }
   
   schemaReady = true;
@@ -913,7 +918,7 @@ router.patch('/ads/:id/status', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'STATUS_COLUMN_MISSING' });
     }
 
-    await pool.query(`UPDATE ads SET status=$1 WHERE id=$2`, [status, id]);
+    await pool.query(`UPDATE ads SET status=$1 WHERE id::text=$2`, [status, String(id)]);
     await audit(req, 'ads.status', id, { status });
     res.json({ ok: true });
   } catch (e) {
@@ -933,7 +938,7 @@ router.patch('/ads/:id/feature', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'FEATURED_COLUMN_MISSING' });
     }
 
-    await pool.query(`UPDATE ads SET featured=$1 WHERE id=$2`, [featured, id]);
+    await pool.query(`UPDATE ads SET featured=$1 WHERE id::text=$2`, [featured, String(id)]);
     await audit(req, 'ads.feature', id, { featured });
     res.json({ ok: true });
   } catch (e) {
@@ -973,7 +978,7 @@ router.delete('/ads/:id', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const id = req.params.id;
 
-    await pool.query(`DELETE FROM ads WHERE id=$1`, [id]);
+    await pool.query(`DELETE FROM ads WHERE id::text=$1`, [String(id)]);
 
     await audit(req, 'ads.delete', id, null);
     res.json({ ok: true });

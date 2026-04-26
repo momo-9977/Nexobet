@@ -470,8 +470,31 @@ app.get('/api/ads', async (req, res) => {
 });
 
 app.get('/api/ads/featured', async (req, res) => {
-  req.query.featured = 'true';
-  return app._router.handle(req, res, () => {});
+  try {
+    await ensureDbShape();
+
+    const r = await q(`
+      SELECT
+        a.*,
+        (
+          SELECT url
+          FROM ad_images
+          WHERE ad_id::text = a.id::text
+          ORDER BY ord ASC
+          LIMIT 1
+        ) as image
+      FROM ads a
+      WHERE a.status='published'
+        AND COALESCE(a.featured,false)=true
+      ORDER BY a.created_at DESC
+      LIMIT 10
+    `);
+
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
 });
 
 /* =========================================================

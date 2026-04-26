@@ -54,16 +54,14 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Railway/Proxy
 app.set('trust proxy', 1);
 
-/* -------------------- Sessions (NO CRASH) -------------------- */
-// مهم: باش مايبقاش كيطير login، خاص SESSION_SECRET يكون ثابت فـ Railway Variables
+/* -------------------- Sessions (stable) -------------------- */
+
+const IS_PROD = process.env.NODE_ENV === 'production';
+
 const SESSION_SECRET =
   process.env.SESSION_SECRET && process.env.SESSION_SECRET.trim()
     ? process.env.SESSION_SECRET.trim()
-    : crypto.randomBytes(32).toString('hex');
-
-if (IS_PROD && !(process.env.SESSION_SECRET && process.env.SESSION_SECRET.trim())) {
-  console.warn('⚠️ SESSION_SECRET missing in production. Using random secret (sessions reset on restart).');
-}
+    : 'dev_secret_change_me'; // فـ dev فقط
 
 app.use(session({
   store: new pgSession({
@@ -71,12 +69,14 @@ app.use(session({
     tableName: 'session',
     createTableIfMissing: true
   }),
+  name: 'sid',
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  proxy: true, // مهم مع Railway + trust proxy
   cookie: {
     httpOnly: true,
-    secure: IS_PROD,
+    secure: IS_PROD,   // https فقط فـ production
     sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 14
   }

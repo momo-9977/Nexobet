@@ -10,16 +10,12 @@
   --bg-0:#071024;
   --bg-1:#081426;
   --card-bg:rgba(255,255,255,0.04);
-  --card-border:rgba(255,255,255,0.05);
+  --card-border:rgba(255,255,255,0.06);
   --text:#e6eef8;
   --muted:#9aa8c2;
   --accent:#2ea3ff;
   --accent-2:#60a5fa;
-  --success:#22c55e;
   --shadow:0 20px 45px rgba(0,0,0,.4);
-
-  --diamond-size:64px;
-  --diamond-gap:64px;
 }
 
 *{box-sizing:border-box}
@@ -31,24 +27,24 @@ body{
     radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
     linear-gradient(180deg,var(--bg-0),var(--bg-1));
   color:var(--text);
-  padding-bottom:130px;
+  padding-bottom:90px;
 }
 
-/* Back */
 .back-btn{
   position:fixed;
   top:20px;
   right:20px;
-  width:48px;
-  height:48px;
+  width:48px;height:48px;
   border-radius:14px;
   background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,.08);
   display:flex;
   align-items:center;
   justify-content:center;
   cursor:pointer;
   backdrop-filter:blur(6px);
   z-index:100;
+  transition:.2s;
 }
 .back-btn:hover{transform:translateY(-3px)}
 
@@ -68,31 +64,22 @@ body{
   box-shadow:var(--shadow);
 }
 
-/* Hero */
 .support-hero{
   border-radius:22px;
   padding:30px;
   background:linear-gradient(135deg,var(--accent),var(--accent-2));
   color:white;
 }
+.support-hero h1{margin:0 0 8px;font-size:30px}
+.support-hero p{margin:0;font-size:14px;line-height:1.8;opacity:.95}
 
-.support-hero h1{
-  margin:0 0 8px;
-  font-size:30px;
-}
-
-.support-hero p{
-  margin:0;
-  font-size:14px;
-  line-height:1.8;
-  opacity:.95;
-}
-
-/* Grid */
 .support-grid{
   display:grid;
   grid-template-columns:1.2fr .8fr;
   gap:20px;
+}
+@media(max-width:900px){
+  .support-grid{grid-template-columns:1fr}
 }
 
 .faq-item{
@@ -102,21 +89,19 @@ body{
   margin-bottom:12px;
   overflow:hidden;
 }
-
 .faq-question{
   width:100%;
   padding:16px;
   background:none;
   border:none;
   color:white;
-  font-weight:700;
+  font-weight:800;
   text-align:right;
   cursor:pointer;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
-
 .faq-answer{
   display:none;
   padding:0 16px 16px;
@@ -124,10 +109,8 @@ body{
   font-size:14px;
   line-height:1.8;
 }
-
 .faq-item.active .faq-answer{display:block}
 
-/* Contact */
 .contact-box h3{margin-top:0}
 .support-actions{display:grid;gap:12px;margin-top:12px}
 
@@ -135,7 +118,7 @@ body{
   padding:14px;
   border-radius:18px;
   text-decoration:none;
-  font-weight:700;
+  font-weight:800;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -143,83 +126,158 @@ body{
   color:white;
   transition:.2s;
 }
-
 .support-btn:hover{transform:translateY(-3px)}
-
 .whatsapp{background:linear-gradient(135deg,#16a34a,#22c55e)}
 .email{background:linear-gradient(135deg,#2563eb,#3b82f6)}
 .telegram{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}
 
-@media(max-width:900px){
-  .support-grid{grid-template-columns:1fr}
-}
-
-
+.muted{color:var(--muted);font-size:14px;line-height:1.8}
+.small{font-size:12px;color:rgba(255,255,255,.65)}
 </style>
 </head>
-<body>
 
+<body>
 <div class="back-btn" onclick="history.back()">←</div>
 
 <div class="page">
 
-<div class="card support-hero">
-<h1>كيف نقدر نعاونك؟</h1>
-<p>
-هنا غادي تلقى أهم الأجوبة على المشاكل الشائعة،
-وإلا ما لقيتيش الحل تقدر تتواصل معنا مباشرة.
-</p>
-</div>
+  <div class="card support-hero">
+    <h1>كيف نقدر نعاونك؟</h1>
+    <p>هنا غادي تلقى أهم الأجوبة على المشاكل الشائعة، وإذا ما لقيتيش الحل تقدر تتواصل معنا مباشرة.</p>
+  </div>
 
-<div class="support-grid">
+  <div class="support-grid">
 
-<div>
-<div class="faq-item active">
-<button class="faq-question" onclick="toggleFaq(this)">
-<span>كيفاش ننشر إعلان جديد؟</span>
-<span>+</span>
-</button>
-<div class="faq-answer">
-دخل لصفحة "نشر"، عمر العنوان والوصف والثمن والمدينة،
-وزيد صورة واحدة على الأقل ثم اضغط نشر الإعلان.
-</div>
-</div>
+    <!-- FAQ -->
+    <div class="card">
+      <h3 style="margin-top:0">الأسئلة الشائعة</h3>
+      <p class="muted" style="margin-top:6px">الأسئلة كتجي من لوحة التحكم (Admin). إذا تبدلات فالأدمن كتتبدل هنا مباشرة.</p>
 
-<div class="faq-item">
-<button class="faq-question" onclick="toggleFaq(this)">
-<span>كيف نعدل أو نحذف إعلان؟</span>
-<span>+</span>
-</button>
-<div class="faq-answer">
-دخل لبروفايل ديالك، ومن قسم "إعلاناتي"
-تقدر تختار تعديل أو حذف.
-</div>
-</div>
-</div>
+      <div id="faqWrap" style="margin-top:14px">
+        <div class="small">... جاري التحميل</div>
+      </div>
+    </div>
 
-<div class="card contact-box">
-<h3>تواصل معنا مباشرة</h3>
-<p style="color:var(--muted);font-size:14px;">
-إلا كان عندك مشكل آخر، استعمل واحدة من وسائل التواصل التالية.
-</p>
+    <!-- CONTACT -->
+    <div class="card contact-box">
+      <h3>تواصل معنا مباشرة</h3>
+      <p class="muted">إلا كان عندك مشكل آخر، استعمل واحدة من وسائل التواصل التالية.</p>
 
-<div class="support-actions">
-<a class="support-btn whatsapp" href="https://wa.me/212600000000" target="_blank">🟢 واتساب</a>
-<a class="support-btn email" href="mailto:support@lemarche.com">📧 إيميل</a>
-<a class="support-btn telegram" href="https://t.me/lemarche_support" target="_blank">✈️ تيليجرام</a>
-</div>
+      <div class="support-actions" id="supportActions">
+        <a class="support-btn whatsapp" id="waBtn" href="#" target="_blank" rel="noopener">🟢 واتساب</a>
+        <a class="support-btn email" id="mailBtn" href="#">📧 إيميل</a>
+        <a class="support-btn telegram" id="tgBtn" href="#" target="_blank" rel="noopener">✈️ تيليجرام</a>
+      </div>
 
-</div>
+      <div class="small" id="supportNote" style="margin-top:10px"></div>
+    </div>
 
+  </div>
 </div>
-</div>
-
-<!-- NAVIGATION -->
 
 <script>
 function toggleFaq(btn){
   btn.parentElement.classList.toggle("active");
 }
+
+async function jget(url){
+  const res = await fetch(url, { credentials:'include' });
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
+  return data;
+}
+
+function safeText(s){ return String(s || '').trim(); }
+
+function buildWaLink(raw){
+  // accept: "2126..." or "+2126..." or "06...."
+  let p = safeText(raw).replace(/\s+/g,'');
+  if(!p) return '';
+  p = p.replace(/^\+/, '');
+  if(p.startsWith('0')) p = '212' + p.slice(1);
+  if(!p.startsWith('212')) p = '212' + p; // fallback
+  return 'https://wa.me/' + p;
+}
+
+async function loadSupportSettings(){
+  const waBtn = document.getElementById('waBtn');
+  const mailBtn = document.getElementById('mailBtn');
+  const tgBtn = document.getElementById('tgBtn');
+  const note = document.getElementById('supportNote');
+
+  try{
+    const s = await jget('/api/support/settings');
+
+    const wa = safeText(s.whatsapp);
+    const em = safeText(s.email);
+    const tg = safeText(s.telegram);
+
+    // WhatsApp
+    if(wa){
+      waBtn.href = buildWaLink(wa);
+      waBtn.style.display = 'flex';
+    }else{
+      waBtn.style.display = 'none';
+    }
+
+    // Email
+    if(em){
+      mailBtn.href = 'mailto:' + em;
+      mailBtn.style.display = 'flex';
+    }else{
+      mailBtn.style.display = 'none';
+    }
+
+    // Telegram
+    if(tg){
+      tgBtn.href = tg.startsWith('http') ? tg : ('https://t.me/' + tg.replace('@',''));
+      tgBtn.style.display = 'flex';
+    }else{
+      tgBtn.style.display = 'none';
+    }
+
+    if(!wa && !em && !tg){
+      note.textContent = '⚠️ لم يتم إعداد وسائل الدعم بعد من لوحة التحكم.';
+    }else{
+      note.textContent = '';
+    }
+  }catch(e){
+    note.textContent = 'تعذر تحميل إعدادات الدعم.';
+  }
+}
+
+async function loadFaq(){
+  const wrap = document.getElementById('faqWrap');
+  wrap.innerHTML = '';
+
+  try{
+    const r = await jget('/api/support/faq');
+    const items = Array.isArray(r.items) ? r.items : [];
+
+    if(!items.length){
+      wrap.innerHTML = '<div class="small">لا توجد أسئلة بعد. يمكن إضافتها من لوحة التحكم.</div>';
+      return;
+    }
+
+    wrap.innerHTML = items.map((x, idx)=>`
+      <div class="faq-item ${idx===0?'active':''}">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>${safeText(x.question) || '—'}</span>
+          <span>+</span>
+        </button>
+        <div class="faq-answer">${safeText(x.answer) || ''}</div>
+      </div>
+    `).join('');
+
+  }catch(e){
+    wrap.innerHTML = '<div class="small">تعذر تحميل الأسئلة الشائعة.</div>';
+  }
+}
+
+(async function init(){
+  await loadSupportSettings();
+  await loadFaq();
+})();
 </script>
 
 </body>

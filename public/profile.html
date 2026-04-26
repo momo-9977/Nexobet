@@ -801,31 +801,58 @@
     }
   });
 
-  // Avatar upload
-  avatarInput.addEventListener('change', async (e)=>{
-    if(!currentUser) return;
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
+// Avatar upload (FIXED)
+avatarInput.addEventListener('change', async (e) => {
+  if (!currentUser) return;
 
-    try{
-      const fd = new FormData();
-      fd.append('avatar', file);
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
 
-      const res = await fetch('/api/users/' + encodeURIComponent(currentUser.id) + '/avatar', apiOpts('PUT', fd));
-      if(!res.ok) throw new Error('upload failed');
+  // ✅ validate type + size (اختياري ولكن مفيد)
+  const okTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+  if (!okTypes.includes(file.type)) {
+    toast('المرجو رفع صورة (png/jpg/webp/gif) ❌', false);
+    avatarInput.value = '';
+    return;
+  }
 
-      const data = await res.json().catch(()=> ({}));
-      if(data.avatar) currentUser.avatar = data.avatar;
+  const maxMb = 10;
+  if (file.size > maxMb * 1024 * 1024) {
+    toast('الصورة كبيرة بزاف (max 10MB) ❌', false);
+    avatarInput.value = '';
+    return;
+  }
 
+  try {
+    const fd = new FormData();
+    fd.append('avatar', file);
+
+    // ✅ مهم: ما تزيدش Content-Type يدويا مع FormData
+    const res = await fetch(
+      '/api/users/' + encodeURIComponent(currentUser.id) + '/avatar',
+      apiOpts('PUT', fd)
+    );
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data?.message || data?.error || 'upload failed');
+    }
+
+    if (data.avatar) {
+      currentUser.avatar = data.avatar;
       setAvatar(currentUser);
       toast('تم تحديث الصورة ✅', true);
-    }catch(err){
-      console.error(err);
-      toast('فشل رفع الصورة ❌', false);
-    }finally{
-      avatarInput.value = '';
+    } else {
+      throw new Error('SERVER_NO_AVATAR_RETURNED');
     }
-  });
+  } catch (err) {
+    console.error(err);
+    toast('فشل رفع الصورة ❌', false);
+  } finally {
+    avatarInput.value = '';
+  }
+});
 
   // Change password
   qs('#changePwdBtn').addEventListener('click', async ()=>{

@@ -321,6 +321,59 @@ const storage = multer.diskStorage({
   }
 });
 
+// ===============================
+// Avatar Upload (Profile)
+// PUT /api/users/:id/avatar
+// ===============================
+
+// multer خاص بالصور فقط (avatar)
+const avatarUpload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const ok = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.mimetype);
+    cb(ok ? null : new Error('INVALID_FILE_TYPE'), ok);
+  }
+});
+
+app.put('/api/users/:id/avatar', requireAuthApi, avatarUpload.single('avatar'), async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const targetId = String(req.params.id || '');
+    const sessionId = String(req.session.user.id || '');
+
+    // ✅ حماية: مايمكنش تبدّل avatar ديال شي واحد آخر
+    if (targetId !== sessionId) {
+      return res.status(403).json({ error: 'FORBIDDEN' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'NO_FILE' });
+    }
+
+    // ✅ تأكد users table فيه avatar column
+    const hasAvatar = await hasColumn('users', 'avatar');
+    if (!hasAvatar) {
+      await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT`).catch(() => {});
+    }
+
+    const avatarUrl = safeFilenameUrl(req.file); // "/uploads/xxxx.png"
+
+    await q(`UPDATE users SET avatar=$1 WHERE id=$2`, [avatarUrl, targetId]);
+
+    return res.json({ ok: true, avatar: avatarUrl });
+  } catch (e) {
+    console.error(e);
+    const msg = String(e.message || e);
+    if (msg.includes('INVALID_FILE_TYPE')) {
+      return res.status(400).json({ error: 'INVALID_FILE_TYPE' });
+    }
+    return res.status(500).json({ error: 'SERVER_ERROR', message: msg });
+  }
+});
+
+
 const upload = multer({
   storage,
   limits: { fileSize: 1024 * 1024 * 1024 * 2 }
@@ -345,6 +398,66 @@ app.get('/admin', requireAdminPage, (req, res) => res.sendFile(path.join(PUBLIC_
 /* =========================================================
    PUBLIC API
    ========================================================= */
+// ===============================
+// PUBLIC SUPPORT (for /support page)
+// ===============================
+
+app.get('/api/support/settings', async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    // settings table already exists
+    const r = await q(
+      `SELECT support_whatsapp, support_email, support_telegram
+       FROM settings
+       WHERE id=1
+       LIMIT 1`
+    );
+
+    const s = r.rows[0] || {};
+    res.json({
+      whatsapp: s.support_whatsapp || '',
+      email: s.support_email || '',
+      telegram: s.support_telegram || ''
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
+app.get('/api/support/faq', async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    // table support_faq is created in admin.routes ensureSchema,
+    // so here we create it too (safe) to avoid "relation does not exist"
+    await q(`
+      CREATE TABLE IF NOT EXISTS support_faq(
+        id UUID PRIMARY KEY,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        active BOOLEAN NOT NULL DEFAULT true,
+        ord INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `).catch(() => {});
+
+    const r = await q(`
+      SELECT id, question, answer, ord
+      FROM support_faq
+      WHERE active = true
+      ORDER BY ord ASC, created_at DESC
+      LIMIT 200
+    `);
+
+    res.json({ items: r.rows });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
 
 app.get('/api/settings', async (req, res) => {
   try {

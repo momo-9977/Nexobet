@@ -2100,13 +2100,16 @@
      *  11) Support
      *  =========================== */
     async function loadSupport(){
-      try{
-        const s = await api('/support/settings', apiOpts());
-        qs('#supWa').value = s.whatsapp || '';
-        qs('#supEmail').value = s.email || '';
-        qs('#supTg').value = s.telegram || '';
-      }catch(e){}
-    }
+  try{
+    const s = await api('/support/settings', apiOpts());
+    qs('#supWa').value = s.whatsapp || '';
+    qs('#supEmail').value = s.email || '';
+    qs('#supTg').value = s.telegram || '';
+  }catch(e){}
+
+  // ✅ مهم: حمّل FAQ وعمّر table باش يبان delete/actions
+  await loadFaq();
+}
 
     qs('#saveSupportBtn').addEventListener('click', async ()=>{
       try{
@@ -2130,6 +2133,85 @@
         toast('تمت إضافة FAQ ✅', true);
       }catch(e){ console.error(e); toast('فشل ❌', false); }
     });
+
+    // ---------- Support: FAQ ----------
+async function loadFaq(){
+  try{
+    const data = await api('/support/faq', apiOpts());
+    const items = data.items || data || [];
+    renderFaqTable(items);
+  }catch(e){
+    console.error(e);
+    renderFaqTable([]);
+  }
+}
+
+function renderFaqTable(items){
+  const tbody = qs('#faqTable tbody');
+
+  if(!items.length){
+    tbody.innerHTML = `<tr><td colspan="3" class="muted">—</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items.map(x=>{
+    const id = x.id;
+    const qTxt = x.question || '';
+    const active = (x.active !== false);
+
+    return `
+      <tr>
+        <td>${esc(qTxt)}</td>
+        <td>${active ? '<span class="tag good">yes</span>' : '<span class="tag bad">no</span>'}</td>
+        <td class="nowrap">
+          <div class="actions">
+            <button class="mini bad" onclick="deleteFaq('${esc(id)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.deleteFaq = async (id)=>{
+  if(!confirm('حذف FAQ؟')) return;
+  try{
+    await api('/support/faq/' + encodeURIComponent(id), apiOpts('DELETE'));
+    toast('تم الحذف ✅', true);
+    loadFaq();
+  }catch(e){
+    console.error(e);
+    toast('فشل الحذف ❌', false);
+  }
+};
+
+// زر Add
+qs('#addFaqBtn').addEventListener('click', async ()=>{
+  try{
+    const question = qs('#faqQ').value.trim();
+    const answer = qs('#faqA').value.trim();
+    const order = Number(qs('#faqOrder').value || 0);
+    const active = qs('#faqActive').value === 'true';
+
+    if(!question || !answer){
+      return toast('دخل Question و Answer', false);
+    }
+
+    await api('/support/faq', apiOpts('POST', { question, answer, order, active }));
+
+    qs('#faqQ').value = '';
+    qs('#faqA').value = '';
+    toast('تمت الإضافة ✅', true);
+
+    loadFaq();
+  }catch(e){
+    console.error(e);
+    toast('فشل الإضافة ❌', false);
+  }
+});
+
+// زر Reload
+qs('#reloadFaqBtn').addEventListener('click', loadFaq);
 
     /** ===========================
      *  12) Media

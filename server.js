@@ -26,11 +26,34 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 /* -------------------- Directories -------------------- */
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
+
+// ✅ uploads فـ volume (دائم) إذا كان /data موجود
+const VOLUME_ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH || '/data';
+const UPLOADS_DIR = fs.existsSync(VOLUME_ROOT)
+  ? path.join(VOLUME_ROOT, 'uploads')
+  : path.join(PUBLIC_DIR, 'uploads'); // fallback local
 
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
+
+// ✅ Serve uploads
+app.use('/uploads', express.static(UPLOADS_DIR, {
+  maxAge: '7d',
+  immutable: true
+}));
+
+// ✅ Serve public
+app.use(express.static(PUBLIC_DIR));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    const base = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, base + ext);
+  }
+});
 
 /* -------------------- Middlewares -------------------- */
 

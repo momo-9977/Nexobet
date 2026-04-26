@@ -394,6 +394,49 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
+app.get('/api/ads/:id', async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const adId = String(req.params.id);
+
+    const r = await q(`SELECT * FROM ads WHERE id::text=$1 LIMIT 1`, [adId]);
+    const ad = r.rows[0];
+    if (!ad) return res.status(404).json({ error: 'NOT_FOUND' });
+
+    // صور الإعلان
+    const imgs = await q(
+      `SELECT id, url, ord
+       FROM ad_images
+       WHERE ad_id::text=$1
+       ORDER BY ord ASC`,
+      [adId]
+    );
+    const images = imgs.rows.map(x => ({ id: x.id, url: x.url, ord: x.ord }));
+
+    // owner phone
+    let owner = null;
+    if (ad.user_id) {
+      const u = await q(
+        `SELECT id,name,phone,city FROM users WHERE id::text=$1 LIMIT 1`,
+        [String(ad.user_id)]
+      );
+      owner = u.rows[0] || null;
+    }
+
+    res.json({
+      ...ad,
+      image: images[0]?.url || null,
+      images, // [{id,url,ord}]
+      owner: owner ? { id: owner.id, name: owner.name, phone: owner.phone, city: owner.city } : null
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
+
 // hero slides
 app.get('/api/home/slides', async (req, res) => {
   try {
@@ -690,6 +733,110 @@ app.get('/api/my/ads', requireAuthApi, async (req, res) => {
     `, [userId]);
 
     res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
+app.put('/api/ads/:id', requireAuthApi, upload.fields([
+  { name: 'images', maxCount: 6 },
+  { name: 'video', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const adId = String(req.params.id);
+    const userId = String(req.session.user.id);
+
+    // verify owner
+    const own = await q(`SELECT id,user_id FROM ads WHERE id::text=$1 LIMIT 1`, [adId]);
+    if (!own.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
+    if (String(own.rows[0].user_id) !== userId) return res.status(403).json({ error: 'FORBIDDEN' });
+
+    // validate
+    const schema = z.object({
+      title: z.string().min(2),
+      description: z.string().min(3),
+      price: z.coerce.number().min(0),
+      city: z.string().min(1),
+      category: z.string().min(1)
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
+
+    const { title, description, price, city, category } = parsed.data;
+
+    // category
+    const hasCategoryId = await hasColumn('ads', 'category_id');
+    const hasCategory = await hasColumn('ads', 'category');
+
+    let categoryId = null;
+    if (hasCategoryId) {
+      categoryId = await resolveCategoryId(category);
+      if (!categoryId) return res.status(400).json({ error: 'CATEGORY_NOT_FOUND' });
+    }
+
+    // update main ad
+    if (hasCategoryId) {
+      await q(
+        `UPDATE ads
+         SET title=$1, description=$2, price=$3, city=$4, category_id=$5, updated_at=NOW()
+         WHERE id::text=$6`,
+        [title, description, price, city, String(categoryId), adId]
+      );
+    } else if (hasCategory) {
+      await q(
+        `UPDATE ads
+         SET title=$1, description=$2, price=$3, city=$4, category=$5, updated_at=NOW()
+         WHERE id::text=$6`,
+        [title, description, price, city, String(category), adId]
+      );
+    } else {
+      return res.status(500).json({ error: 'ADS_CATEGORY_COLUMN_MISSING' });
+    }
+
+    // add new images (append)
+    const newImages = (req.files?.images || []);
+    if (newImages.length) {
+      const maxOrdR = await q(
+        `SELECT COALESCE(MAX(ord), -1) as m FROM ad_images WHERE ad_id::text=$1`,
+        [adId]
+      );
+      let ord = (maxOrdR.rows[0]?.m ?? -1) + 1;
+
+      for (const f of newImages) {
+        await q(
+          `INSERT INTO ad_images(ad_id,url,ord) VALUES($1,$2,$3)`,
+          [adId, safeFilenameUrl(f), ord++]
+        );
+      }
+    }
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
+app.delete('/api/ads/:id/images/:imgId', requireAuthApi, async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const adId = String(req.params.id);
+    const imgId = String(req.params.imgId);
+    const userId = String(req.session.user.id);
+
+    // verify owner
+    const own = await q(`SELECT id,user_id FROM ads WHERE id::text=$1 LIMIT 1`, [adId]);
+    if (!own.rows[0]) return res.status(404).json({ error: 'NOT_FOUND' });
+    if (String(own.rows[0].user_id) !== userId) return res.status(403).json({ error: 'FORBIDDEN' });
+
+    await q(`DELETE FROM ad_images WHERE id::text=$1 AND ad_id::text=$2`, [imgId, adId]);
+
+    res.json({ ok: true });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });

@@ -1,371 +1,351 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Samsar — تفاصيل الإعلان</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>تفاصيل الإعلان</title>
 
-<style>
-:root{
-  --bg-0:#071024;
-  --bg-1:#081426;
-  --card-bg:rgba(255,255,255,0.04);
-  --card-border:rgba(255,255,255,0.05);
-  --text:#e6eef8;
-  --muted:#9aa8c2;
-  --accent:#2ea3ff;
-  --accent-2:#60a5fa;
-  --success:#22c55e;
-  --danger:#ef4444;
-  --shadow:0 15px 40px rgba(0,0,0,.35);
-}
+  <style>
+    :root{
+      --bg-0:#071024;
+      --bg-1:#081426;
+      --card-bg:rgba(255,255,255,0.03);
+      --card-border:rgba(255,255,255,0.06);
+      --text:#e6eef8;
+      --muted:#9aa8c2;
+      --accent:#2ea3ff;
+      --accent-2:#60a5fa;
+      --premium:#fbbf24;
+      --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
+        linear-gradient(180deg,var(--bg-0),var(--bg-1));
+      color:var(--text);
+      padding-bottom:90px;
+    }
+    .page{max-width:980px;margin:18px auto;padding:16px}
 
-*{box-sizing:border-box}
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid var(--card-border);
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition:.2s;
+      white-space:nowrap;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      border:none;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:#fff;
+      font-weight:800;
+    }
+    .btn.danger{
+      background:rgba(239,68,68,.12);
+      border:1px solid rgba(239,68,68,.35);
+      color:#fecaca;
+    }
 
-body{
-  margin:0;
-  font-family:Inter,Arial,sans-serif;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
-    linear-gradient(180deg,var(--bg-0),var(--bg-1));
-  color:var(--text);
-  padding-bottom:30px;
-}
+    .card{
+      margin-top:14px;
+      background:var(--card-bg);
+      border:1px solid var(--card-border);
+      border-radius:18px;
+      overflow:hidden;
+    }
 
-/* Top Bar */
-.top-bar{
-  position:sticky;
-  top:0;
-  backdrop-filter:blur(14px);
-  background:rgba(15,23,42,.7);
-  border-bottom:1px solid rgba(255,255,255,0.05);
-  padding:14px 18px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  z-index:1000;
-}
+    /* slider */
+    .slider{
+      position:relative;
+      height:320px;
+      background:rgba(255,255,255,.04);
+    }
+    .slide{
+      position:absolute; inset:0;
+      opacity:0;
+      transition:opacity .35s ease;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .slide.active{opacity:1}
+    .slide img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .slider .nav{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:42px;height:42px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.25);
+      color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    .slider .prev{left:12px}
+    .slider .next{right:12px}
+    .dots{
+      position:absolute;
+      bottom:12px;
+      left:50%;
+      transform:translateX(-50%);
+      display:flex;
+      gap:8px;
+    }
+    .dots span{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(255,255,255,.35);
+      cursor:pointer;
+    }
+    .dots span.active{background:#fff}
 
-.top-left{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
+    .content{padding:14px}
+    .title{margin:0;font-size:20px;line-height:1.3}
+    .meta{
+      margin-top:6px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .price{
+      margin-top:10px;
+      font-size:20px;
+      font-weight:900;
+      color:#fff;
+    }
+    .desc{
+      margin-top:12px;
+      color:rgba(255,255,255,.86);
+      line-height:1.8;
+      white-space:pre-wrap;
+    }
 
-.back-btn{
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.06);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  transition:.2s;
-  border:none;
-}
-.back-btn:hover{
-  background:rgba(255,255,255,0.12);
-  transform:scale(1.05);
-}
+    .actions{
+      margin-top:14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
 
-.page-title{
-  font-weight:700;
-  font-size:16px;
-}
+    .note{
+      margin-top:10px;
+      color:rgba(255,255,255,.65);
+      font-size:13px;
+    }
 
-.home-btn{
-  padding:10px 14px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.08);
-  color:var(--text);
-  text-decoration:none;
-  font-weight:800;
-  font-size:13px;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  transition:.2s;
-}
-.home-btn:hover{
-  background:rgba(255,255,255,0.12);
-  transform:translateY(-1px);
-}
-
-/* Layout */
-.container{
-  max-width:950px;
-  margin:30px auto;
-  padding:20px;
-}
-
-.card{
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  padding:24px;
-  border-radius:22px;
-  margin-bottom:20px;
-  backdrop-filter:blur(12px);
-  box-shadow:var(--shadow);
-}
-
-.card h2{margin-top:0}
-
-.price{
-  font-size:22px;
-  font-weight:800;
-  color:var(--success);
-}
-
-/* Media */
-.images img{
-  width:100%;
-  max-height:450px;
-  object-fit:cover;
-  border-radius:18px;
-  margin-bottom:12px;
-  transition:.3s;
-}
-.images img:hover{transform:scale(1.02)}
-
-.video{
-  width:100%;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,0.06);
-}
-
-/* Owner */
-.owner{background:rgba(255,255,255,0.03)}
-
-.contact-actions{
-  display:flex;
-  gap:10px;
-  margin-top:12px;
-  flex-wrap:wrap;
-}
-
-.contact-btn{
-  padding:10px 16px;
-  border-radius:14px;
-  text-decoration:none;
-  font-weight:800;
-  font-size:14px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  transition:.2s;
-  color:white;
-  border:0;
-  cursor:pointer;
-}
-
-.call{background:linear-gradient(135deg,#16a34a,#22c55e)}
-.mail{background:linear-gradient(135deg,#2563eb,#3b82f6)}
-.whatsapp{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}
-.fav{background:linear-gradient(135deg,#a78bfa,#f472b6)}
-.report{background:linear-gradient(135deg,#ef4444,#b91c1c)}
-
-.contact-btn:hover{transform:translateY(-2px)}
-
-/* States */
-.state{
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:18px;
-  padding:18px;
-  color:var(--muted);
-}
-.state strong{color:var(--text)}
-</style>
+    @media(max-width:700px){
+      .slider{height:260px}
+    }
+  </style>
 </head>
+
 <body>
+  <div class="page">
 
-<div class="top-bar">
-  <div class="top-left">
-    <button class="back-btn" type="button" onclick="history.back()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
-    </button>
-    <div class="page-title">تفاصيل الإعلان</div>
+    <div class="topbar">
+      <a class="btn" href="/">
+        <!-- home icon -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
+        </svg>
+        الرئيسية
+      </a>
+
+      <div style="font-weight:900;">تفاصيل الإعلان</div>
+
+      <button class="btn" onclick="history.back()">
+        رجوع
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="card" id="card">
+      <div class="content" id="statusBox" style="padding:18px;color:rgba(255,255,255,.7)">
+        جاري تحميل الإعلان...
+      </div>
+    </div>
+
   </div>
-
-  <!-- ✅ زر العودة للرئيسية -->
-  <a class="home-btn" href="/">
-    🏠 <span>الرئيسية</span>
-  </a>
-</div>
-
-<div class="container">
-  <div id="adContainer">
-    <div class="state"><strong>تحميل...</strong></div>
-  </div>
-</div>
 
 <script>
-/** ===== Helpers ===== */
-function escapeHtml(s=''){
-  return String(s).replace(/[&<>"']/g, m =>
-    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
-  );
-}
-function apiOpts(method='GET', body=null){
-  const opts = { method, credentials:'include', headers:{} };
-  if(body && !(body instanceof FormData)){
-    opts.headers['Content-Type'] = 'application/json';
-    opts.body = JSON.stringify(body);
-  } else if(body instanceof FormData){
-    opts.body = body;
-  }
-  return opts;
-}
-
-const params = new URLSearchParams(window.location.search);
-const id = params.get('id');
-
-let currentAd = null;
-let isFav = false;
-
-async function loadAd(){
-  const container = document.getElementById('adContainer');
-
-  if(!id){
-    container.innerHTML = `<div class="state"><strong>خطأ:</strong> معرّف الإعلان غير موجود.</div>`;
-    return;
+  async function jget(url){
+    const res = await fetch(url, { credentials:'include' });
+    const data = await res.json().catch(()=> ({}));
+    if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
+    return data;
   }
 
-  try{
-    const res = await fetch('/api/ads/' + encodeURIComponent(id), apiOpts());
-    if(!res.ok){
-      container.innerHTML = `<div class="state"><strong>الإعلان غير موجود</strong></div>`;
+  function safeText(s){ return String(s || '').trim(); }
+
+  function formatPrice(p){
+    const n = Number(p);
+    if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
+    return (p ? String(p) + ' د.م' : '');
+  }
+
+  function absUrlMaybe(u){
+    const v = safeText(u);
+    if(!v) return '';
+    if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
+    return v.startsWith('/') ? v : ('/' + v);
+  }
+
+  function getIdFromQuery(){
+    const sp = new URLSearchParams(location.search);
+    return sp.get('id') || '';
+  }
+
+  function normalizePhone(raw){
+    // نخلي غير الأرقام و + (باش يخدم tel/wa)
+    let p = String(raw || '').trim();
+    if(!p) return '';
+    p = p.replace(/[^\d+]/g,'');
+    return p;
+  }
+
+  function render(ad){
+    const card = document.getElementById('card');
+
+    const title = safeText(ad.title) || '—';
+    const price = formatPrice(ad.price);
+    const city  = safeText(ad.city) || '';
+    const desc  = safeText(ad.description) || '';
+    const created = ad.created_at ? new Date(ad.created_at).toLocaleString('fr-MA') : '';
+
+    const images = Array.isArray(ad.images) ? ad.images.map(absUrlMaybe).filter(Boolean) : [];
+    if(!images.length && ad.image) images.push(absUrlMaybe(ad.image));
+    if(!images.length){
+      images.push('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+          <rect width="100%" height="100%" fill="#0b1222"/>
+          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
+        </svg>`
+      ));
+    }
+
+    const phone = normalizePhone(ad.phone || ad.owner_phone || '');
+    const waPhone = phone ? phone.replace(/^\+/, '') : ''; // whatsapp يحتاج بدون +
+
+    card.innerHTML = `
+      <div class="slider" id="slider">
+        ${images.map((src, i)=>`
+          <div class="slide ${i===0?'active':''}">
+            <img src="${src}" alt="">
+          </div>
+        `).join('')}
+
+        ${images.length > 1 ? `
+          <div class="nav prev" id="prevBtn">‹</div>
+          <div class="nav next" id="nextBtn">›</div>
+          <div class="dots" id="dots">
+            ${images.map((_, i)=>`<span class="${i===0?'active':''}" data-i="${i}"></span>`).join('')}
+          </div>
+        ` : ``}
+      </div>
+
+      <div class="content">
+        <h1 class="title">${title}</h1>
+        <div class="meta">
+          ${city ? `<span>📍 ${city}</span>` : ``}
+          ${created ? `<span>🕒 ${created}</span>` : ``}
+          ${safeText(ad.ownerName) ? `<span>👤 ${safeText(ad.ownerName)}</span>` : ``}
+        </div>
+
+        <div class="price">${price}</div>
+
+        ${desc ? `<div class="desc">${desc}</div>` : ``}
+
+        <div class="actions">
+          ${phone ? `
+            <a class="btn primary" href="tel:${phone}">
+              <span>اتصال</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </a>
+
+            <a class="btn" target="_blank" rel="noopener" href="https://wa.me/${waPhone}">
+              <span>واتساب</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/>
+              </svg>
+            </a>
+          ` : `
+            <div class="note">⚠️ رقم الهاتف غير متوفر لهذا الإعلان.</div>
+          `}
+        </div>
+
+        <div class="note">إذا بان “الإعلان غير موجود” فراه ID غلط أو الإعلان ماشي published.</div>
+      </div>
+    `;
+
+    // slider logic
+    const slides = Array.from(card.querySelectorAll('.slide'));
+    if(slides.length <= 1) return;
+
+    const dots = Array.from(card.querySelectorAll('#dots span'));
+    let cur = 0;
+
+    const goTo = (i) => {
+      slides[cur].classList.remove('active');
+      dots[cur].classList.remove('active');
+      cur = i;
+      slides[cur].classList.add('active');
+      dots[cur].classList.add('active');
+    };
+
+    card.querySelector('#prevBtn').onclick = () => goTo((cur - 1 + slides.length) % slides.length);
+    card.querySelector('#nextBtn').onclick = () => goTo((cur + 1) % slides.length);
+
+    dots.forEach(d => {
+      d.onclick = () => goTo(parseInt(d.dataset.i, 10));
+    });
+  }
+
+  (async function init(){
+    const id = getIdFromQuery();
+    const statusBox = document.getElementById('statusBox');
+
+    if(!id){
+      statusBox.textContent = 'الإعلان غير موجود (id ناقص).';
       return;
     }
 
-    const ad = await res.json();
-    currentAd = ad;
-
-    // (اختياري) تحقق واش فالمفضلة
     try{
-      const favRes = await fetch('/api/ads/' + encodeURIComponent(id) + '/favorite', apiOpts());
-      if(favRes.ok){
-        const favData = await favRes.json();
-        isFav = !!favData.favorite;
-      }
-    }catch(e){}
-
-    renderAd(ad);
-  }catch(err){
-    console.error(err);
-    container.innerHTML = `<div class="state"><strong>خطأ:</strong> تعذر الاتصال بالسيرفر.</div>`;
-  }
-}
-
-function renderAd(ad){
-  const container = document.getElementById('adContainer');
-
-  const title = escapeHtml(ad.title || '');
-  const price = escapeHtml(String(ad.price ?? ''));
-  const city = escapeHtml(ad.city || '');
-  const desc = escapeHtml(ad.description || '');
-
-  let mediaHtml = '';
-  if(ad.images && Array.isArray(ad.images) && ad.images.length){
-    mediaHtml += `<div class="card images">`;
-    ad.images.forEach(img=>{
-      mediaHtml += `<img src="${img}" alt="image">`;
-    });
-    mediaHtml += `</div>`;
-  }
-
-  if(ad.video){
-    mediaHtml += `
-      <div class="card">
-        <video class="video" controls src="${ad.video}"></video>
-      </div>
-    `;
-  }
-
-  const ownerName = escapeHtml(ad.owner_name || ad.ownerName || '');
-  const ownerPhone = (ad.owner_phone || ad.ownerPhone || '').toString();
-  const ownerEmail = (ad.owner_email || ad.ownerEmail || '').toString();
-  const waPhone = ownerPhone ? ownerPhone.replace(/\D/g,'') : '';
-
-  const favLabel = isFav ? '💖 إزالة من المفضلة' : '🤍 إضافة للمفضلة';
-
-  container.innerHTML = `
-    <div class="card">
-      <h2>${title}</h2>
-      <p class="price">${price} د.م</p>
-      <p><b>المدينة:</b> ${city}</p>
-      <p>${desc}</p>
-
-      <div class="contact-actions">
-        <button class="contact-btn fav" type="button" id="favBtn">${favLabel}</button>
-        <button class="contact-btn report" type="button" id="reportBtn">🚩 إبلاغ</button>
-      </div>
-    </div>
-
-    ${mediaHtml}
-
-    <div class="card owner">
-      <h3 style="margin-top:0">معلومات البائع</h3>
-      <p>${ownerName}</p>
-
-      <div class="contact-actions">
-        ${ownerPhone ? `<a class="contact-btn call" href="tel:${escapeHtml(ownerPhone)}">📞 اتصال</a>` : ''}
-        ${ownerEmail ? `<a class="contact-btn mail" href="mailto:${escapeHtml(ownerEmail)}">📧 إيميل</a>` : ''}
-        ${waPhone ? `<a class="contact-btn whatsapp" target="_blank" href="https://wa.me/${waPhone}">💬 واتساب</a>` : ''}
-      </div>
-    </div>
-  `;
-
-  document.getElementById('favBtn').addEventListener('click', toggleFavorite);
-  document.getElementById('reportBtn').addEventListener('click', reportAd);
-}
-
-async function toggleFavorite(){
-  if(!currentAd) return;
-
-  const adId = currentAd.id || currentAd._id || id;
-
-  try{
-    if(!isFav){
-      const res = await fetch('/api/favorites', apiOpts('POST', { adId }));
-      if(!res.ok) throw new Error('fav failed');
-      isFav = true;
-    }else{
-      const res = await fetch('/api/favorites/' + encodeURIComponent(adId), apiOpts('DELETE'));
-      if(!res.ok) throw new Error('unfav failed');
-      isFav = false;
+      const ad = await jget('/api/ads/' + encodeURIComponent(id));
+      render(ad);
+    }catch(e){
+      statusBox.textContent = 'الإعلان غير موجود';
     }
-    renderAd(currentAd);
-  }catch(e){
-    console.error(e);
-    alert('تعذر تحديث المفضلة الآن');
-  }
-}
-
-async function reportAd(){
-  if(!currentAd) return;
-  const adId = currentAd.id || currentAd._id || id;
-
-  const reason = prompt('شنو السبب؟ (مثال: احتيال / محتوى ممنوع / رقم خاطئ)');
-  if(!reason) return;
-
-  try{
-    const res = await fetch('/api/reports', apiOpts('POST', { adId, reason }));
-    if(!res.ok) throw new Error('report failed');
-    alert('تم إرسال البلاغ ✅');
-  }catch(e){
-    console.error(e);
-    alert('تعذر إرسال البلاغ الآن');
-  }
-}
-
-loadAd();
+  })();
 </script>
 
 </body>

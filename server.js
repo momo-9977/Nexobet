@@ -436,6 +436,58 @@ app.get('/api/ads', async (req, res) => {
       where.push(`COALESCE(a.featured,false)=true`);
     }
 
+// ✅ Ad details (single ad) with images + owner phone
+app.get('/api/ads/:id', async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const adId = String(req.params.id || '').trim();
+    if (!adId) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+
+    // كنجبدو الإعلان + رقم الهاتف ديال المالك (من جدول users)
+    // ملاحظة: كنستعمل ::text باش نتفاداو uuid=text error
+    const adRes = await q(`
+      SELECT
+        a.*,
+        COALESCE(u.phone, '') as owner_phone,
+        COALESCE(u.name, '')  as owner_name
+      FROM ads a
+      LEFT JOIN users u
+        ON u.id::text = a.user_id::text
+      WHERE a.id::text = $1
+      LIMIT 1
+    `, [adId]);
+
+    const ad = adRes.rows[0];
+    if (!ad) return res.status(404).json({ error: 'NOT_FOUND' });
+
+    // ✅ إذا بغيتي تخلي غير published يبان للعموم:
+    // إلا كان عندك status وكاتستعملها
+    if (String(ad.status || '') && String(ad.status) !== 'published') {
+      return res.status(404).json({ error: 'NOT_FOUND' });
+    }
+
+    // الصور ديال الإعلان
+    const imgs = await q(`
+      SELECT url
+      FROM ad_images
+      WHERE ad_id::text = $1
+      ORDER BY ord ASC, id ASC
+    `, [adId]);
+
+    // نرجعو JSON مرتب
+    res.json({
+      ...ad,
+      phone: ad.owner_phone || '',         // رقم الهاتف لصاحب الإعلان
+      ownerName: ad.owner_name || '',
+      images: imgs.rows.map(x => x.url)     // array ديال الصور
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
     // category
     if (category) {
       const hasCategoryId = await hasColumn('ads', 'category_id');

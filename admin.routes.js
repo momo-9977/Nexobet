@@ -219,6 +219,61 @@ async function ensureSchema(req) {
     );
   `);
 
+// ✅ PUT بدون :id (باش يوافق Admin UI اللي كيدير PUT /api/admin/support/faq)
+router.put('/support/faq', requireAdmin, async (req, res) => {
+  try {
+    await ensureSchema(req);
+    const pool = getPool(req);
+
+    const id = String(req.body?.id || '').trim();
+    if (!id) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'id required' });
+
+    const b = req.body || {};
+
+    await pool.query(
+      `UPDATE support_faq SET
+        question = COALESCE($2, question),
+        answer = COALESCE($3, answer),
+        active = COALESCE($4, active),
+        ord = COALESCE($5, ord),
+        updated_at = NOW()
+       WHERE id=$1`,
+      [
+        id,
+        b.question !== undefined ? String(b.question) : null,
+        b.answer !== undefined ? String(b.answer) : null,
+        b.active !== undefined ? toBool(b.active) : null,
+        b.order !== undefined ? toInt(b.order, 0) : null
+      ]
+    );
+
+    await audit(req, 'support.faq.update', id, null);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
+// ✅ DELETE بدون :id (باش يوافق Admin UI اللي كيدير DELETE /api/admin/support/faq)
+router.delete('/support/faq', requireAdmin, async (req, res) => {
+  try {
+    await ensureSchema(req);
+    const pool = getPool(req);
+
+    const id = String(req.body?.id || '').trim();
+    if (!id) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'id required' });
+
+    await pool.query(`DELETE FROM support_faq WHERE id=$1`, [id]);
+
+    await audit(req, 'support.faq.delete', id, null);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR' });
+  }
+});
+
   // support faq
   await pool.query(`
     CREATE TABLE IF NOT EXISTS support_faq(

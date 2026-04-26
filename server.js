@@ -46,15 +46,6 @@ app.use('/uploads', express.static(UPLOADS_DIR, {
 // ✅ Serve public
 app.use(express.static(PUBLIC_DIR));
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase();
-    const base = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, base + ext);
-  }
-});
-
 /* -------------------- Middlewares -------------------- */
 
 app.use(helmet({ contentSecurityPolicy: false }));

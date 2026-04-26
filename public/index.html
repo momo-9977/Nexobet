@@ -391,7 +391,7 @@ function isFeatured(ad){
 
 function renderAdCard(ad, showBadge){
   const id = ad.id;
-  const img = firstImage(ad);
+  const img = absUrlMaybe(firstImage(ad));
   const title = safeText(ad.title);
   const price = formatPrice(ad.price);
   const href = '/ad?id=' + encodeURIComponent(id);

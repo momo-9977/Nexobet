@@ -1483,12 +1483,32 @@ router.put('/support/settings', requireAdmin, async (req, res) => {
   }
 });
 
+
 router.get('/support/faq', requireAdmin, async (req, res) => {
   try {
     await ensureSchema(req);
     const pool = getPool(req);
-    const r = await pool.query(`SELECT id, question, answer, active, ord FROM support_faq ORDER BY ord ASC, created_at DESC`);
-    res.json({ items: r.rows });
+
+    const r = await pool.query(`
+      SELECT
+        id,
+        question,
+        answer,
+        active,
+        ord AS "order"
+      FROM support_faq
+      ORDER BY ord ASC, created_at DESC
+    `);
+
+    res.json({
+      items: r.rows.map(x => ({
+        id: x.id,
+        question: x.question || '',
+        answer: x.answer || '',
+        active: x.active !== false,
+        order: Number.isFinite(+x.order) ? +x.order : 0
+      }))
+    });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR' });

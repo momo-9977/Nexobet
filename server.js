@@ -170,6 +170,15 @@ async function ensureDbShape() {
   // settings
   await ensureCoreSettings();
 
+// users columns (phone/bio/city/avatar) باش البروفايل يقدر يحفظ
+  if (await hasTable('users')) {
+    await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`).catch(() => {});
+    await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS city TEXT`).catch(() => {});
+    await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT`).catch(() => {});
+    await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT`).catch(() => {});
+    await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ`).catch(() => {});
+  }
+
   // categories extras
   if (await hasTable('categories')) {
     await q(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS key TEXT`).catch(() => {});
@@ -601,17 +610,24 @@ app.get('/api/ads/:id', async (req, res) => {
 
     // كنجبدو الإعلان + رقم الهاتف ديال المالك (من جدول users)
     // ملاحظة: كنستعمل ::text باش نتفاداو uuid=text error
-    const adRes = await q(`
-      SELECT
-        a.*,
-        COALESCE(u.phone, '') as owner_phone,
-        COALESCE(u.name, '')  as owner_name
-      FROM ads a
-      LEFT JOIN users u
-        ON u.id::text = a.user_id::text
-      WHERE a.id::text = $1
+    const r = await q(`
+  SELECT
+    a.*,
+    (
+      SELECT url
+      FROM ad_images
+      WHERE ad_id::text = a.id::text
+      ORDER BY ord ASC
       LIMIT 1
-    `, [adId]);
+    ) as image,
+    u.phone as "ownerPhone",
+    u.name  as "ownerName"
+  FROM ads a
+  LEFT JOIN users u ON u.id::text = a.user_id::text
+  WHERE ${where.join(' AND ')}
+  ORDER BY a.created_at DESC
+  LIMIT ${lim}
+`, params);
 
     const ad = adRes.rows[0];
     if (!ad) return res.status(404).json({ error: 'NOT_FOUND' });
@@ -730,6 +746,59 @@ app.get('/api/auth/me', async (req, res) => {
     if (!u) return res.status(401).json({ error: 'UNAUTHORIZED' });
     res.json(safeUserRow(u));
   } catch (e) {
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
+app.put('/api/users/:id', requireAuthApi, async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const userId = String(req.session.user.id);
+    const targetId = String(req.params.id);
+
+    // ما نخليوش شي واحد يبدل بروفايل ديال شي حد آخر
+    if (userId !== targetId) {
+      return res.status(403).json({ error: 'FORBIDDEN' });
+    }
+
+    const schema = z.object({
+      phone: z.string().trim().min(6).max(30).optional(),
+      city: z.string().trim().min(1).max(120).optional(),
+      bio: z.string().trim().max(800).optional(),
+      name: z.string().trim().min(2).max(120).optional()
+    });
+
+    const parsed = schema.safeParse(req.body || {});
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', details: parsed.error.issues });
+    }
+
+    const b = parsed.data;
+
+    // تأكد الأعمدة موجودة
+    const hasPhone = await hasColumn('users', 'phone');
+    const hasCity = await hasColumn('users', 'city');
+    const hasBio = await hasColumn('users', 'bio');
+    const hasName = await hasColumn('users', 'name');
+
+    const sets = [];
+    const params = [userId];
+    let i = 2;
+
+    if (b.phone !== undefined && hasPhone) { sets.push(`phone=$${i++}`); params.push(b.phone || null); }
+    if (b.city !== undefined && hasCity) { sets.push(`city=$${i++}`); params.push(b.city || null); }
+    if (b.bio !== undefined && hasBio) { sets.push(`bio=$${i++}`); params.push(b.bio || null); }
+    if (b.name !== undefined && hasName) { sets.push(`name=$${i++}`); params.push(b.name || null); }
+
+    sets.push(`updated_at=NOW()`);
+
+    await q(`UPDATE users SET ${sets.join(', ')} WHERE id=$1`, params);
+
+    const u = await loadUser(userId);
+    res.json({ ok: true, user: safeUserRow(u) });
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });

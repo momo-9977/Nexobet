@@ -255,8 +255,11 @@ const els = {
   sortSelect: document.getElementById('sortSelect'),
 };
 
+let categories = [];
+let selectedCategory = ''; // key / name / id (كيف ما جاي من السيرفر)
+
+// ---------- helpers ----------
 let _debTimer = null;
-let _allCats = [];
 
 function showSkeleton(){
   els.container.innerHTML = `
@@ -273,74 +276,149 @@ function escapeHtml(s=''){
   ));
 }
 
-function normalizeCat(c){
-  // السيرفر ديالك كيرجع غالباً: {id, name, key}
-  const id = (c && (c.key || c.id)) ? String(c.key || c.id) : '';
+function absUrlMaybe(u){
+  const v = String(u || '').trim();
+  if(!v) return '';
+  if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
+  return v.startsWith('/') ? v : ('/' + v);
+}
+
+function formatPrice(p){
+  const n = Number(p);
+  if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
+  return (p ? String(p) + ' د.م' : '');
+}
+
+async function jget(url){
+  const res = await fetch(url, { credentials:'include' });
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
+  return data;
+}
+
+function getUrlParams(){
+  const sp = new URLSearchParams(location.search);
   return {
-    id,
-    name: String(c?.name || '').trim(),
-    description: String(c?.description || '').trim(),     // غير موجودة غالباً => ''
-    image: String(c?.image || c?.image_url || '').trim(), // غير موجودة غالباً => ''
-    active: (c?.active === undefined) ? true : !!c.active,
-    order: Number.isFinite(+c?.ord) ? +c.ord : 0,
-    adsCount: Number.isFinite(+c?.adsCount) ? +c.adsCount : 0
+    q: sp.get('q') || '',
+    category: sp.get('category') || ''
   };
 }
 
-function applyFilterAndRender(){
-  const q = (els.searchInput.value || '').trim().toLowerCase();
-  const sort = (els.sortSelect.value || 'order').trim();
-
-  let items = _allCats.slice();
-
-  // ✅ افتراضي: active=true
-  items = items.filter(x => x.active !== false);
-
-  // search (front only)
-  if(q){
-    items = items.filter(x =>
-      (x.name || '').toLowerCase().includes(q) ||
-      (x.description || '').toLowerCase().includes(q) ||
-      (x.id || '').toLowerCase().includes(q)
-    );
+function setUrlParams(next){
+  const sp = new URLSearchParams(location.search);
+  if(next.q !== undefined){
+    const v = String(next.q || '').trim();
+    if(v) sp.set('q', v); else sp.delete('q');
   }
-
-  // sort (front only)
-  if(sort === 'name'){
-    items.sort((a,b)=> (a.name||'').localeCompare(b.name||'', 'ar'));
-  }else{
-    // order الافتراضي
-    items.sort((a,b)=> (a.order||0) - (b.order||0));
+  if(next.category !== undefined){
+    const v = String(next.category || '').trim();
+    if(v) sp.set('category', v); else sp.delete('category');
   }
+  const url = location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
+  history.pushState({}, '', url);
+}
 
-  // render
+// ---------- UI modes ----------
+// mode = 'categories' => عرض الأقسام
+// mode = 'ads'        => عرض الإعلانات
+let mode = 'categories';
+
+function showEmpty(msg){
+  els.container.innerHTML = '';
+  els.emptyState.style.display = 'block';
+  els.emptyState.textContent = msg || 'لا توجد نتائج';
+}
+
+// ---------- render categories ----------
+function renderCategories(){
+  mode = 'categories';
   els.container.innerHTML = '';
 
-  if(!items.length){
-    els.emptyState.style.display = 'block';
+  if(!categories.length){
+    showEmpty('لا توجد أقسام متاحة حالياً');
     return;
   }
 
   els.emptyState.style.display = 'none';
 
-  items.forEach(cat=>{
+  categories.forEach(cat=>{
+    const key = String(cat.key || cat.id || cat.name || '').trim();
+    const name = cat.name || key || '—';
+
     const card = document.createElement('a');
-
-    // ✅ ما عندناش category.html فالـ routes ديالك
-    // نخليها تمشي لـ categories.html مع param باش من بعد تقدر تستعملو فصفحة عرض الإعلانات
-    card.href = `/categories.html?category=${encodeURIComponent(cat.id)}`;
-
+    card.href = 'javascript:void(0)';
     card.className = 'category-card';
-    card.dataset.id = cat.id;
 
-    const imgSrc = cat.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop';
+    const imgSrc = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#0b1222"/>
+            <stop offset="1" stop-color="#121c33"/>
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#g)"/>
+        <text x="50%" y="48%" dominant-baseline="middle" text-anchor="middle"
+          fill="#93a3bf" font-size="30" font-family="Arial">${escapeHtml(name)}</text>
+        <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle"
+          fill="#6fa8ff" font-size="16" font-family="Arial">اضغط لعرض الإعلانات</text>
+      </svg>`
+    );
 
     card.innerHTML = `
-      <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(cat.name || '')}">
+      <img src="${imgSrc}" alt="${escapeHtml(name)}">
       <div class="category-overlay">
-        <h3>${escapeHtml(cat.name || cat.id)}</h3>
-        <p>${escapeHtml(cat.description || '')}</p>
-        <div class="category-count">${Number(cat.adsCount || 0)} إعلان</div>
+        <h3>${escapeHtml(name)}</h3>
+        <p>اضغط لعرض الإعلانات داخل هذا القسم</p>
+        <div class="category-count">—</div>
+      </div>
+    `;
+
+    card.addEventListener('click', ()=>{
+      selectedCategory = key;
+      setUrlParams({ category: selectedCategory }); // ✅ url كيولي ?category=...
+      loadAds(); // ✅ نفس الصفحة كتجيب الإعلانات
+    });
+
+    els.container.appendChild(card);
+  });
+}
+
+// ---------- render ads ----------
+function renderAds(items){
+  mode = 'ads';
+  els.container.innerHTML = '';
+
+  if(!items.length){
+    showEmpty(selectedCategory ? 'لا توجد إعلانات في هذا القسم حالياً' : 'لا توجد نتائج حالياً');
+    return;
+  }
+
+  els.emptyState.style.display = 'none';
+
+  items.forEach(ad=>{
+    const id = ad.id || ad._id || '';
+    const title = ad.title || '—';
+    const city  = ad.city || '';
+    const price = formatPrice(ad.price);
+    const img   = absUrlMaybe(ad.image) || 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+        <rect width="100%" height="100%" fill="#0b1222"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+          fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
+      </svg>`
+    );
+
+    const card = document.createElement('a');
+    card.href = '/ad?id=' + encodeURIComponent(id);
+    card.className = 'category-card';
+
+    card.innerHTML = `
+      <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}">
+      <div class="category-overlay">
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(city)}</p>
+        <div class="category-count">${escapeHtml(price)}</div>
       </div>
     `;
 
@@ -348,34 +426,81 @@ function applyFilterAndRender(){
   });
 }
 
+// ---------- loaders ----------
 async function loadCategories(){
   showSkeleton();
-
   try{
-    // ✅ السيرفر ديالك كيدعم غير /api/categories بلا params
-    const res = await fetch('/api/categories', { credentials: 'include' });
-    if(!res.ok) throw new Error('failed');
-
-    const raw = await res.json();
-    _allCats = (Array.isArray(raw) ? raw : []).map(normalizeCat).filter(x => x.id);
-
-    applyFilterAndRender();
-  }catch(err){
-    console.error(err);
-    els.container.innerHTML = '';
-    els.emptyState.style.display = 'block';
+    const data = await jget('/api/categories'); // السيرفر الحالي
+    categories = Array.isArray(data) ? data : [];
+    renderCategories();
+  }catch(e){
+    categories = [];
+    showEmpty('لا توجد أقسام متاحة حالياً');
   }
 }
 
-// Events
+async function loadAds(){
+  showSkeleton();
+
+  const q = (els.searchInput.value || '').trim();
+
+  // ✅ حدّث URL ب q
+  setUrlParams({ q });
+
+  const params = new URLSearchParams();
+  if(q) params.set('q', q);
+  if(selectedCategory) params.set('category', selectedCategory);
+  params.set('limit', '50');
+
+  try{
+    const ads = await jget('/api/ads?' + params.toString());
+    renderAds(Array.isArray(ads) ? ads : []);
+  }catch(e){
+    renderAds([]);
+  }
+}
+
+// ---------- events ----------
 els.searchInput.addEventListener('input', ()=>{
   clearTimeout(_debTimer);
-  _debTimer = setTimeout(applyFilterAndRender, 200);
+  _debTimer = setTimeout(()=>{
+    // إذا مازال ما اختارش قسم وكيكتب فالبحث: نقدر نخليه يجيب ads عامة
+    loadAds();
+  }, 250);
 });
-els.sortSelect.addEventListener('change', applyFilterAndRender);
 
-// First load
-loadCategories();
+els.sortSelect.addEventListener('change', ()=>{
+  // حاليا sorting من السيرفر ما كاينش، نخليه يعاود يجيب
+  if(mode === 'ads') loadAds();
+});
+
+// back/forward browser
+window.addEventListener('popstate', ()=>{
+  const p = getUrlParams();
+  els.searchInput.value = p.q || '';
+  selectedCategory = p.category || '';
+
+  if(selectedCategory || (p.q && p.q.trim())){
+    loadAds();
+  }else{
+    renderCategories();
+  }
+});
+
+// ---------- init ----------
+(async function init(){
+  const p = getUrlParams();
+
+  // حمّل الأقسام دائما أولاً
+  await loadCategories();
+
+  // إذا جاك الرابط فيه category ولا q: عرض الإعلانات مباشرة
+  if(p.category || (p.q && p.q.trim())){
+    selectedCategory = p.category || '';
+    els.searchInput.value = p.q || '';
+    loadAds();
+  }
+})();
 </script>
 
 </body>

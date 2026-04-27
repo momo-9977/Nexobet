@@ -524,47 +524,7 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-app.get('/api/ads/:id', async (req, res) => {
-  try {
-    await ensureDbShape();
 
-    const adId = String(req.params.id);
-
-    const r = await q(`SELECT * FROM ads WHERE id::text=$1 LIMIT 1`, [adId]);
-    const ad = r.rows[0];
-    if (!ad) return res.status(404).json({ error: 'NOT_FOUND' });
-
-    // صور الإعلان
-    const imgs = await q(
-      `SELECT id, url, ord
-       FROM ad_images
-       WHERE ad_id::text=$1
-       ORDER BY ord ASC`,
-      [adId]
-    );
-    const images = imgs.rows.map(x => ({ id: x.id, url: x.url, ord: x.ord }));
-
-    // owner phone
-    let owner = null;
-    if (ad.user_id) {
-      const u = await q(
-        `SELECT id,name,phone,city FROM users WHERE id::text=$1 LIMIT 1`,
-        [String(ad.user_id)]
-      );
-      owner = u.rows[0] || null;
-    }
-
-    res.json({
-      ...ad,
-      image: images[0]?.url || null,
-      images, // [{id,url,ord}]
-      owner: owner ? { id: owner.id, name: owner.name, phone: owner.phone, city: owner.city } : null
-    });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
-});
 
 
 // hero slides
@@ -659,6 +619,73 @@ app.get('/api/ads', async (req, res) => {
   }
 });
 
+app.get('/api/ads/featured', async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const r = await q(`
+      SELECT
+        a.*,
+        (
+          SELECT url
+          FROM ad_images
+          WHERE ad_id::text = a.id::text
+          ORDER BY ord ASC
+          LIMIT 1
+        ) as image
+      FROM ads a
+      WHERE a.status='published'
+        AND COALESCE(a.featured,false)=true
+      ORDER BY a.created_at DESC
+      LIMIT 10
+    `);
+
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
+app.get('/api/ads/:id', async (req, res) => {
+  try {
+    await ensureDbShape();
+
+    const adId = String(req.params.id);
+
+    const r = await q(`SELECT * FROM ads WHERE id::text=$1 LIMIT 1`, [adId]);
+    const ad = r.rows[0];
+    if (!ad) return res.status(404).json({ error: 'NOT_FOUND' });
+
+    const imgs = await q(
+      `SELECT id, url, ord
+       FROM ad_images
+       WHERE ad_id::text=$1
+       ORDER BY ord ASC`,
+      [adId]
+    );
+    const images = imgs.rows.map(x => ({ id: x.id, url: x.url, ord: x.ord }));
+
+    let owner = null;
+    if (ad.user_id) {
+      const u = await q(
+        `SELECT id,name,phone,city FROM users WHERE id::text=$1 LIMIT 1`,
+        [String(ad.user_id)]
+      );
+      owner = u.rows[0] || null;
+    }
+
+    res.json({
+      ...ad,
+      image: images[0]?.url || null,
+      images,
+      owner: owner ? { id: owner.id, name: owner.name, phone: owner.phone, city: owner.city } : null
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
 /* =========================================================
    AUTH API
    ========================================================= */

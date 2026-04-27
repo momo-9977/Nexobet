@@ -99,10 +99,6 @@ app.use(session({
 // مهم ل admin.routes
 app.set('pool', pool);
 
-/* -------------------- Static -------------------- */
-
-app.use('/uploads', express.static(UPLOADS_DIR));
-app.use(express.static(PUBLIC_DIR));
 
 /* -------------------- Helpers: DB/Schema -------------------- */
 
@@ -600,65 +596,6 @@ app.get('/api/ads', async (req, res) => {
       where.push(`COALESCE(a.featured,false)=true`);
     }
 
-// ✅ Ad details (single ad) with images + owner phone
-app.get('/api/ads/:id', async (req, res) => {
-  try {
-    await ensureDbShape();
-
-    const adId = String(req.params.id || '').trim();
-    if (!adId) return res.status(400).json({ error: 'VALIDATION_ERROR' });
-
-    // كنجبدو الإعلان + رقم الهاتف ديال المالك (من جدول users)
-    // ملاحظة: كنستعمل ::text باش نتفاداو uuid=text error
-    const r = await q(`
-  SELECT
-    a.*,
-    (
-      SELECT url
-      FROM ad_images
-      WHERE ad_id::text = a.id::text
-      ORDER BY ord ASC
-      LIMIT 1
-    ) as image,
-    u.phone as "ownerPhone",
-    u.name  as "ownerName"
-  FROM ads a
-  LEFT JOIN users u ON u.id::text = a.user_id::text
-  WHERE ${where.join(' AND ')}
-  ORDER BY a.created_at DESC
-  LIMIT ${lim}
-`, params);
-
-    const ad = adRes.rows[0];
-    if (!ad) return res.status(404).json({ error: 'NOT_FOUND' });
-
-    // ✅ إذا بغيتي تخلي غير published يبان للعموم:
-    // إلا كان عندك status وكاتستعملها
-    if (String(ad.status || '') && String(ad.status) !== 'published') {
-      return res.status(404).json({ error: 'NOT_FOUND' });
-    }
-
-    // الصور ديال الإعلان
-    const imgs = await q(`
-      SELECT url
-      FROM ad_images
-      WHERE ad_id::text = $1
-      ORDER BY ord ASC, id ASC
-    `, [adId]);
-
-    // نرجعو JSON مرتب
-    res.json({
-      ...ad,
-      phone: ad.owner_phone || '',         // رقم الهاتف لصاحب الإعلان
-      ownerName: ad.owner_name || '',
-      images: imgs.rows.map(x => x.url)     // array ديال الصور
-    });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
-});
-
     // category
     if (category) {
       const hasCategoryId = await hasColumn('ads', 'category_id');
@@ -692,40 +629,15 @@ app.get('/api/ads/:id', async (req, res) => {
           WHERE ad_id::text = a.id::text
           ORDER BY ord ASC
           LIMIT 1
-        ) as image
+        ) as image,
+        u.phone as "ownerPhone",
+        u.name  as "ownerName"
       FROM ads a
+      LEFT JOIN users u ON u.id::text = a.user_id::text
       WHERE ${where.join(' AND ')}
       ORDER BY a.created_at DESC
       LIMIT ${lim}
     `, params);
-
-    res.json(r.rows);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
-  }
-});
-
-app.get('/api/ads/featured', async (req, res) => {
-  try {
-    await ensureDbShape();
-
-    const r = await q(`
-      SELECT
-        a.*,
-        (
-          SELECT url
-          FROM ad_images
-          WHERE ad_id::text = a.id::text
-          ORDER BY ord ASC
-          LIMIT 1
-        ) as image
-      FROM ads a
-      WHERE a.status='published'
-        AND COALESCE(a.featured,false)=true
-      ORDER BY a.created_at DESC
-      LIMIT 10
-    `);
 
     res.json(r.rows);
   } catch (e) {

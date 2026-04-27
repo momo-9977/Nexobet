@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>الأقسام</title>
 
 <style>
-
 /* ===== NAV (UNCHANGED) ===== */
 .modern-flat-nav{
   position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
+  bottom:0; left:0; right:0;
   height:70px;
   background:#ffffff;
   border-top:1px solid #e5e7eb;
@@ -34,36 +31,47 @@
   justify-content:center;
   gap:4px;
 }
-.modern-flat-nav svg{
-  width:22px !important;
-  height:22px !important;
-}
-.modern-flat-item.active{
-  color:#16a34a;
-}
+.modern-flat-nav svg{ width:22px !important; height:22px !important; }
+.modern-flat-item.active{ color:#16a34a; }
 
 /* ===== BASE ===== */
+:root{
+  --bg0:#071024;
+  --bg1:#0c1524;
+  --card:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.06);
+  --text:#e6eef8;
+  --muted:#9aa8c2;
+  --accent:#2ea3ff;
+  --accent2:#60a5fa;
+}
+*{box-sizing:border-box}
 body{
   margin:0;
   font-family:Inter,Arial,sans-serif;
-  background:linear-gradient(180deg,#071024,#0c1524);
-  color:#e6eef8;
+  background:linear-gradient(180deg,var(--bg0),var(--bg1));
+  color:var(--text);
   padding-bottom:90px;
 }
 
 .top-bar{
   position:sticky;
   top:0;
-  background:rgba(15,23,42,0.75);
+  background:rgba(15,23,42,0.78);
   backdrop-filter:blur(18px);
   border-bottom:1px solid rgba(255,255,255,0.06);
   padding:14px 18px;
   display:flex;
   align-items:center;
+  justify-content:space-between;
   gap:14px;
   z-index:1000;
 }
-
+.top-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
 .back-btn{
   width:38px;
   height:38px;
@@ -73,49 +81,76 @@ body{
   align-items:center;
   justify-content:center;
   cursor:pointer;
+  user-select:none;
+  border:1px solid rgba(255,255,255,0.07);
+}
+.back-btn:hover{transform:translateY(-1px)}
+.badge{
+  font-size:12px;
+  color:rgba(255,255,255,.85);
+  padding:8px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
 }
 
 .page{
   max-width:1200px;
-  margin:30px auto;
-  padding:20px;
+  margin:18px auto;
+  padding:18px;
 }
 
 /* ===== FILTER BAR ===== */
 .filter-bar{
-  margin-bottom:25px;
+  margin-bottom:18px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:15px;
+  gap:12px;
   flex-wrap:wrap;
 }
 
 .search-input{
   flex:1;
-  min-width:200px;
-  padding:12px;
-  border-radius:12px;
-  border:none;
+  min-width:220px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
   background:rgba(255,255,255,0.06);
   color:white;
   outline:none;
 }
 
 .sort-select{
-  padding:12px;
-  border-radius:12px;
-  border:none;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
   background:rgba(255,255,255,0.06);
   color:white;
   outline:none;
 }
 
-/* ===== GRID ===== */
+.small-btn{
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.06);
+  color:var(--text);
+  cursor:pointer;
+  white-space:nowrap;
+}
+.small-btn.primary{
+  border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;
+  font-weight:800;
+}
+
+/* ===== GRID: CATEGORIES ===== */
 .category-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:22px;
+  gap:18px;
 }
 
 .category-card{
@@ -123,46 +158,75 @@ body{
   border-radius:20px;
   overflow:hidden;
   cursor:pointer;
-  background:#111;
-  transition:.3s;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,0.06);
+  transition:.22s;
   text-decoration:none;
   color:inherit;
+  min-height:220px;
 }
-
+.category-card:hover{ transform:translateY(-4px); }
 .category-card img{
   width:100%;
   height:220px;
   object-fit:cover;
   filter:brightness(.75);
+  display:block;
 }
-
-.category-card:hover{
-  transform:translateY(-6px);
-}
-
 .category-overlay{
   position:absolute;
-  bottom:0;
+  bottom:0; width:100%;
+  padding:16px;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.78));
+}
+.category-overlay h3{ margin:0; font-size:18px; font-weight:900; }
+.category-overlay p{ margin:6px 0 0; font-size:13px; color:#cbd5e1; line-height:1.6; }
+.category-count{ margin-top:8px; font-size:12px; color:#93c5fd; }
+
+/* ===== GRID: ADS ===== */
+.ads-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:18px;
+}
+
+.ad-card{
+  border-radius:20px;
+  overflow:hidden;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+  text-decoration:none;
+  color:inherit;
+  transition:.22s;
+}
+.ad-card:hover{ transform:translateY(-4px); }
+.ad-img{
   width:100%;
-  padding:18px;
-  background:linear-gradient(180deg,transparent,rgba(0,0,0,.7));
+  height:190px;
+  background:rgba(255,255,255,0.05);
+  display:block;
+  object-fit:cover;
 }
-
-.category-overlay h3{
+.ad-body{ padding:14px; }
+.ad-title{
   margin:0;
-  font-size:20px;
-  font-weight:800;
+  font-size:16px;
+  font-weight:900;
+  line-height:1.3;
 }
-
-.category-overlay p{
-  margin:4px 0;
-  font-size:13px;
-  color:#cbd5e1;
-}
-
-.category-count{
+.ad-meta{
+  margin-top:8px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  color:rgba(255,255,255,.68);
   font-size:12px;
-  color:#60a5fa;
+}
+.ad-price{
+  margin-top:10px;
+  font-size:18px;
+  font-weight:900;
+  color:#fff;
 }
 
 /* ===== SKELETON ===== */
@@ -172,45 +236,63 @@ body{
   background:linear-gradient(90deg,#1f2937 25%,#374151 50%,#1f2937 75%);
   background-size:200% 100%;
   animation:loading 1.5s infinite;
+  border:1px solid rgba(255,255,255,0.04);
 }
-@keyframes loading{
-  0%{background-position:200% 0}
-  100%{background-position:-200% 0}
-}
+@keyframes loading{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
 .empty-state{
   text-align:center;
   margin-top:60px;
-  color:#9aa8c2;
+  color:var(--muted);
 }
+.muted{ color:var(--muted); }
 
 </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <div class="back-btn" onclick="window.history.back()">←</div>
-  <strong>الأقسام</strong>
+  <div class="top-left">
+    <div class="back-btn" id="backBtn">←</div>
+    <strong id="pageTitle">الأقسام</strong>
+  </div>
+  <div class="badge" id="modeBadge">عرض الأقسام</div>
 </div>
 
 <div class="page">
 
   <div class="filter-bar">
-    <input id="searchInput" class="search-input" placeholder="بحث داخل الأقسام...">
+    <input id="searchInput" class="search-input" placeholder="بحث..." />
     <select id="sortSelect" class="sort-select">
       <option value="order">الترتيب الافتراضي</option>
       <option value="name">أبجدي</option>
+      <option value="new">الأحدث</option>
     </select>
+
+    <button id="clearCategoryBtn" class="small-btn" style="display:none">إظهار الأقسام</button>
+    <button id="reloadBtn" class="small-btn primary">تحديث</button>
   </div>
 
-  <div id="categoriesContainer" class="category-grid">
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
+  <!-- CATEGORIES -->
+  <div id="categoriesWrap">
+    <div id="categoriesContainer" class="category-grid">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  </div>
+
+  <!-- ADS -->
+  <div id="adsWrap" style="display:none">
+    <div id="adsContainer" class="ads-grid">
+      <div class="skeleton" style="height:260px"></div>
+      <div class="skeleton" style="height:260px"></div>
+      <div class="skeleton" style="height:260px"></div>
+    </div>
   </div>
 
   <div id="emptyState" class="empty-state" style="display:none;">
-    لا توجد أقسام متاحة حالياً
+    لا توجد نتائج حالياً
   </div>
 
 </div>
@@ -249,25 +331,42 @@ body{
 
 <script>
 const els = {
-  container: document.getElementById('categoriesContainer'),
-  emptyState: document.getElementById('emptyState'),
+  pageTitle: document.getElementById('pageTitle'),
+  modeBadge: document.getElementById('modeBadge'),
+  backBtn: document.getElementById('backBtn'),
+
   searchInput: document.getElementById('searchInput'),
   sortSelect: document.getElementById('sortSelect'),
+  reloadBtn: document.getElementById('reloadBtn'),
+  clearCategoryBtn: document.getElementById('clearCategoryBtn'),
+
+  categoriesWrap: document.getElementById('categoriesWrap'),
+  categoriesContainer: document.getElementById('categoriesContainer'),
+
+  adsWrap: document.getElementById('adsWrap'),
+  adsContainer: document.getElementById('adsContainer'),
+
+  emptyState: document.getElementById('emptyState'),
 };
 
-let categories = [];
-let selectedCategory = ''; // key / name / id (كيف ما جاي من السيرفر)
+let state = {
+  categories: [],
+  currentCategory: '', // key/id/name
+  mode: 'categories',  // categories | ads
+  deb: null,
+};
 
-// ---------- helpers ----------
-let _debTimer = null;
+function qsParam(name){
+  const sp = new URLSearchParams(location.search);
+  return (sp.get(name) || '').trim();
+}
 
-function showSkeleton(){
-  els.container.innerHTML = `
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-  `;
-  els.emptyState.style.display = 'none';
+function setUrlCategory(cat){
+  const sp = new URLSearchParams(location.search);
+  if(cat) sp.set('category', cat);
+  else sp.delete('category');
+  const next = location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
+  history.pushState({}, '', next);
 }
 
 function escapeHtml(s=''){
@@ -277,7 +376,7 @@ function escapeHtml(s=''){
 }
 
 function absUrlMaybe(u){
-  const v = String(u || '').trim();
+  const v = String(u||'').trim();
   if(!v) return '';
   if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
   return v.startsWith('/') ? v : ('/' + v);
@@ -289,216 +388,324 @@ function formatPrice(p){
   return (p ? String(p) + ' د.م' : '');
 }
 
+function showEmpty(msg){
+  els.emptyState.textContent = msg || 'لا توجد نتائج حالياً';
+  els.emptyState.style.display = 'block';
+}
+
+function hideEmpty(){ els.emptyState.style.display = 'none'; }
+
+function showCatSkeleton(){
+  els.categoriesContainer.innerHTML = `
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  `;
+}
+function showAdsSkeleton(){
+  els.adsContainer.innerHTML = `
+    <div class="skeleton" style="height:260px"></div>
+    <div class="skeleton" style="height:260px"></div>
+    <div class="skeleton" style="height:260px"></div>
+  `;
+}
+
 async function jget(url){
   const res = await fetch(url, { credentials:'include' });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
+  const data = await res.json().catch(()=> null);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
   return data;
 }
 
-function getUrlParams(){
-  const sp = new URLSearchParams(location.search);
-  return {
-    q: sp.get('q') || '',
-    category: sp.get('category') || ''
-  };
-}
-
-function setUrlParams(next){
-  const sp = new URLSearchParams(location.search);
-  if(next.q !== undefined){
-    const v = String(next.q || '').trim();
-    if(v) sp.set('q', v); else sp.delete('q');
-  }
-  if(next.category !== undefined){
-    const v = String(next.category || '').trim();
-    if(v) sp.set('category', v); else sp.delete('category');
-  }
-  const url = location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
-  history.pushState({}, '', url);
-}
-
-// ---------- UI modes ----------
-// mode = 'categories' => عرض الأقسام
-// mode = 'ads'        => عرض الإعلانات
-let mode = 'categories';
-
-function showEmpty(msg){
-  els.container.innerHTML = '';
-  els.emptyState.style.display = 'block';
-  els.emptyState.textContent = msg || 'لا توجد نتائج';
-}
-
-// ---------- render categories ----------
-function renderCategories(){
-  mode = 'categories';
-  els.container.innerHTML = '';
-
-  if(!categories.length){
-    showEmpty('لا توجد أقسام متاحة حالياً');
-    return;
-  }
-
-  els.emptyState.style.display = 'none';
-
-  categories.forEach(cat=>{
-    const key = String(cat.key || cat.id || cat.name || '').trim();
-    const name = cat.name || key || '—';
-
-    const card = document.createElement('a');
-    card.href = 'javascript:void(0)';
-    card.className = 'category-card';
-
-    const imgSrc = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
-        <defs>
-          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#0b1222"/>
-            <stop offset="1" stop-color="#121c33"/>
-          </linearGradient>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#g)"/>
-        <text x="50%" y="48%" dominant-baseline="middle" text-anchor="middle"
-          fill="#93a3bf" font-size="30" font-family="Arial">${escapeHtml(name)}</text>
-        <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle"
-          fill="#6fa8ff" font-size="16" font-family="Arial">اضغط لعرض الإعلانات</text>
-      </svg>`
-    );
-
-    card.innerHTML = `
-      <img src="${imgSrc}" alt="${escapeHtml(name)}">
-      <div class="category-overlay">
-        <h3>${escapeHtml(name)}</h3>
-        <p>اضغط لعرض الإعلانات داخل هذا القسم</p>
-        <div class="category-count">—</div>
-      </div>
-    `;
-
-    card.addEventListener('click', ()=>{
-      selectedCategory = key;
-      setUrlParams({ category: selectedCategory }); // ✅ url كيولي ?category=...
-      loadAds(); // ✅ نفس الصفحة كتجيب الإعلانات
-    });
-
-    els.container.appendChild(card);
-  });
-}
-
-// ---------- render ads ----------
-function renderAds(items){
-  mode = 'ads';
-  els.container.innerHTML = '';
-
-  if(!items.length){
-    showEmpty(selectedCategory ? 'لا توجد إعلانات في هذا القسم حالياً' : 'لا توجد نتائج حالياً');
-    return;
-  }
-
-  els.emptyState.style.display = 'none';
-
-  items.forEach(ad=>{
-    const id = ad.id || ad._id || '';
-    const title = ad.title || '—';
-    const city  = ad.city || '';
-    const price = formatPrice(ad.price);
-    const img   = absUrlMaybe(ad.image) || 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
-        <rect width="100%" height="100%" fill="#0b1222"/>
-        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-          fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
-      </svg>`
-    );
-
-    const card = document.createElement('a');
-    card.href = '/ad?id=' + encodeURIComponent(id);
-    card.className = 'category-card';
-
-    card.innerHTML = `
-      <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}">
-      <div class="category-overlay">
-        <h3>${escapeHtml(title)}</h3>
-        <p>${escapeHtml(city)}</p>
-        <div class="category-count">${escapeHtml(price)}</div>
-      </div>
-    `;
-
-    els.container.appendChild(card);
-  });
-}
-
-// ---------- loaders ----------
+/* =========================
+   LOAD CATEGORIES
+========================= */
 async function loadCategories(){
-  showSkeleton();
+  state.mode = 'categories';
+  state.currentCategory = '';
+  setUrlCategory('');
+  renderMode();
+
+  hideEmpty();
+  showCatSkeleton();
+
   try{
-    const data = await jget('/api/categories'); // السيرفر الحالي
-    categories = Array.isArray(data) ? data : [];
+    const cats = await jget('/api/categories');
+    state.categories = Array.isArray(cats) ? cats : [];
+
     renderCategories();
   }catch(e){
-    categories = [];
-    showEmpty('لا توجد أقسام متاحة حالياً');
+    console.error(e);
+    els.categoriesContainer.innerHTML = '';
+    showEmpty('تعذر تحميل الأقسام');
   }
 }
 
-async function loadAds(){
-  showSkeleton();
+function catGetKey(cat){
+  // نحاولو نخليو key اللي كيتفهمه السيرفر ديال /api/ads?category=
+  // server.js عندك كيدعم uuid, int, key, name
+  return String(cat.key || cat.id || cat.category || cat.name || '').trim();
+}
+
+function catGetName(cat){
+  return String(cat.name || cat.title || cat.key || cat.id || '').trim();
+}
+
+function catGetDesc(cat){
+  return String(cat.description || cat.desc || '').trim();
+}
+
+function catGetImage(cat){
+  return absUrlMaybe(cat.image_url || cat.imageUrl || cat.image || cat.cover || '');
+}
+
+function renderCategories(){
+  const q = (els.searchInput.value || '').trim().toLowerCase();
+  const sort = (els.sortSelect.value || 'order').trim();
+
+  let items = state.categories.slice();
+
+  // فلترة محلية (حيت /api/categories ما عندوش q)
+  if(q){
+    items = items.filter(c=>{
+      const name = catGetName(c).toLowerCase();
+      const desc = catGetDesc(c).toLowerCase();
+      const key  = catGetKey(c).toLowerCase();
+      return name.includes(q) || desc.includes(q) || key.includes(q);
+    });
+  }
+
+  // ترتيب
+  if(sort === 'name'){
+    items.sort((a,b)=> catGetName(a).localeCompare(catGetName(b), 'ar'));
+  } else if(sort === 'new'){
+    // ماعندناش created_at فـ public غالباً -> نخليوها كما هي
+  } else {
+    // order: إذا عندك ord فـ السيرفر/الجدول
+    items.sort((a,b)=> (Number(a.ord||0) - Number(b.ord||0)));
+  }
+
+  els.categoriesContainer.innerHTML = '';
+  if(!items.length){
+    showEmpty('لا توجد أقسام مطابقة');
+    return;
+  }
+  hideEmpty();
+
+  const fallbackImg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+      <defs>
+        <linearGradient id="g" x1="0" x2="1">
+          <stop offset="0" stop-color="#0b1222"/>
+          <stop offset="1" stop-color="#0e1a33"/>
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#g)"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+            fill="#93a3bf" font-size="28" font-family="Arial">SAMSAR</text>
+    </svg>`
+  );
+
+  items.forEach(cat=>{
+    const key = catGetKey(cat);
+    const name = catGetName(cat) || '—';
+    const desc = catGetDesc(cat);
+    const img = catGetImage(cat) || fallbackImg;
+
+    const card = document.createElement('a');
+    card.href = '/categories?category=' + encodeURIComponent(key);
+    card.className = 'category-card';
+
+    card.innerHTML = `
+      <img src="${escapeHtml(img)}" alt="${escapeHtml(name)}">
+      <div class="category-overlay">
+        <h3>${escapeHtml(name)}</h3>
+        ${desc ? `<p>${escapeHtml(desc)}</p>` : `<p class="muted">—</p>`}
+      </div>
+    `;
+
+    // نخلي التنقل SPA بدون ريفريش (اختياري) ولكن كيتوافق حتى مع ريفريش
+    card.addEventListener('click', (e)=>{
+      e.preventDefault();
+      openCategory(key, name);
+    });
+
+    els.categoriesContainer.appendChild(card);
+  });
+}
+
+/* =========================
+   ADS VIEW
+========================= */
+function renderMode(){
+  const isAds = state.mode === 'ads';
+
+  els.categoriesWrap.style.display = isAds ? 'none' : '';
+  els.adsWrap.style.display = isAds ? '' : 'none';
+
+  els.clearCategoryBtn.style.display = isAds ? '' : 'none';
+  els.modeBadge.textContent = isAds ? 'عرض الإعلانات' : 'عرض الأقسام';
+  els.pageTitle.textContent = isAds ? 'إعلانات القسم' : 'الأقسام';
+}
+
+async function openCategory(categoryKey, categoryName=''){
+  state.mode = 'ads';
+  state.currentCategory = String(categoryKey||'').trim();
+  setUrlCategory(state.currentCategory);
+  renderMode();
+
+  hideEmpty();
+  showAdsSkeleton();
+
+  // كيعرض اسم القسم في العنوان إذا عطيناه
+  if(categoryName) els.pageTitle.textContent = categoryName;
+
+  await loadAdsList();
+}
+
+async function loadAdsList(){
+  hideEmpty();
+  showAdsSkeleton();
 
   const q = (els.searchInput.value || '').trim();
-
-  // ✅ حدّث URL ب q
-  setUrlParams({ q });
+  const sort = (els.sortSelect.value || 'order').trim(); // ماعندناش sort فالسيرفر -> نخليه
 
   const params = new URLSearchParams();
+  if(state.currentCategory) params.set('category', state.currentCategory);
   if(q) params.set('q', q);
-  if(selectedCategory) params.set('category', selectedCategory);
-  params.set('limit', '50');
+  params.set('limit', '50'); // أكثر شوية
 
   try{
     const ads = await jget('/api/ads?' + params.toString());
-    renderAds(Array.isArray(ads) ? ads : []);
+    const items = Array.isArray(ads) ? ads : [];
+
+    renderAds(items);
   }catch(e){
-    renderAds([]);
+    console.error(e);
+    els.adsContainer.innerHTML = '';
+    showEmpty('لا توجد إعلانات حالياً');
   }
 }
 
-// ---------- events ----------
+function renderAds(items){
+  els.adsContainer.innerHTML = '';
+  if(!items.length){
+    showEmpty('لا توجد إعلانات حالياً');
+    return;
+  }
+  hideEmpty();
+
+  const fallbackImg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+      <rect width="100%" height="100%" fill="#0b1222"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+            fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
+    </svg>`
+  );
+
+  items.forEach(a=>{
+    const id = String(a.id || a._id || '').trim();
+    const title = String(a.title || '').trim() || '—';
+    const city = String(a.city || '').trim();
+    const created = a.created_at ? new Date(a.created_at).toLocaleString('fr-MA') : '';
+    const price = formatPrice(a.price);
+
+    const img = absUrlMaybe(a.image || a.image_url || a.cover || '') || fallbackImg;
+
+    const card = document.createElement('a');
+    card.className = 'ad-card';
+    card.href = '/ad?id=' + encodeURIComponent(id);
+
+    card.innerHTML = `
+      <img class="ad-img" src="${escapeHtml(img)}" alt="${escapeHtml(title)}">
+      <div class="ad-body">
+        <h3 class="ad-title">${escapeHtml(title)}</h3>
+        <div class="ad-meta">
+          ${city ? `<span>📍 ${escapeHtml(city)}</span>` : ``}
+          ${created ? `<span>🕒 ${escapeHtml(created)}</span>` : ``}
+        </div>
+        <div class="ad-price">${escapeHtml(price)}</div>
+      </div>
+    `;
+    els.adsContainer.appendChild(card);
+  });
+}
+
+/* =========================
+   EVENTS
+========================= */
+els.reloadBtn.addEventListener('click', ()=>{
+  if(state.mode === 'ads') loadAdsList();
+  else loadCategories();
+});
+
+els.clearCategoryBtn.addEventListener('click', ()=>{
+  // رجوع لعرض الأقسام
+  state.mode = 'categories';
+  state.currentCategory = '';
+  setUrlCategory('');
+  renderMode();
+  renderCategories();
+});
+
 els.searchInput.addEventListener('input', ()=>{
-  clearTimeout(_debTimer);
-  _debTimer = setTimeout(()=>{
-    // إذا مازال ما اختارش قسم وكيكتب فالبحث: نقدر نخليه يجيب ads عامة
-    loadAds();
+  clearTimeout(state.deb);
+  state.deb = setTimeout(()=>{
+    if(state.mode === 'ads') loadAdsList();
+    else renderCategories();
   }, 250);
 });
 
 els.sortSelect.addEventListener('change', ()=>{
-  // حاليا sorting من السيرفر ما كاينش، نخليه يعاود يجيب
-  if(mode === 'ads') loadAds();
+  if(state.mode === 'ads') loadAdsList();
+  else renderCategories();
 });
 
-// back/forward browser
-window.addEventListener('popstate', ()=>{
-  const p = getUrlParams();
-  els.searchInput.value = p.q || '';
-  selectedCategory = p.category || '';
+els.backBtn.addEventListener('click', ()=>{
+  // حل مشكل history.back() فاش كتكون الصفحة مفتوحة مباشرة
+  if(state.mode === 'ads'){
+    // رجع لعرض الأقسام
+    state.mode = 'categories';
+    state.currentCategory = '';
+    setUrlCategory('');
+    renderMode();
+    renderCategories();
+    return;
+  }
 
-  if(selectedCategory || (p.q && p.q.trim())){
-    loadAds();
+  if(history.length > 1) history.back();
+  else location.href = '/';
+});
+
+// دعم زر back ديال المتصفح
+window.addEventListener('popstate', ()=>{
+  const cat = qsParam('category');
+  if(cat){
+    state.mode = 'ads';
+    state.currentCategory = cat;
+    renderMode();
+    loadAdsList();
   }else{
+    state.mode = 'categories';
+    state.currentCategory = '';
+    renderMode();
     renderCategories();
   }
 });
 
-// ---------- init ----------
+/* =========================
+   BOOT
+========================= */
 (async function init(){
-  const p = getUrlParams();
-
-  // حمّل الأقسام دائما أولاً
-  await loadCategories();
-
-  // إذا جاك الرابط فيه category ولا q: عرض الإعلانات مباشرة
-  if(p.category || (p.q && p.q.trim())){
-    selectedCategory = p.category || '';
-    els.searchInput.value = p.q || '';
-    loadAds();
+  const cat = qsParam('category');
+  if(cat){
+    // دخلتي مباشرة لقسم: /categories?category=...
+    state.mode = 'ads';
+    state.currentCategory = cat;
+    renderMode();
+    await loadAdsList();
+  }else{
+    await loadCategories();
   }
 })();
 </script>

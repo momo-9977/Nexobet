@@ -347,7 +347,7 @@ function esc(s=''){
 }
 
 function absUrlMaybe(u){
-  const v = String(u||'').trim();
+  const v = String(u || '').trim();
   if(!v) return '';
   if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
   return v.startsWith('/') ? v : ('/' + v);
@@ -356,7 +356,7 @@ function absUrlMaybe(u){
 function formatPrice(p){
   const n = Number(p);
   if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
-  return (p ? String(p) + ' د.م' : '');
+  return p ? (String(p) + ' د.م') : '';
 }
 
 async function jget(url){
@@ -368,7 +368,7 @@ async function jget(url){
 
 function getParam(name){
   const sp = new URLSearchParams(location.search);
-  return (sp.get(name) || '').trim();
+  return String(sp.get(name) || '').trim();
 }
 
 function setCategoryInUrl(cat){
@@ -377,6 +377,10 @@ function setCategoryInUrl(cat){
   else sp.delete('category');
   const next = location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
   history.pushState({}, '', next);
+}
+
+function norm(v){
+  return String(v || '').trim().toLowerCase();
 }
 
 const placeholderCat = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
@@ -419,11 +423,31 @@ const els = {
   applyFilters: document.getElementById('applyFilters'),
 };
 
-let state = {
-  category: '',
-  catName: '',
-  allAds: [],
+const state = {
+  categories: [],
+  selectedCategory: null,
+  categoryAds: []
 };
+
+function getCatId(cat){
+  return String(cat.id || '').trim();
+}
+
+function getCatKey(cat){
+  return String(cat.key || '').trim();
+}
+
+function getCatName(cat){
+  return String(cat.name || cat.title || '').trim();
+}
+
+function getCatDesc(cat){
+  return String(cat.description || cat.desc || '').trim();
+}
+
+function getCatImage(cat){
+  return absUrlMaybe(cat.image_url || cat.imageUrl || cat.image || cat.cover || cat.photo || '');
+}
 
 function showCats(){
   els.catsView.style.display = '';
@@ -434,7 +458,7 @@ function showCats(){
 function showAds(){
   els.catsView.style.display = 'none';
   els.adsView.style.display = '';
-  els.topTitle.textContent = state.catName ? state.catName : 'إعلانات القسم';
+  els.topTitle.textContent = state.selectedCategory?.name || 'إعلانات القسم';
 }
 
 function catsSkeleton(){
@@ -455,152 +479,131 @@ function adsSkeleton(){
   els.adsEmpty.style.display = 'none';
 }
 
-function catKey(cat){
-  return String(cat.key || cat.id || cat.category || cat.name || '').trim();
+function findCategoryByAny(value){
+  const v = norm(value);
+  if(!v) return null;
+
+  return state.categories.find(cat => {
+    return (
+      norm(getCatId(cat)) === v ||
+      norm(getCatKey(cat)) === v ||
+      norm(getCatName(cat)) === v
+    );
+  }) || null;
 }
 
-function catName(cat){
-  return String(cat.name || cat.title || cat.key || cat.id || '').trim();
-}
+function renderCategories(items){
+  els.catsGrid.innerHTML = '';
 
-function catDesc(cat){
-  return String(cat.description || cat.desc || '').trim();
-}
-
-function catImage(cat){
-  return absUrlMaybe(cat.image_url || cat.imageUrl || cat.image || cat.cover || cat.photo || '');
-}
-
-async function loadCategories(){
-  showCats();
-  catsSkeleton();
-
-  try{
-    const cats = await jget('/api/categories');
-    const items = Array.isArray(cats) ? cats : [];
-
-    els.catsGrid.innerHTML = '';
-
-    if(!items.length){
-      els.catsEmpty.style.display = 'block';
-      return;
-    }
-
-    items.forEach(c=>{
-      const key = catKey(c);
-      const name = catName(c) || '—';
-      const desc = catDesc(c) || '';
-      const img  = catImage(c) || placeholderCat;
-
-      const card = document.createElement('a');
-      card.className = 'cat-card';
-      card.href = '/categories?category=' + encodeURIComponent(key);
-      card.innerHTML = `
-        <img class="cat-img" src="${esc(img)}" alt="${esc(name)}">
-        <div class="cat-body">
-          <h3 class="cat-name">${esc(name)}</h3>
-          <div class="cat-desc">${desc ? esc(desc) : '—'}</div>
-        </div>
-      `;
-
-      card.addEventListener('click', (e)=>{
-        e.preventDefault();
-        openCategory(key, name);
-      });
-
-      els.catsGrid.appendChild(card);
-    });
-
-  }catch(e){
-    console.error(e);
-    els.catsGrid.innerHTML = '';
+  if(!items.length){
     els.catsEmpty.style.display = 'block';
+    return;
   }
+
+  els.catsEmpty.style.display = 'none';
+
+  items.forEach(cat => {
+    const id   = getCatId(cat);
+    const key  = getCatKey(cat);
+    const name = getCatName(cat) || '—';
+    const desc = getCatDesc(cat) || '—';
+    const img  = getCatImage(cat) || placeholderCat;
+    const urlValue = id || key || name;
+
+    const card = document.createElement('a');
+    card.className = 'cat-card';
+    card.href = '/categories?category=' + encodeURIComponent(urlValue);
+    card.innerHTML = `
+      <img class="cat-img" src="${esc(img)}" alt="${esc(name)}">
+      <div class="cat-body">
+        <h3 class="cat-name">${esc(name)}</h3>
+        <div class="cat-desc">${esc(desc)}</div>
+      </div>
+    `;
+
+    card.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCategory(cat);
+    });
+
+    els.catsGrid.appendChild(card);
+  });
 }
 
-async function openCategory(catKeyValue, catNameValue){
-  state.category = String(catKeyValue || '').trim();
-  state.catName = String(catNameValue || '').trim();
+function adImage(ad){
+  if(ad.image) return absUrlMaybe(ad.image);
 
-  setCategoryInUrl(state.category);
+  if(Array.isArray(ad.images) && ad.images.length){
+    const first = ad.images[0];
+    if(typeof first === 'string') return absUrlMaybe(first);
+    if(first && first.url) return absUrlMaybe(first.url);
+  }
 
-  els.adsSearch.value = '';
-  els.minPrice.value = '';
-  els.maxPrice.value = '';
-
-  showAds();
-  await loadAds();
+  return placeholderAd;
 }
 
-async function loadAds(){
-  adsSkeleton();
-  state.allAds = [];
+function adBelongsToSelectedCategory(ad){
+  if(!state.selectedCategory) return false;
 
-  try{
-    const params = new URLSearchParams();
-    params.set('category', state.category);
-    params.set('limit', '50');
+  const targetValues = [
+    state.selectedCategory.id,
+    state.selectedCategory.key,
+    state.selectedCategory.name
+  ].map(norm).filter(Boolean);
 
-    const ads = await jget('/api/ads?' + params.toString());
-    const items = Array.isArray(ads) ? ads : [];
+  const adValues = [
+    ad.category_id,
+    ad.categoryId,
+    ad.category,
+    ad.category_key,
+    ad.categoryKey,
+    ad.category_name,
+    ad.categoryName,
+    ad.category_title,
+    ad.categoryTitle
+  ].map(norm).filter(Boolean);
 
-    state.allAds = items;
-    renderAdsWithFilters();
-
-  }catch(e){
-    console.error(e);
-    els.adsGrid.innerHTML = '';
-    els.adsEmpty.style.display = 'block';
-  }
+  return targetValues.some(v => adValues.includes(v));
 }
 
-function renderAdsWithFilters(){
-  const q = String(els.adsSearch.value || '').trim().toLowerCase();
+function applyAdsFilters(items){
+  const q = norm(els.adsSearch.value);
+  const minP = els.minPrice.value === '' ? null : Number(els.minPrice.value);
+  const maxP = els.maxPrice.value === '' ? null : Number(els.maxPrice.value);
 
-  let minP = els.minPrice.value === '' ? null : Number(els.minPrice.value);
-  let maxP = els.maxPrice.value === '' ? null : Number(els.maxPrice.value);
-  if(minP !== null && !Number.isFinite(minP)) minP = null;
-  if(maxP !== null && !Number.isFinite(maxP)) maxP = null;
+  return items.filter(ad => {
+    const title = norm(ad.title);
+    const desc = norm(ad.description);
+    const price = Number(ad.price);
 
-  let filtered = state.allAds.slice();
+    if(q && !title.includes(q) && !desc.includes(q)) return false;
+    if(minP !== null && Number.isFinite(minP)){
+      if(!Number.isFinite(price) || price < minP) return false;
+    }
+    if(maxP !== null && Number.isFinite(maxP)){
+      if(!Number.isFinite(price) || price > maxP) return false;
+    }
+    return true;
+  });
+}
 
-  if(q){
-    filtered = filtered.filter(a=>{
-      const t = String(a.title || '').toLowerCase();
-      const d = String(a.description || '').toLowerCase();
-      return t.includes(q) || d.includes(q);
-    });
-  }
-
-  if(minP !== null){
-    filtered = filtered.filter(a=>{
-      const p = Number(a.price);
-      return Number.isFinite(p) ? (p >= minP) : false;
-    });
-  }
-
-  if(maxP !== null){
-    filtered = filtered.filter(a=>{
-      const p = Number(a.price);
-      return Number.isFinite(p) ? (p <= maxP) : false;
-    });
-  }
-
+function renderAds(items){
   els.adsGrid.innerHTML = '';
 
-  if(!filtered.length){
+  if(!items.length){
     els.adsEmpty.style.display = 'block';
     return;
   }
+
   els.adsEmpty.style.display = 'none';
 
-  filtered.forEach(a=>{
-    const id = String(a.id || a._id || '').trim();
-    const title = String(a.title || '').trim() || '—';
-    const city = String(a.city || '').trim();
-    const created = a.created_at ? new Date(a.created_at).toLocaleString('fr-MA') : '';
-    const price = formatPrice(a.price);
-    const img = absUrlMaybe(a.image || a.image_url || a.cover || '') || placeholderAd;
+  items.forEach(ad => {
+    const id = String(ad.id || ad._id || '').trim();
+    const title = String(ad.title || '').trim() || '—';
+    const city = String(ad.city || '').trim();
+    const created = ad.created_at ? new Date(ad.created_at).toLocaleString('fr-MA') : '';
+    const price = formatPrice(ad.price);
+    const img = adImage(ad);
 
     const card = document.createElement('a');
     card.className = 'ad-card';
@@ -616,46 +619,179 @@ function renderAdsWithFilters(){
         <div class="ad-price">${esc(price)}</div>
       </div>
     `;
+
     els.adsGrid.appendChild(card);
   });
 }
 
-els.backBtn.addEventListener('click', ()=>{
+function refreshAdsView(){
+  const filtered = applyAdsFilters(state.categoryAds);
+  renderAds(filtered);
+}
+
+async function loadCategories(){
+  showCats();
+  catsSkeleton();
+
+  try{
+    const cats = await jget('/api/categories');
+    state.categories = Array.isArray(cats) ? cats : [];
+    renderCategories(state.categories);
+  }catch(e){
+    console.error(e);
+    els.catsGrid.innerHTML = '';
+    els.catsEmpty.style.display = 'block';
+  }
+}
+
+async function loadAdsForSelectedCategory(){
+  adsSkeleton();
+  state.categoryAds = [];
+
+  if(!state.selectedCategory){
+    els.adsGrid.innerHTML = '';
+    els.adsEmpty.style.display = 'block';
+    return;
+  }
+
+  try{
+    let items = [];
+
+    const tryValue =
+      state.selectedCategory.key ||
+      state.selectedCategory.id ||
+      state.selectedCategory.name;
+
+    if(tryValue){
+      try{
+        const byServerFilter = await jget('/api/ads?category=' + encodeURIComponent(tryValue) + '&limit=100');
+        if(Array.isArray(byServerFilter) && byServerFilter.length){
+          items = byServerFilter;
+        }
+      }catch(_){}
+    }
+
+    if(!items.length){
+      const allAds = await jget('/api/ads?limit=100');
+      const allItems = Array.isArray(allAds) ? allAds : [];
+      items = allItems.filter(adBelongsToSelectedCategory);
+    }
+
+    state.categoryAds = items;
+    refreshAdsView();
+  }catch(e){
+    console.error(e);
+    els.adsGrid.innerHTML = '';
+    els.adsEmpty.style.display = 'block';
+  }
+}
+
+async function openCategory(cat){
+  state.selectedCategory = {
+    id: getCatId(cat),
+    key: getCatKey(cat),
+    name: getCatName(cat),
+    description: getCatDesc(cat),
+    image: getCatImage(cat)
+  };
+
+  const urlValue =
+    state.selectedCategory.id ||
+    state.selectedCategory.key ||
+    state.selectedCategory.name;
+
+  setCategoryInUrl(urlValue);
+  els.adsSearch.value = '';
+  els.minPrice.value = '';
+  els.maxPrice.value = '';
+
+  showAds();
+  await loadAdsForSelectedCategory();
+}
+
+els.backBtn.addEventListener('click', () => {
   location.href = '/';
 });
 
-els.applyFilters.addEventListener('click', async ()=>{
-  await loadAds();
-  renderAdsWithFilters();
+els.applyFilters.addEventListener('click', () => {
+  refreshAdsView();
 });
 
-[els.adsSearch, els.minPrice, els.maxPrice].forEach(el=>{
-  el.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') els.applyFilters.click();
+[els.adsSearch, els.minPrice, els.maxPrice].forEach(el => {
+  el.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') refreshAdsView();
   });
 });
 
-window.addEventListener('popstate', ()=>{
-  const cat = getParam('category');
-  if(cat){
-    state.category = cat;
-    state.catName = '';
+window.addEventListener('popstate', async () => {
+  const categoryParam = getParam('category');
+
+  if(!state.categories.length){
+    try{
+      const cats = await jget('/api/categories');
+      state.categories = Array.isArray(cats) ? cats : [];
+    }catch(_){}
+  }
+
+  if(categoryParam){
+    const found = findCategoryByAny(categoryParam);
+    if(found){
+      state.selectedCategory = {
+        id: getCatId(found),
+        key: getCatKey(found),
+        name: getCatName(found),
+        description: getCatDesc(found),
+        image: getCatImage(found)
+      };
+    }else{
+      state.selectedCategory = {
+        id: categoryParam,
+        key: categoryParam,
+        name: categoryParam
+      };
+    }
+
     showAds();
-    loadAds();
+    await loadAdsForSelectedCategory();
   }else{
-    loadCategories();
+    state.selectedCategory = null;
+    await loadCategories();
   }
 });
 
 (async function init(){
-  const cat = getParam('category');
-  if(cat){
-    state.category = cat;
-    state.catName = '';
+  try{
+    const cats = await jget('/api/categories');
+    state.categories = Array.isArray(cats) ? cats : [];
+  }catch(e){
+    state.categories = [];
+  }
+
+  const categoryParam = getParam('category');
+
+  if(categoryParam){
+    const found = findCategoryByAny(categoryParam);
+    if(found){
+      state.selectedCategory = {
+        id: getCatId(found),
+        key: getCatKey(found),
+        name: getCatName(found),
+        description: getCatDesc(found),
+        image: getCatImage(found)
+      };
+    }else{
+      state.selectedCategory = {
+        id: categoryParam,
+        key: categoryParam,
+        name: categoryParam
+      };
+    }
+
     showAds();
-    await loadAds();
+    await loadAdsForSelectedCategory();
   }else{
-    await loadCategories();
+    renderCategories(state.categories);
+    showCats();
   }
 })();
 </script>

@@ -494,9 +494,19 @@ app.get('/api/categories', async (req, res) => {
     const hasActive = await hasColumn('categories', 'active');
     const hasOrd = await hasColumn('categories', 'ord');
     const hasCreatedAt = await hasColumn('categories', 'created_at');
+    const hasDescription = await hasColumn('categories', 'description');
+    const hasImageUrl = await hasColumn('categories', 'image_url');
+    const hasKey = await hasColumn('categories', 'key');
 
-    const result = await q(`
-      SELECT id, name, key
+    const rows = await q(`
+      SELECT
+        id,
+        name
+        ${hasKey ? ', key' : ', NULL::text as key'}
+        ${hasDescription ? ', description' : ', NULL::text as description'}
+        ${hasImageUrl ? ', image_url' : ', NULL::text as image_url'}
+        ${hasImageUrl ? ', image_url as image' : ', NULL::text as image'}
+        ${hasActive ? ', COALESCE(active,true) as active' : ', true as active'}
       FROM categories
       ${hasActive ? 'WHERE COALESCE(active,true)=true' : ''}
       ORDER BY
@@ -504,10 +514,13 @@ app.get('/api/categories', async (req, res) => {
         ${hasCreatedAt ? 'created_at DESC' : 'id ASC'}
     `);
 
-    res.json(result.rows);
+    res.json(rows.rows);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+    res.status(500).json({
+      error: 'SERVER_ERROR',
+      message: String(e.message || e)
+    });
   }
 });
 

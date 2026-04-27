@@ -89,10 +89,18 @@ body{
 .hero-slide{
   position:absolute;
   inset:0;
-  background-size:cover;
-  background-position:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   opacity:0;
   transition:opacity .6s ease;
+  background:#0b1222;
+}
+
+.hero-slide img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
 }
 .hero-slide.active{opacity:1}
 .hero::after{
@@ -448,7 +456,8 @@ function startHero(slides, intervalMs){
   slides.forEach((sl, i)=>{
     const d = document.createElement('a');
     d.className = 'hero-slide' + (i===0 ? ' active' : '');
-    d.style.backgroundImage = `url('${absUrlMaybe(sl.imageUrl)}')`;
+    const img = document.createElement('img');
+    img.src = absUrlMaybe(sl.imageUrl);d.appendChild(img);
     d.href = sl.linkUrl ? sl.linkUrl : '#';
     d.style.display = 'block';
     d.style.textDecoration = 'none';

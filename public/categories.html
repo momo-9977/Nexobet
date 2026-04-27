@@ -6,299 +6,308 @@
 <title>الأقسام</title>
 
 <style>
-/* ===== NAV (UNCHANGED) ===== */
-.modern-flat-nav{
-  position:fixed;
-  bottom:0; left:0; right:0;
-  height:70px;
-  background:#ffffff;
-  border-top:1px solid #e5e7eb;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  z-index:999;
-}
-.modern-flat-item{
-  flex:1;
-  text-align:center;
-  text-decoration:none;
-  color:#6b7280;
-  font-size:12px;
-  font-weight:600;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-}
-.modern-flat-nav svg{ width:22px !important; height:22px !important; }
-.modern-flat-item.active{ color:#16a34a; }
+  :root{
+    --bg0:#071024;
+    --bg1:#0c1524;
+    --card:rgba(255,255,255,0.04);
+    --border:rgba(255,255,255,0.06);
+    --text:#e6eef8;
+    --muted:#9aa8c2;
+    --accent:#2ea3ff;
+    --accent2:#60a5fa;
+    --shadow:0 18px 45px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
+      linear-gradient(180deg,var(--bg0),var(--bg1));
+    color:var(--text);
+    padding-bottom:90px;
+  }
 
-/* ===== BASE ===== */
-:root{
-  --bg0:#071024;
-  --bg1:#0c1524;
-  --card:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.06);
-  --text:#e6eef8;
-  --muted:#9aa8c2;
-  --accent:#2ea3ff;
-  --accent2:#60a5fa;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Inter,Arial,sans-serif;
-  background:linear-gradient(180deg,var(--bg0),var(--bg1));
-  color:var(--text);
-  padding-bottom:90px;
-}
+  .top-bar{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    background:rgba(15,23,42,0.78);
+    backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .title-wrap{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .back-btn{
+    width:40px;
+    height:40px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.08);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    user-select:none;
+    transition:.15s;
+  }
+  .back-btn:hover{transform:translateY(-1px)}
+  .top-title{
+    font-weight:900;
+    letter-spacing:.2px;
+  }
 
-.top-bar{
-  position:sticky;
-  top:0;
-  background:rgba(15,23,42,0.78);
-  backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(255,255,255,0.06);
-  padding:14px 18px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  z-index:1000;
-}
-.top-left{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-.back-btn{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.06);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  user-select:none;
-  border:1px solid rgba(255,255,255,0.07);
-}
-.back-btn:hover{transform:translateY(-1px)}
-.badge{
-  font-size:12px;
-  color:rgba(255,255,255,.85);
-  padding:8px 10px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.08);
-}
+  .page{
+    max-width:1200px;
+    margin:18px auto;
+    padding:18px;
+  }
 
-.page{
-  max-width:1200px;
-  margin:18px auto;
-  padding:18px;
-}
+  .category-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:18px;
+  }
+  .cat-card{
+    border-radius:22px;
+    overflow:hidden;
+    background:rgba(255,255,255,0.035);
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:var(--shadow);
+    text-decoration:none;
+    color:inherit;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .cat-card:hover{transform:translateY(-4px)}
+  .cat-img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
+    display:block;
+    background:rgba(255,255,255,0.05);
+  }
+  .cat-body{
+    padding:14px 14px 16px;
+  }
+  .cat-name{
+    margin:0;
+    font-size:18px;
+    font-weight:900;
+    line-height:1.3;
+  }
+  .cat-desc{
+    margin:8px 0 0;
+    color:rgba(255,255,255,.75);
+    line-height:1.7;
+    font-size:13px;
+    min-height:38px;
+  }
 
-/* ===== FILTER BAR ===== */
-.filter-bar{
-  margin-bottom:18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-}
+  .controls{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .controls-left{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    flex:1;
+  }
+  .input{
+    padding:12px 14px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.10);
+    background:rgba(255,255,255,0.06);
+    color:var(--text);
+    outline:none;
+    min-width:220px;
+  }
+  .input.small{
+    min-width:140px;
+    width:140px;
+  }
+  .btn{
+    padding:12px 14px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.10);
+    background:rgba(255,255,255,0.06);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+    transition:.15s;
+    white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{
+    border:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;
+    font-weight:900;
+  }
 
-.search-input{
-  flex:1;
-  min-width:220px;
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.08);
-  background:rgba(255,255,255,0.06);
-  color:white;
-  outline:none;
-}
+  .ads-grid{
+    margin-top:16px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:18px;
+  }
+  .ad-card{
+    border-radius:22px;
+    overflow:hidden;
+    background:rgba(255,255,255,0.035);
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:var(--shadow);
+    text-decoration:none;
+    color:inherit;
+    transition:.2s;
+  }
+  .ad-card:hover{transform:translateY(-4px)}
+  .ad-img{
+    width:100%;
+    height:190px;
+    object-fit:cover;
+    display:block;
+    background:rgba(255,255,255,0.05);
+  }
+  .ad-body{padding:14px}
+  .ad-title{
+    margin:0;
+    font-size:16px;
+    font-weight:900;
+    line-height:1.3;
+  }
+  .ad-meta{
+    margin-top:8px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    color:rgba(255,255,255,.68);
+    font-size:12px;
+  }
+  .ad-price{
+    margin-top:10px;
+    font-size:18px;
+    font-weight:900;
+    color:#fff;
+  }
 
-.sort-select{
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.08);
-  background:rgba(255,255,255,0.06);
-  color:white;
-  outline:none;
-}
+  .skeleton{
+    border-radius:22px;
+    background:linear-gradient(90deg,#1f2937 25%,#374151 50%,#1f2937 75%);
+    background-size:200% 100%;
+    animation:loading 1.5s infinite;
+    border:1px solid rgba(255,255,255,0.04);
+  }
+  .sk-cat{height:260px}
+  .sk-ad{height:280px}
 
-.small-btn{
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.10);
-  background:rgba(255,255,255,0.06);
-  color:var(--text);
-  cursor:pointer;
-  white-space:nowrap;
-}
-.small-btn.primary{
-  border:none;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:#fff;
-  font-weight:800;
-}
+  @keyframes loading{
+    0%{background-position:200% 0}
+    100%{background-position:-200% 0}
+  }
+  .empty{
+    margin-top:40px;
+    text-align:center;
+    color:var(--muted);
+  }
 
-/* ===== GRID: CATEGORIES ===== */
-.category-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:18px;
-}
+  .modern-flat-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:70px;
+    background:#ffffff;
+    border-top:1px solid #e5e7eb;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:999;
+  }
+  .modern-flat-item{
+    flex:1;
+    text-align:center;
+    text-decoration:none;
+    color:#6b7280;
+    font-size:12px;
+    font-weight:600;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+  }
+  .modern-flat-nav svg{
+    width:22px !important;
+    height:22px !important;
+  }
+  .modern-flat-item.active{
+    color:#16a34a;
+  }
 
-.category-card{
-  position:relative;
-  border-radius:20px;
-  overflow:hidden;
-  cursor:pointer;
-  background:rgba(0,0,0,.18);
-  border:1px solid rgba(255,255,255,0.06);
-  transition:.22s;
-  text-decoration:none;
-  color:inherit;
-  min-height:220px;
-}
-.category-card:hover{ transform:translateY(-4px); }
-.category-card img{
-  width:100%;
-  height:220px;
-  object-fit:cover;
-  filter:brightness(.75);
-  display:block;
-}
-.category-overlay{
-  position:absolute;
-  bottom:0; width:100%;
-  padding:16px;
-  background:linear-gradient(180deg,transparent,rgba(0,0,0,.78));
-}
-.category-overlay h3{ margin:0; font-size:18px; font-weight:900; }
-.category-overlay p{ margin:6px 0 0; font-size:13px; color:#cbd5e1; line-height:1.6; }
-.category-count{ margin-top:8px; font-size:12px; color:#93c5fd; }
-
-/* ===== GRID: ADS ===== */
-.ads-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:18px;
-}
-
-.ad-card{
-  border-radius:20px;
-  overflow:hidden;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.06);
-  text-decoration:none;
-  color:inherit;
-  transition:.22s;
-}
-.ad-card:hover{ transform:translateY(-4px); }
-.ad-img{
-  width:100%;
-  height:190px;
-  background:rgba(255,255,255,0.05);
-  display:block;
-  object-fit:cover;
-}
-.ad-body{ padding:14px; }
-.ad-title{
-  margin:0;
-  font-size:16px;
-  font-weight:900;
-  line-height:1.3;
-}
-.ad-meta{
-  margin-top:8px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  color:rgba(255,255,255,.68);
-  font-size:12px;
-}
-.ad-price{
-  margin-top:10px;
-  font-size:18px;
-  font-weight:900;
-  color:#fff;
-}
-
-/* ===== SKELETON ===== */
-.skeleton{
-  height:220px;
-  border-radius:20px;
-  background:linear-gradient(90deg,#1f2937 25%,#374151 50%,#1f2937 75%);
-  background-size:200% 100%;
-  animation:loading 1.5s infinite;
-  border:1px solid rgba(255,255,255,0.04);
-}
-@keyframes loading{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-.empty-state{
-  text-align:center;
-  margin-top:60px;
-  color:var(--muted);
-}
-.muted{ color:var(--muted); }
-
+  @media(max-width:560px){
+    .input{min-width:160px}
+    .input.small{min-width:120px; width:120px;}
+  }
 </style>
 </head>
+
 <body>
 
 <div class="top-bar">
-  <div class="top-left">
+  <div class="title-wrap">
     <div class="back-btn" id="backBtn">←</div>
-    <strong id="pageTitle">الأقسام</strong>
+    <div class="top-title" id="topTitle">الأقسام</div>
   </div>
-  <div class="badge" id="modeBadge">عرض الأقسام</div>
 </div>
 
 <div class="page">
 
-  <div class="filter-bar">
-    <input id="searchInput" class="search-input" placeholder="بحث..." />
-    <select id="sortSelect" class="sort-select">
-      <option value="order">الترتيب الافتراضي</option>
-      <option value="name">أبجدي</option>
-      <option value="new">الأحدث</option>
-    </select>
-
-    <button id="clearCategoryBtn" class="small-btn" style="display:none">إظهار الأقسام</button>
-    <button id="reloadBtn" class="small-btn primary">تحديث</button>
-  </div>
-
-  <!-- CATEGORIES -->
-  <div id="categoriesWrap">
-    <div id="categoriesContainer" class="category-grid">
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
+  <section id="catsView">
+    <div id="catsGrid" class="category-grid">
+      <div class="skeleton sk-cat"></div>
+      <div class="skeleton sk-cat"></div>
+      <div class="skeleton sk-cat"></div>
     </div>
-  </div>
+    <div id="catsEmpty" class="empty" style="display:none;">لا توجد أقسام</div>
+  </section>
 
-  <!-- ADS -->
-  <div id="adsWrap" style="display:none">
-    <div id="adsContainer" class="ads-grid">
-      <div class="skeleton" style="height:260px"></div>
-      <div class="skeleton" style="height:260px"></div>
-      <div class="skeleton" style="height:260px"></div>
+  <section id="adsView" style="display:none;">
+    <div class="controls">
+      <div class="controls-left">
+        <input id="adsSearch" class="input" placeholder="بحث داخل هذا القسم..." />
+        <input id="minPrice" class="input small" type="number" min="0" placeholder="من (د.م)" />
+        <input id="maxPrice" class="input small" type="number" min="0" placeholder="إلى (د.م)" />
+        <button id="applyFilters" class="btn primary">تحديث</button>
+      </div>
     </div>
-  </div>
 
-  <div id="emptyState" class="empty-state" style="display:none;">
-    لا توجد نتائج حالياً
-  </div>
+    <div id="adsGrid" class="ads-grid" style="margin-top:14px;">
+      <div class="skeleton sk-ad"></div>
+      <div class="skeleton sk-ad"></div>
+      <div class="skeleton sk-ad"></div>
+    </div>
+    <div id="adsEmpty" class="empty" style="display:none;">لا توجد إعلانات في هذا القسم</div>
+  </section>
 
 </div>
 
-<!-- NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
+
   <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
@@ -327,49 +336,11 @@ body{
     </svg>
     <span>بروفايل</span>
   </a>
+
 </nav>
 
 <script>
-const els = {
-  pageTitle: document.getElementById('pageTitle'),
-  modeBadge: document.getElementById('modeBadge'),
-  backBtn: document.getElementById('backBtn'),
-
-  searchInput: document.getElementById('searchInput'),
-  sortSelect: document.getElementById('sortSelect'),
-  reloadBtn: document.getElementById('reloadBtn'),
-  clearCategoryBtn: document.getElementById('clearCategoryBtn'),
-
-  categoriesWrap: document.getElementById('categoriesWrap'),
-  categoriesContainer: document.getElementById('categoriesContainer'),
-
-  adsWrap: document.getElementById('adsWrap'),
-  adsContainer: document.getElementById('adsContainer'),
-
-  emptyState: document.getElementById('emptyState'),
-};
-
-let state = {
-  categories: [],
-  currentCategory: '', // key/id/name
-  mode: 'categories',  // categories | ads
-  deb: null,
-};
-
-function qsParam(name){
-  const sp = new URLSearchParams(location.search);
-  return (sp.get(name) || '').trim();
-}
-
-function setUrlCategory(cat){
-  const sp = new URLSearchParams(location.search);
-  if(cat) sp.set('category', cat);
-  else sp.delete('category');
-  const next = location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
-  history.pushState({}, '', next);
-}
-
-function escapeHtml(s=''){
+function esc(s=''){
   return String(s).replace(/[&<>"']/g, m => (
     {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
   ));
@@ -388,322 +359,301 @@ function formatPrice(p){
   return (p ? String(p) + ' د.م' : '');
 }
 
-function showEmpty(msg){
-  els.emptyState.textContent = msg || 'لا توجد نتائج حالياً';
-  els.emptyState.style.display = 'block';
-}
-
-function hideEmpty(){ els.emptyState.style.display = 'none'; }
-
-function showCatSkeleton(){
-  els.categoriesContainer.innerHTML = `
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-  `;
-}
-function showAdsSkeleton(){
-  els.adsContainer.innerHTML = `
-    <div class="skeleton" style="height:260px"></div>
-    <div class="skeleton" style="height:260px"></div>
-    <div class="skeleton" style="height:260px"></div>
-  `;
-}
-
 async function jget(url){
   const res = await fetch(url, { credentials:'include' });
-  const data = await res.json().catch(()=> null);
+  const data = await res.json().catch(()=> ({}));
   if(!res.ok) throw new Error('HTTP ' + res.status);
   return data;
 }
 
-/* =========================
-   LOAD CATEGORIES
-========================= */
-async function loadCategories(){
-  state.mode = 'categories';
-  state.currentCategory = '';
-  setUrlCategory('');
-  renderMode();
-
-  hideEmpty();
-  showCatSkeleton();
-
-  try{
-    const cats = await jget('/api/categories');
-    state.categories = Array.isArray(cats) ? cats : [];
-
-    renderCategories();
-  }catch(e){
-    console.error(e);
-    els.categoriesContainer.innerHTML = '';
-    showEmpty('تعذر تحميل الأقسام');
-  }
+function getParam(name){
+  const sp = new URLSearchParams(location.search);
+  return (sp.get(name) || '').trim();
 }
 
-function catGetKey(cat){
-  // نحاولو نخليو key اللي كيتفهمه السيرفر ديال /api/ads?category=
-  // server.js عندك كيدعم uuid, int, key, name
+function setCategoryInUrl(cat){
+  const sp = new URLSearchParams(location.search);
+  if(cat) sp.set('category', cat);
+  else sp.delete('category');
+  const next = location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
+  history.pushState({}, '', next);
+}
+
+const placeholderCat = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1">
+        <stop offset="0" stop-color="#0b1222"/>
+        <stop offset="1" stop-color="#0e1a33"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+          fill="#93a3bf" font-size="28" font-family="Arial">SAMSAR</text>
+  </svg>`
+);
+
+const placeholderAd = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520">
+    <rect width="100%" height="100%" fill="#0b1222"/>
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+          fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
+  </svg>`
+);
+
+const els = {
+  backBtn: document.getElementById('backBtn'),
+  topTitle: document.getElementById('topTitle'),
+
+  catsView: document.getElementById('catsView'),
+  catsGrid: document.getElementById('catsGrid'),
+  catsEmpty: document.getElementById('catsEmpty'),
+
+  adsView: document.getElementById('adsView'),
+  adsGrid: document.getElementById('adsGrid'),
+  adsEmpty: document.getElementById('adsEmpty'),
+
+  adsSearch: document.getElementById('adsSearch'),
+  minPrice: document.getElementById('minPrice'),
+  maxPrice: document.getElementById('maxPrice'),
+  applyFilters: document.getElementById('applyFilters'),
+};
+
+let state = {
+  category: '',
+  catName: '',
+  allAds: [],
+};
+
+function showCats(){
+  els.catsView.style.display = '';
+  els.adsView.style.display = 'none';
+  els.topTitle.textContent = 'الأقسام';
+}
+
+function showAds(){
+  els.catsView.style.display = 'none';
+  els.adsView.style.display = '';
+  els.topTitle.textContent = state.catName ? state.catName : 'إعلانات القسم';
+}
+
+function catsSkeleton(){
+  els.catsGrid.innerHTML = `
+    <div class="skeleton sk-cat"></div>
+    <div class="skeleton sk-cat"></div>
+    <div class="skeleton sk-cat"></div>
+  `;
+  els.catsEmpty.style.display = 'none';
+}
+
+function adsSkeleton(){
+  els.adsGrid.innerHTML = `
+    <div class="skeleton sk-ad"></div>
+    <div class="skeleton sk-ad"></div>
+    <div class="skeleton sk-ad"></div>
+  `;
+  els.adsEmpty.style.display = 'none';
+}
+
+function catKey(cat){
   return String(cat.key || cat.id || cat.category || cat.name || '').trim();
 }
 
-function catGetName(cat){
+function catName(cat){
   return String(cat.name || cat.title || cat.key || cat.id || '').trim();
 }
 
-function catGetDesc(cat){
+function catDesc(cat){
   return String(cat.description || cat.desc || '').trim();
 }
 
-function catGetImage(cat){
-  return absUrlMaybe(cat.image_url || cat.imageUrl || cat.image || cat.cover || '');
+function catImage(cat){
+  return absUrlMaybe(cat.image_url || cat.imageUrl || cat.image || cat.cover || cat.photo || '');
 }
 
-function renderCategories(){
-  const q = (els.searchInput.value || '').trim().toLowerCase();
-  const sort = (els.sortSelect.value || 'order').trim();
-
-  let items = state.categories.slice();
-
-  // فلترة محلية (حيت /api/categories ما عندوش q)
-  if(q){
-    items = items.filter(c=>{
-      const name = catGetName(c).toLowerCase();
-      const desc = catGetDesc(c).toLowerCase();
-      const key  = catGetKey(c).toLowerCase();
-      return name.includes(q) || desc.includes(q) || key.includes(q);
-    });
-  }
-
-  // ترتيب
-  if(sort === 'name'){
-    items.sort((a,b)=> catGetName(a).localeCompare(catGetName(b), 'ar'));
-  } else if(sort === 'new'){
-    // ماعندناش created_at فـ public غالباً -> نخليوها كما هي
-  } else {
-    // order: إذا عندك ord فـ السيرفر/الجدول
-    items.sort((a,b)=> (Number(a.ord||0) - Number(b.ord||0)));
-  }
-
-  els.categoriesContainer.innerHTML = '';
-  if(!items.length){
-    showEmpty('لا توجد أقسام مطابقة');
-    return;
-  }
-  hideEmpty();
-
-  const fallbackImg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
-      <defs>
-        <linearGradient id="g" x1="0" x2="1">
-          <stop offset="0" stop-color="#0b1222"/>
-          <stop offset="1" stop-color="#0e1a33"/>
-        </linearGradient>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#g)"/>
-      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-            fill="#93a3bf" font-size="28" font-family="Arial">SAMSAR</text>
-    </svg>`
-  );
-
-  items.forEach(cat=>{
-    const key = catGetKey(cat);
-    const name = catGetName(cat) || '—';
-    const desc = catGetDesc(cat);
-    const img = catGetImage(cat) || fallbackImg;
-
-    const card = document.createElement('a');
-    card.href = '/categories?category=' + encodeURIComponent(key);
-    card.className = 'category-card';
-
-    card.innerHTML = `
-      <img src="${escapeHtml(img)}" alt="${escapeHtml(name)}">
-      <div class="category-overlay">
-        <h3>${escapeHtml(name)}</h3>
-        ${desc ? `<p>${escapeHtml(desc)}</p>` : `<p class="muted">—</p>`}
-      </div>
-    `;
-
-    // نخلي التنقل SPA بدون ريفريش (اختياري) ولكن كيتوافق حتى مع ريفريش
-    card.addEventListener('click', (e)=>{
-      e.preventDefault();
-      openCategory(key, name);
-    });
-
-    els.categoriesContainer.appendChild(card);
-  });
-}
-
-/* =========================
-   ADS VIEW
-========================= */
-function renderMode(){
-  const isAds = state.mode === 'ads';
-
-  els.categoriesWrap.style.display = isAds ? 'none' : '';
-  els.adsWrap.style.display = isAds ? '' : 'none';
-
-  els.clearCategoryBtn.style.display = isAds ? '' : 'none';
-  els.modeBadge.textContent = isAds ? 'عرض الإعلانات' : 'عرض الأقسام';
-  els.pageTitle.textContent = isAds ? 'إعلانات القسم' : 'الأقسام';
-}
-
-async function openCategory(categoryKey, categoryName=''){
-  state.mode = 'ads';
-  state.currentCategory = String(categoryKey||'').trim();
-  setUrlCategory(state.currentCategory);
-  renderMode();
-
-  hideEmpty();
-  showAdsSkeleton();
-
-  // كيعرض اسم القسم في العنوان إذا عطيناه
-  if(categoryName) els.pageTitle.textContent = categoryName;
-
-  await loadAdsList();
-}
-
-async function loadAdsList(){
-  hideEmpty();
-  showAdsSkeleton();
-
-  const q = (els.searchInput.value || '').trim();
-  const sort = (els.sortSelect.value || 'order').trim(); // ماعندناش sort فالسيرفر -> نخليه
-
-  const params = new URLSearchParams();
-  if(state.currentCategory) params.set('category', state.currentCategory);
-  if(q) params.set('q', q);
-  params.set('limit', '50'); // أكثر شوية
+async function loadCategories(){
+  showCats();
+  catsSkeleton();
 
   try{
+    const cats = await jget('/api/categories');
+    const items = Array.isArray(cats) ? cats : [];
+
+    els.catsGrid.innerHTML = '';
+
+    if(!items.length){
+      els.catsEmpty.style.display = 'block';
+      return;
+    }
+
+    items.forEach(c=>{
+      const key = catKey(c);
+      const name = catName(c) || '—';
+      const desc = catDesc(c) || '';
+      const img  = catImage(c) || placeholderCat;
+
+      const card = document.createElement('a');
+      card.className = 'cat-card';
+      card.href = '/categories?category=' + encodeURIComponent(key);
+      card.innerHTML = `
+        <img class="cat-img" src="${esc(img)}" alt="${esc(name)}">
+        <div class="cat-body">
+          <h3 class="cat-name">${esc(name)}</h3>
+          <div class="cat-desc">${desc ? esc(desc) : '—'}</div>
+        </div>
+      `;
+
+      card.addEventListener('click', (e)=>{
+        e.preventDefault();
+        openCategory(key, name);
+      });
+
+      els.catsGrid.appendChild(card);
+    });
+
+  }catch(e){
+    console.error(e);
+    els.catsGrid.innerHTML = '';
+    els.catsEmpty.style.display = 'block';
+  }
+}
+
+async function openCategory(catKeyValue, catNameValue){
+  state.category = String(catKeyValue || '').trim();
+  state.catName = String(catNameValue || '').trim();
+
+  setCategoryInUrl(state.category);
+
+  els.adsSearch.value = '';
+  els.minPrice.value = '';
+  els.maxPrice.value = '';
+
+  showAds();
+  await loadAds();
+}
+
+async function loadAds(){
+  adsSkeleton();
+  state.allAds = [];
+
+  try{
+    const params = new URLSearchParams();
+    params.set('category', state.category);
+    params.set('limit', '50');
+
     const ads = await jget('/api/ads?' + params.toString());
     const items = Array.isArray(ads) ? ads : [];
 
-    renderAds(items);
+    state.allAds = items;
+    renderAdsWithFilters();
+
   }catch(e){
     console.error(e);
-    els.adsContainer.innerHTML = '';
-    showEmpty('لا توجد إعلانات حالياً');
+    els.adsGrid.innerHTML = '';
+    els.adsEmpty.style.display = 'block';
   }
 }
 
-function renderAds(items){
-  els.adsContainer.innerHTML = '';
-  if(!items.length){
-    showEmpty('لا توجد إعلانات حالياً');
+function renderAdsWithFilters(){
+  const q = String(els.adsSearch.value || '').trim().toLowerCase();
+
+  let minP = els.minPrice.value === '' ? null : Number(els.minPrice.value);
+  let maxP = els.maxPrice.value === '' ? null : Number(els.maxPrice.value);
+  if(minP !== null && !Number.isFinite(minP)) minP = null;
+  if(maxP !== null && !Number.isFinite(maxP)) maxP = null;
+
+  let filtered = state.allAds.slice();
+
+  if(q){
+    filtered = filtered.filter(a=>{
+      const t = String(a.title || '').toLowerCase();
+      const d = String(a.description || '').toLowerCase();
+      return t.includes(q) || d.includes(q);
+    });
+  }
+
+  if(minP !== null){
+    filtered = filtered.filter(a=>{
+      const p = Number(a.price);
+      return Number.isFinite(p) ? (p >= minP) : false;
+    });
+  }
+
+  if(maxP !== null){
+    filtered = filtered.filter(a=>{
+      const p = Number(a.price);
+      return Number.isFinite(p) ? (p <= maxP) : false;
+    });
+  }
+
+  els.adsGrid.innerHTML = '';
+
+  if(!filtered.length){
+    els.adsEmpty.style.display = 'block';
     return;
   }
-  hideEmpty();
+  els.adsEmpty.style.display = 'none';
 
-  const fallbackImg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
-      <rect width="100%" height="100%" fill="#0b1222"/>
-      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-            fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
-    </svg>`
-  );
-
-  items.forEach(a=>{
+  filtered.forEach(a=>{
     const id = String(a.id || a._id || '').trim();
     const title = String(a.title || '').trim() || '—';
     const city = String(a.city || '').trim();
     const created = a.created_at ? new Date(a.created_at).toLocaleString('fr-MA') : '';
     const price = formatPrice(a.price);
-
-    const img = absUrlMaybe(a.image || a.image_url || a.cover || '') || fallbackImg;
+    const img = absUrlMaybe(a.image || a.image_url || a.cover || '') || placeholderAd;
 
     const card = document.createElement('a');
     card.className = 'ad-card';
     card.href = '/ad?id=' + encodeURIComponent(id);
-
     card.innerHTML = `
-      <img class="ad-img" src="${escapeHtml(img)}" alt="${escapeHtml(title)}">
+      <img class="ad-img" src="${esc(img)}" alt="${esc(title)}">
       <div class="ad-body">
-        <h3 class="ad-title">${escapeHtml(title)}</h3>
+        <h3 class="ad-title">${esc(title)}</h3>
         <div class="ad-meta">
-          ${city ? `<span>📍 ${escapeHtml(city)}</span>` : ``}
-          ${created ? `<span>🕒 ${escapeHtml(created)}</span>` : ``}
+          ${city ? `<span>📍 ${esc(city)}</span>` : ``}
+          ${created ? `<span>🕒 ${esc(created)}</span>` : ``}
         </div>
-        <div class="ad-price">${escapeHtml(price)}</div>
+        <div class="ad-price">${esc(price)}</div>
       </div>
     `;
-    els.adsContainer.appendChild(card);
+    els.adsGrid.appendChild(card);
   });
 }
 
-/* =========================
-   EVENTS
-========================= */
-els.reloadBtn.addEventListener('click', ()=>{
-  if(state.mode === 'ads') loadAdsList();
-  else loadCategories();
-});
-
-els.clearCategoryBtn.addEventListener('click', ()=>{
-  // رجوع لعرض الأقسام
-  state.mode = 'categories';
-  state.currentCategory = '';
-  setUrlCategory('');
-  renderMode();
-  renderCategories();
-});
-
-els.searchInput.addEventListener('input', ()=>{
-  clearTimeout(state.deb);
-  state.deb = setTimeout(()=>{
-    if(state.mode === 'ads') loadAdsList();
-    else renderCategories();
-  }, 250);
-});
-
-els.sortSelect.addEventListener('change', ()=>{
-  if(state.mode === 'ads') loadAdsList();
-  else renderCategories();
-});
-
 els.backBtn.addEventListener('click', ()=>{
-  // حل مشكل history.back() فاش كتكون الصفحة مفتوحة مباشرة
-  if(state.mode === 'ads'){
-    // رجع لعرض الأقسام
-    state.mode = 'categories';
-    state.currentCategory = '';
-    setUrlCategory('');
-    renderMode();
-    renderCategories();
-    return;
-  }
-
-  if(history.length > 1) history.back();
-  else location.href = '/';
+  location.href = '/';
 });
 
-// دعم زر back ديال المتصفح
+els.applyFilters.addEventListener('click', async ()=>{
+  await loadAds();
+  renderAdsWithFilters();
+});
+
+[els.adsSearch, els.minPrice, els.maxPrice].forEach(el=>{
+  el.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') els.applyFilters.click();
+  });
+});
+
 window.addEventListener('popstate', ()=>{
-  const cat = qsParam('category');
+  const cat = getParam('category');
   if(cat){
-    state.mode = 'ads';
-    state.currentCategory = cat;
-    renderMode();
-    loadAdsList();
+    state.category = cat;
+    state.catName = '';
+    showAds();
+    loadAds();
   }else{
-    state.mode = 'categories';
-    state.currentCategory = '';
-    renderMode();
-    renderCategories();
+    loadCategories();
   }
 });
 
-/* =========================
-   BOOT
-========================= */
 (async function init(){
-  const cat = qsParam('category');
+  const cat = getParam('category');
   if(cat){
-    // دخلتي مباشرة لقسم: /categories?category=...
-    state.mode = 'ads';
-    state.currentCategory = cat;
-    renderMode();
-    await loadAdsList();
+    state.category = cat;
+    state.catName = '';
+    showAds();
+    await loadAds();
   }else{
     await loadCategories();
   }

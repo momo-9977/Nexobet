@@ -81,7 +81,7 @@ body{
   padding:20px;
 }
 
-/* ===== FILTER BAR (READY FOR FUTURE) ===== */
+/* ===== FILTER BAR ===== */
 .filter-bar{
   margin-bottom:25px;
   display:flex;
@@ -195,19 +195,15 @@ body{
 
 <div class="page">
 
-  <!-- FILTER UI (READY FOR BACKEND) -->
   <div class="filter-bar">
     <input id="searchInput" class="search-input" placeholder="بحث داخل الأقسام...">
     <select id="sortSelect" class="sort-select">
       <option value="order">الترتيب الافتراضي</option>
-      <option value="adsCount">الأكثر إعلانات</option>
       <option value="name">أبجدي</option>
     </select>
   </div>
 
-  <!-- GRID -->
   <div id="categoriesContainer" class="category-grid">
-    <!-- Skeleton Loading -->
     <div class="skeleton"></div>
     <div class="skeleton"></div>
     <div class="skeleton"></div>
@@ -221,7 +217,6 @@ body{
 
 <!-- NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
-
   <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
@@ -250,26 +245,9 @@ body{
     </svg>
     <span>بروفايل</span>
   </a>
-
 </nav>
 
 <script>
-/*
-  ✅ API ROUTES (Ready for server/admin later)
-  -------------------------------------------
-  GET /api/categories?onlyActive=1&includeCounts=1&q=...&sort=order|adsCount|name
-
-  Response example per item:
-  {
-    id: "phones",
-    name: "الهواتف",
-    description: "جديدة ومستعملة",
-    image: "/uploads/phones.jpg",
-    active: true,
-    adsCount: 12
-  }
-*/
-
 const els = {
   container: document.getElementById('categoriesContainer'),
   emptyState: document.getElementById('emptyState'),
@@ -278,20 +256,7 @@ const els = {
 };
 
 let _debTimer = null;
-
-function buildCategoriesUrl(){
-  const q = (els.searchInput.value || '').trim();
-  const sort = (els.sortSelect.value || 'order').trim();
-
-  const params = new URLSearchParams();
-  params.set('onlyActive', '1');
-  params.set('includeCounts', '1'); // باش يجي adsCount من السيرفر
-  params.set('sort', sort);
-
-  if (q) params.set('q', q);
-
-  return '/api/categories?' + params.toString();
-}
+let _allCats = [];
 
 function showSkeleton(){
   els.container.innerHTML = `
@@ -308,58 +273,106 @@ function escapeHtml(s=''){
   ));
 }
 
+function normalizeCat(c){
+  // السيرفر ديالك كيرجع غالباً: {id, name, key}
+  const id = (c && (c.key || c.id)) ? String(c.key || c.id) : '';
+  return {
+    id,
+    name: String(c?.name || '').trim(),
+    description: String(c?.description || '').trim(),     // غير موجودة غالباً => ''
+    image: String(c?.image || c?.image_url || '').trim(), // غير موجودة غالباً => ''
+    active: (c?.active === undefined) ? true : !!c.active,
+    order: Number.isFinite(+c?.ord) ? +c.ord : 0,
+    adsCount: Number.isFinite(+c?.adsCount) ? +c.adsCount : 0
+  };
+}
+
+function applyFilterAndRender(){
+  const q = (els.searchInput.value || '').trim().toLowerCase();
+  const sort = (els.sortSelect.value || 'order').trim();
+
+  let items = _allCats.slice();
+
+  // ✅ افتراضي: active=true
+  items = items.filter(x => x.active !== false);
+
+  // search (front only)
+  if(q){
+    items = items.filter(x =>
+      (x.name || '').toLowerCase().includes(q) ||
+      (x.description || '').toLowerCase().includes(q) ||
+      (x.id || '').toLowerCase().includes(q)
+    );
+  }
+
+  // sort (front only)
+  if(sort === 'name'){
+    items.sort((a,b)=> (a.name||'').localeCompare(b.name||'', 'ar'));
+  }else{
+    // order الافتراضي
+    items.sort((a,b)=> (a.order||0) - (b.order||0));
+  }
+
+  // render
+  els.container.innerHTML = '';
+
+  if(!items.length){
+    els.emptyState.style.display = 'block';
+    return;
+  }
+
+  els.emptyState.style.display = 'none';
+
+  items.forEach(cat=>{
+    const card = document.createElement('a');
+
+    // ✅ ما عندناش category.html فالـ routes ديالك
+    // نخليها تمشي لـ categories.html مع param باش من بعد تقدر تستعملو فصفحة عرض الإعلانات
+    card.href = `/categories.html?category=${encodeURIComponent(cat.id)}`;
+
+    card.className = 'category-card';
+    card.dataset.id = cat.id;
+
+    const imgSrc = cat.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop';
+
+    card.innerHTML = `
+      <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(cat.name || '')}">
+      <div class="category-overlay">
+        <h3>${escapeHtml(cat.name || cat.id)}</h3>
+        <p>${escapeHtml(cat.description || '')}</p>
+        <div class="category-count">${Number(cat.adsCount || 0)} إعلان</div>
+      </div>
+    `;
+
+    els.container.appendChild(card);
+  });
+}
+
 async function loadCategories(){
   showSkeleton();
 
   try{
-    const url = buildCategoriesUrl();
-    const res = await fetch(url, { credentials: 'include' });
-
+    // ✅ السيرفر ديالك كيدعم غير /api/categories بلا params
+    const res = await fetch('/api/categories', { credentials: 'include' });
     if(!res.ok) throw new Error('failed');
 
-    const categories = await res.json();
+    const raw = await res.json();
+    _allCats = (Array.isArray(raw) ? raw : []).map(normalizeCat).filter(x => x.id);
 
-    els.container.innerHTML = '';
-
-    const activeCats = (Array.isArray(categories) ? categories : []).filter(c => c && c.active);
-
-    if(!activeCats.length){
-      els.emptyState.style.display = 'block';
-      return;
-    }
-
-    activeCats.forEach(cat=>{
-      const card = document.createElement('a');
-      card.href = `/category.html?key=${encodeURIComponent(cat.id)}`;
-      card.className = 'category-card';
-      card.dataset.id = cat.id;
-
-      const imgSrc = cat.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop';
-
-      card.innerHTML = `
-        <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(cat.name || '')}">
-        <div class="category-overlay">
-          <h3>${escapeHtml(cat.name || '')}</h3>
-          <p>${escapeHtml(cat.description || '')}</p>
-          <div class="category-count">${Number(cat.adsCount || 0)} إعلان</div>
-        </div>
-      `;
-
-      els.container.appendChild(card);
-    });
-
+    applyFilterAndRender();
   }catch(err){
+    console.error(err);
     els.container.innerHTML = '';
     els.emptyState.style.display = 'block';
   }
 }
 
-// Events: search + sort
+// Events
 els.searchInput.addEventListener('input', ()=>{
   clearTimeout(_debTimer);
-  _debTimer = setTimeout(loadCategories, 250);
+  _debTimer = setTimeout(applyFilterAndRender, 200);
 });
-els.sortSelect.addEventListener('change', loadCategories);
+els.sortSelect.addEventListener('change', applyFilterAndRender);
 
 // First load
 loadCategories();

@@ -514,7 +514,7 @@ async function loadFeatured(){
       items.map(a=>renderAdCard(a, true)).join('') ||
       `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات مميزة</div>`;
   }catch(_){
-    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل الإعلانات المميزة</div>`;
+    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات   </div>`;
   }
 }
 
@@ -535,23 +535,7 @@ async function loadLatest(){
   }
 }
 
-/* ===========================
-   4) Categories
-=========================== */
-async function loadCats(){
-  const grid = document.getElementById('catsGrid');
-  grid.innerHTML = '';
-  try{
-    const cats = await jget('/api/categories');
-    const items = Array.isArray(cats) ? cats : [];
-    grid.innerHTML = items.slice(0,12).map(c=>{
-      const name = safeText(c.name) || '—';
-      return `<div class="category" data-id="${c.id}">${name}</div>`;
-    }).join('') || `<div style="color:rgba(255,255,255,.65)">لا توجد أقسام</div>`;
-  }catch(_){
-    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل الأقسام</div>`;
-  }
-}
+
 
 /* ===========================
    Search

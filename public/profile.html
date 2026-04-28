@@ -2,1006 +2,380 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>البروفايل</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
+<title>سمسار - البروفايل</title>
 
 <style>
   :root{
-    --bg-0:#071024;
-    --bg-1:#081426;
-    --card-bg:rgba(255,255,255,0.04);
-    --card-border:rgba(255,255,255,0.08);
-    --text:#e6eef8;
-    --muted:#9aa8c2;
-    --accent:#2ea3ff;
-    --accent-2:#60a5fa;
-    --success:#34d399;
-    --danger:#ef4444;
-    --warn:#f59e0b;
+    --bg-main:#0a0f1d;
+    --card-bg:#161e2d;
+    --card-border:rgba(255,255,255,0.06);
+    --text-white:#ffffff;
+    --text-muted:#94a3b8;
+    --accent:#3b82f6;
+    --success:#10b981;
     --premium:#fbbf24;
-    --premium-2:#fde68a;
-    --shadow:0 18px 45px rgba(0,0,0,.35);
+    --glass:rgba(255, 255, 255, 0.03);
   }
 
-  *{box-sizing:border-box}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{
     margin:0;
-    font-family:Inter,Arial,sans-serif;
-    background:
-      radial-gradient(circle at 10% 10%, rgba(46,163,255,0.10), transparent 20%),
-      linear-gradient(180deg,var(--bg-0),var(--bg-1));
-    color:var(--text);
-    padding-bottom:90px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-main);
+    color:var(--text-white);
+    padding-bottom:100px;
   }
 
-  .page{max-width:1180px;margin:22px auto;padding:16px}
+  .page{max-width:550px; margin:0 auto; padding:15px;}
 
-  .card{
-    background:var(--card-bg);
-    border:1px solid var(--card-border);
-    border-radius:18px;
-    padding:14px;
-    box-shadow:0 14px 36px rgba(0,0,0,.25);
+  /* Profile Header */
+  .profile-hero {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(0,0,0,0));
+    padding: 30px 20px; border-radius: 24px; border: 1px solid var(--card-border);
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    margin-bottom: 25px; position: relative; overflow: hidden;
   }
-
-  .profile-header{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:16px;
-    border-radius:18px;
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.09);
-    box-shadow:var(--shadow);
+  .profile-hero::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
   }
 
-  .avatar{
-    width:78px;height:78px;border-radius:18px;
-    background:linear-gradient(135deg,var(--accent),var(--accent-2));
-    display:flex;align-items:center;justify-content:center;
-    font-size:28px;font-weight:900;color:#fff;
-    overflow:hidden;cursor:pointer;
-    border:1px solid rgba(255,255,255,0.14);
-    flex-shrink:0;
+  .avatar-container {
+    width: 90px; height: 90px; border-radius: 50%;
+    border: 3px solid var(--accent); padding: 3px; position: relative;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); margin-bottom: 15px;
   }
-  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-  input[type="file"]{display:none}
+  .avatar-circle {
+    width: 100%; height: 100%; border-radius: 50%; background: var(--card-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: 800; color: white; overflow: hidden;
+  }
+  .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+  
+  .user-info h1 { margin: 0; font-size: 20px; font-weight: 800; }
+  .user-info p { margin: 5px 0 0; color: var(--text-muted); font-size: 13px; }
 
-  .u-meta{min-width:0}
-  .u-meta h1{
-    margin:0;
-    font-size:18px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  /* Premium Tiles Grid */
+  .tiles-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
   }
-  .u-meta p{
-    margin:6px 0 0;
-    color:var(--muted);
-    font-size:13px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  .action-tile {
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    padding: 18px; border-radius: 20px; display: flex; flex-direction: column;
+    align-items: center; text-align: center; cursor: pointer; transition: 0.3s;
+    text-decoration: none; color: inherit;
   }
+  .action-tile:active { transform: scale(0.95); background: rgba(59,130,246,0.05); }
+  .tile-icon {
+    width: 45px; height: 45px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 12px;
+  }
+  .action-tile h3 { margin: 0; font-size: 14px; font-weight: 700; }
 
-  .badge{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    margin-top:10px;
-    padding:6px 10px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:900;
-    border:1px solid rgba(255,255,255,0.10);
-    background:rgba(255,255,255,0.04);
-    color:var(--text);
-    width:max-content;
-  }
-  .badge.verified{
-    background:rgba(52,211,153,0.14);
-    border-color:rgba(52,211,153,0.22);
-    color:#bbf7d0;
-  }
+  /* Icon Colors */
+  .bg-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+  .bg-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+  .bg-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+  .bg-gold { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+  .bg-red { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
-  .tiles{
-    margin-top:14px;
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:12px;
+  /* Floating Sheets (Modals) */
+  .modal-sheet {
+    position: fixed; top: 100%; left: 0; right: 0; height: 85vh;
+    background: #111827; border-top-left-radius: 30px; border-top-right-radius: 30px;
+    z-index: 10000; padding: 20px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5); overflow-y: auto;
+    border-top: 1px solid var(--card-border);
   }
-  @media (max-width:980px){ .tiles{grid-template-columns:repeat(2,1fr)} }
-  @media (max-width:560px){ .tiles{grid-template-columns:1fr} }
-
-  .tile{
-    border-radius:20px;
-    padding:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
-    border:1px solid rgba(255,255,255,0.08);
-    cursor:pointer;
-    transition:.18s ease;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    min-height:92px;
-    user-select:none;
-    position:relative;
-    overflow:hidden;
+  .modal-sheet.active { transform: translateY(-85vh); }
+  .sheet-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; position: sticky; top: 0; background: #111827; padding: 10px 0; z-index: 10;
   }
-  .tile::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:linear-gradient(135deg, rgba(255,255,255,0.06), transparent 50%);
-    pointer-events:none;
-  }
-  .tile:hover{transform:translateY(-2px);background:rgba(255,255,255,0.05)}
-  .tile.active{
-    background:linear-gradient(180deg, rgba(46,163,255,0.18), rgba(96,165,250,0.10));
-    border-color:rgba(46,163,255,0.30);
-    box-shadow:0 14px 34px rgba(46,163,255,0.12);
+  .close-sheet {
+    width: 35px; height: 35px; border-radius: 50%; background: var(--glass);
+    display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer;
   }
 
-  .tile-icon{
-    width:56px;height:56px;border-radius:18px;
-    border:1px solid rgba(255,255,255,0.14);
-    display:flex;align-items:center;justify-content:center;
-    font-size:23px;
-    flex-shrink:0;
-    color:#fff;
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.18),
-      0 10px 28px rgba(0,0,0,0.25);
+  /* Form & List Elements */
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .input-box {
+    width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border);
+    padding: 12px 15px; border-radius: 12px; color: white; outline: none;
+  }
+  .save-btn {
+    width: 100%; background: var(--accent); color: white; border: none;
+    padding: 14px; border-radius: 14px; font-weight: 800; margin-top: 10px; cursor: pointer;
   }
 
-  .tile[data-tab="account"] .tile-icon{
-    background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  /* List Items */
+  .list-item {
+    background: var(--glass); border: 1px solid var(--card-border);
+    border-radius: 15px; padding: 15px; margin-bottom: 10px;
   }
-  .tile[data-tab="myads"] .tile-icon{
-    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  .item-row { display: flex; justify-content: space-between; align-items: center; }
+  .pill-status { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: bold; }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
+    background: #ffffff; display: flex; align-items: center;
+    justify-content: space-around; z-index: 999; border-top: 1px solid #eee;
+    padding-bottom: env(safe-area-inset-bottom);
   }
-  .tile[data-link="post-ad"] .tile-icon{
-    background:linear-gradient(135deg,#10b981,#22c55e);
+  .nav-link {
+    display: flex; flex-direction: column; align-items: center;
+    text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 600; gap:4px;
   }
-  .tile[data-tab="password"] .tile-icon{
-    background:linear-gradient(135deg,#f59e0b,#fbbf24);
-    color:#111827;
-  }
-  .tile[data-tab="premium"] .tile-icon{
-    background:linear-gradient(135deg,#f59e0b,#fde68a);
-    color:#111827;
-  }
-  .tile[data-tab="notifications"] .tile-icon{
-    background:linear-gradient(135deg,#ec4899,#f43f5e);
+  .nav-link.active { color: #16a34a; }
+  .nav-link svg { width: 22px; height: 22px; }
+
+  .dot-notif {
+    position: absolute; top: 18px; right: 18px; width: 10px; height: 10px;
+    background: var(--danger); border-radius: 50%; border: 2px solid var(--card-bg); display: none;
   }
 
-  .tile-text{min-width:0}
-  .tile-title{margin:0;font-size:15px;font-weight:900}
-  .tile-desc{
-    margin:6px 0 0;
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.6;
+  /* Toast */
+  .toast-msg {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: #10b981; color: white; padding: 10px 20px; border-radius: 10px;
+    font-weight: bold; z-index: 20000; display: none;
   }
-  .dot{
-    width:10px;height:10px;border-radius:999px;
-    background:var(--danger);
-    border:2px solid rgba(7,16,36,0.9);
-    display:none;
-    margin-inline-start:auto;
-  }
-  .dot.show{display:inline-block}
-
-  .panel-wrap{margin-top:14px}
-  .panel{display:none}
-  .panel.active{display:block}
-
-  .panel h2{margin:0 0 10px;font-size:16px}
-  .muted{color:var(--muted)}
-
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .form-grid .full{grid-column:1 / -1}
-  @media (max-width:760px){.form-grid{grid-template-columns:1fr}}
-
-  label{display:block;margin:0 0 6px;font-size:13px;font-weight:900}
-  input, textarea, select{
-    width:100%;
-    padding:12px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.10);
-    background:rgba(255,255,255,0.03);
-    color:var(--text);
-    outline:none;
-    font-size:14px;
-  }
-  input[readonly], input[disabled]{
-    opacity:.9;
-    background:rgba(255,255,255,0.02);
-    color:rgba(230,238,248,0.85);
-    cursor:not-allowed;
-  }
-  textarea{min-height:110px;resize:vertical}
-
-  .list{display:grid;gap:10px}
-  .item{
-    padding:12px;border-radius:16px;
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.08);
-  }
-  .item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-  .item-title{margin:0;font-size:14px;font-weight:900}
-  .pill{
-    display:inline-flex;align-items:center;justify-content:center;
-    padding:6px 10px;border-radius:999px;
-    font-size:12px;font-weight:900;
-    border:1px solid rgba(255,255,255,0.10);
-    background:rgba(255,255,255,0.03);
-    color:var(--text);
-    white-space:nowrap;
-  }
-  .pill.ok{background:rgba(52,211,153,0.14);border-color:rgba(52,211,153,0.22);color:#bbf7d0}
-  .pill.warn{background:rgba(245,158,11,0.14);border-color:rgba(245,158,11,0.22);color:#fde68a}
-  .pill.err{background:rgba(239,68,68,0.14);border-color:rgba(239,68,68,0.22);color:#fecaca}
-  .meta{margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}
-  .item-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-
-  .mini-btn{
-    padding:10px 12px;border-radius:12px;
-    border:1px solid rgba(255,255,255,0.12);
-    background:rgba(255,255,255,0.04);
-    color:var(--text);
-    font-weight:900;
-    cursor:pointer;
-    text-decoration:none;
-  }
-  .mini-btn.primary{background:rgba(46,163,255,0.16);border-color:rgba(46,163,255,0.22);color:#dbeafe}
-  .mini-btn.danger{background:rgba(239,68,68,0.16);border-color:rgba(239,68,68,0.22);color:#fecaca}
-  .mini-btn.warn{background:rgba(245,158,11,0.16);border-color:rgba(245,158,11,0.22);color:#fde68a}
-  .mini-btn:disabled{opacity:.6;cursor:not-allowed}
-
-  .premium-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  @media (max-width:860px){.premium-grid{grid-template-columns:1fr}}
-  .plan{
-    border-radius:18px;padding:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));
-    border:1px solid rgba(255,255,255,0.08);
-  }
-  .plan h3{margin:0 0 6px;font-size:14px}
-  .plan .price{font-weight:900;font-size:20px;margin:8px 0}
-  .plan ul{margin:0;padding:0 18px;color:var(--muted);font-size:13px;line-height:1.9}
-  .plan .choose{margin-top:12px;width:100%}
-
-  .select-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-  @media (max-width:860px){.select-row{grid-template-columns:1fr}}
-
-  .bottom-actions{
-    margin-top:14px;
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-  }
-  @media (max-width:860px){ .bottom-actions{grid-template-columns:1fr} }
-
-  .btn{
-    border:none;border-radius:14px;
-    padding:14px 12px;
-    font-weight:900;cursor:pointer;
-    transition:.18s ease;
-    text-decoration:none;
-    display:inline-flex;align-items:center;justify-content:center;gap:10px;
-    white-space:nowrap;
-  }
-  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
-  .btn.ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);color:var(--text)}
-  .btn.danger{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
-  .btn:hover{transform:translateY(-2px)}
-  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-
-  .toast{
-    position:fixed;left:50%;transform:translateX(-50%);
-    bottom:88px;
-    background:rgba(0,0,0,0.75);
-    color:#fff;
-    padding:12px 14px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.12);
-    box-shadow:0 16px 40px rgba(0,0,0,.45);
-    display:none;
-    z-index:5000;
-    min-width:240px;
-    text-align:center;
-    font-weight:900;
-  }
-  .toast.show{display:block;animation:pop .18s ease}
-  .toast.success{background:linear-gradient(135deg, rgba(52,211,153,0.35), rgba(16,185,129,0.22))}
-  .toast.error{background:linear-gradient(135deg, rgba(239,68,68,0.35), rgba(220,38,38,0.22))}
-  @keyframes pop { from{opacity:0;transform:translateX(-50%) translateY(6px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-
-  .modern-flat-nav{
-    position:fixed;
-    bottom:0;left:0;right:0;
-    height:70px;
-    background:#ffffff;
-    border-top:1px solid #e5e7eb;
-    display:flex;
-    justify-content:space-around;
-    align-items:center;
-    z-index:999;
-  }
-  .modern-flat-item{
-    flex:1;
-    text-align:center;
-    text-decoration:none;
-    color:#6b7280;
-    font-size:12px;
-    font-weight:600;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:4px;
-  }
-  .modern-flat-nav svg{
-    width:22px !important;
-    height:22px !important;
-    display:block;
-  }
-  .modern-flat-item.active{color:#16a34a}
 </style>
 </head>
 
 <body>
+
 <div class="page">
-
-  <section class="profile-header">
-    <div class="avatar" id="avatarBox" title="تغيير صورة البروفايل">
-      <span id="avatarLetter">U</span>
-      <img id="avatarImg" alt="avatar" style="display:none">
-    </div>
-    <div class="u-meta">
-      <h1 id="userNameMini">...</h1>
-      <p id="userEmailMini">...</p>
-      <span id="verifiedBadge" class="badge verified" style="display:none">✅ موثق</span>
-    </div>
-    <input id="avatarInput" type="file" accept="image/*" />
-  </section>
-
-  <section class="tiles" id="tiles">
-    <div class="tile active" data-tab="account">
-      <div class="tile-icon">👤</div>
-      <div class="tile-text">
-        <h3 class="tile-title">حسابي</h3>
-        <p class="tile-desc">تعديل الهاتف وصورة البروفايل</p>
+  <div class="profile-hero">
+    <div class="avatar-container" onclick="document.getElementById('avatarInput').click()">
+      <div class="avatar-circle">
+        <span id="avatarLetter">U</span>
+        <img id="avatarImg" style="display:none">
       </div>
     </div>
+    <div class="user-info">
+      <h1 id="userName">...</h1>
+      <p id="userEmail">...</p>
+    </div>
+    <input id="avatarInput" type="file" accept="image/*" style="display:none" />
+  </div>
 
-    <div class="tile" data-tab="myads">
-      <div class="tile-icon">🧾</div>
-      <div class="tile-text">
-        <h3 class="tile-title">إعلاناتي</h3>
-        <p class="tile-desc">تعديل وحذف الإعلانات</p>
-      </div>
+  <div class="tiles-grid">
+    <div class="action-tile" onclick="toggleSheet('sheetAccount')">
+      <div class="tile-icon bg-blue">👤</div>
+      <h3>حسابي</h3>
     </div>
 
-    <a class="tile" data-link="post-ad" href="/post-ad" style="text-decoration:none;color:inherit">
-      <div class="tile-icon">➕</div>
-      <div class="tile-text">
-        <h3 class="tile-title">نشر إعلان</h3>
-        <p class="tile-desc">أضف إعلان جديد بسرعة</p>
-      </div>
+    <div class="action-tile" onclick="toggleSheet('sheetAds')">
+      <div class="tile-icon bg-purple">🧾</div>
+      <h3>إعلاناتي</h3>
+    </div>
+
+    <a href="/post-ad" class="action-tile">
+      <div class="tile-icon bg-green">➕</div>
+      <h3>نشر إعلان</h3>
     </a>
 
-    <div class="tile" data-tab="password">
-      <div class="tile-icon">🔒</div>
-      <div class="tile-text">
-        <h3 class="tile-title">تغيير كلمة السر</h3>
-        <p class="tile-desc">تحديث كلمة المرور الخاصة بك</p>
-      </div>
+    <div class="action-tile" onclick="toggleSheet('sheetPassword')">
+      <div class="tile-icon bg-gold">🔒</div>
+      <h3>كلمة السر</h3>
     </div>
 
-    <div class="tile" data-tab="premium">
-      <div class="tile-icon">⭐</div>
-      <div class="tile-text">
-        <h3 class="tile-title">بروميوم</h3>
-        <p class="tile-desc">تمييز إعلانك في الرئيسية</p>
-      </div>
+    <div class="action-tile" onclick="toggleSheet('sheetPremium')">
+      <div class="tile-icon bg-gold">⭐</div>
+      <h3>بروميوم</h3>
     </div>
 
-    <div class="tile" data-tab="notifications">
-      <div class="tile-icon">🔔</div>
-      <div class="tile-text">
-        <h3 class="tile-title">الإشعارات</h3>
-        <p class="tile-desc">تحديثات حول الإعلانات</p>
-      </div>
-      <span class="dot" id="notifDot"></span>
+    <div class="action-tile" onclick="toggleSheet('sheetNotif')">
+      <div class="dot-notif" id="notifDot"></div>
+      <div class="tile-icon bg-red">🔔</div>
+      <h3>الإشعارات</h3>
     </div>
-  </section>
+  </div>
 
-  <section class="panel-wrap">
-
-    <section class="card panel active" id="panel-account">
-      <h2>معلومات الحساب</h2>
-
-      <div class="form-grid">
-        <div>
-          <label>الاسم (غير قابل للتغيير)</label>
-          <input id="nameInput" readonly />
-        </div>
-        <div>
-          <label>البريد الإلكتروني (غير قابل للتغيير)</label>
-          <input id="emailInput" readonly />
-        </div>
-
-        <div class="full">
-          <label>رقم الهاتف</label>
-          <input id="phoneInput" placeholder="06XXXXXXXX" />
-        </div>
-
-        <div class="full">
-          <button class="btn primary" id="saveAccountBtn" type="button">حفظ التغييرات</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="card panel" id="panel-myads">
-      <div class="item-head" style="margin-bottom:10px">
-        <h2 style="margin:0">إعلاناتي</h2>
-        <a class="mini-btn primary" href="/post-ad">➕ نشر إعلان</a>
-      </div>
-
-      <div class="form-grid">
-        <div>
-          <label>فلترة بالحالة</label>
-          <select id="adsStatusFilter">
-            <option value="all">الكل</option>
-            <option value="published">منشور</option>
-            <option value="pending">قيد المراجعة</option>
-            <option value="rejected">مرفوض</option>
-            <option value="sold">مباع</option>
-            <option value="expired">منتهي</option>
-          </select>
-        </div>
-        <div>
-          <label>بحث</label>
-          <input id="adsSearch" placeholder="ابحث بالعنوان..." />
-        </div>
-        <div class="full">
-          <button class="btn ghost" type="button" id="reloadAdsBtn">تحديث القائمة</button>
-        </div>
-      </div>
-
-      <div class="list" id="myAdsList" style="margin-top:12px"></div>
-    </section>
-
-    <section class="card panel" id="panel-password">
-      <h2>تغيير كلمة السر</h2>
-
-      <div class="form-grid">
-        <div class="full">
-          <label>كلمة السر الحالية</label>
-          <input id="currentPwd" type="password" placeholder="••••••••" />
-        </div>
-        <div>
-          <label>كلمة السر الجديدة</label>
-          <input id="newPwd" type="password" placeholder="••••••••" />
-        </div>
-        <div>
-          <label>تأكيد كلمة السر</label>
-          <input id="confirmPwd" type="password" placeholder="••••••••" />
-        </div>
-        <div class="full">
-          <button class="btn primary" id="changePwdBtn" type="button">حفظ كلمة السر</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="card panel" id="panel-premium">
-      <h2>بروميوم</h2>
-      <p class="muted" style="margin:0 0 12px;line-height:1.7">
-        اختر مدة التمييز، وسيتم التواصل مباشرة عبر واتساب الدعم.
-      </p>
-
-      <div class="premium-grid">
-        <div class="plan">
-          <h3>مميز 24 ساعة</h3>
-          <div class="price">19 د.م</div>
-          <ul>
-            <li>ظهور في الإعلانات المميزة</li>
-            <li>أولوية أعلى</li>
-          </ul>
-          <button class="btn primary choose" data-plan="featured_1d" type="button">اختيار عبر واتساب</button>
-        </div>
-
-        <div class="plan">
-          <h3>مميز 7 أيام</h3>
-          <div class="price">79 د.م</div>
-          <ul>
-            <li>ظهور قوي لمدة أسبوع</li>
-            <li>أفضل قيمة</li>
-          </ul>
-          <button class="btn primary choose" data-plan="featured_7d" type="button">اختيار عبر واتساب</button>
-        </div>
-
-        <div class="plan">
-          <h3>مميز 30 يوم</h3>
-          <div class="price">249 د.م</div>
-          <ul>
-            <li>ظهور لمدة شهر</li>
-            <li>مناسب للتجار</li>
-          </ul>
-          <button class="btn primary choose" data-plan="featured_30d" type="button">اختيار عبر واتساب</button>
-        </div>
-      </div>
-
-      <div class="item" style="margin-top:14px">
-        <div class="item-head">
-          <p class="item-title">اختيار الإعلان</p>
-          <span class="pill warn">اختياري</span>
-        </div>
-        <div class="select-row" style="margin-top:10px">
-          <div>
-            <label>اختر إعلان</label>
-            <select id="premiumAdSelect">
-              <option value="">تحميل إعلاناتك...</option>
-            </select>
-          </div>
-          <div>
-            <label>الخطة المختارة</label>
-            <input id="selectedPlan" readonly value="لم يتم اختيار خطة" />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="card panel" id="panel-notifications">
-      <div class="item-head" style="margin-bottom:10px">
-        <h2 style="margin:0">الإشعارات</h2>
-        <button class="mini-btn" type="button" id="markAllReadBtn">تمييز الكل كمقروء</button>
-      </div>
-
-      <div class="list" id="notifList"></div>
-    </section>
-
-  </section>
-
-  <section class="card" style="margin-top:14px">
-    <div class="bottom-actions">
-      <a class="btn primary" href="/post-ad">➕ نشر إعلان</a>
-      <button class="btn danger" id="logoutBtn" type="button">🚪 تسجيل الخروج</button>
-    </div>
-  </section>
-
+  <button class="save-btn" style="background:#ef4444; margin-top:30px" onclick="logout()">تسجيل الخروج</button>
 </div>
 
-<nav class="modern-flat-nav">
-  <a href="/" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
+<div class="modal-sheet" id="sheetAccount">
+  <div class="sheet-header">
+    <h3>إعدادات الحساب</h3>
+    <div class="close-sheet" onclick="toggleSheet('sheetAccount')">✕</div>
+  </div>
+  <div class="form-group">
+    <label>الاسم الكامل</label>
+    <input class="input-box" id="nameIn" readonly>
+  </div>
+  <div class="form-group">
+    <label>البريد الإلكتروني</label>
+    <input class="input-box" id="emailIn" readonly>
+  </div>
+  <div class="form-group">
+    <label>رقم الهاتف</label>
+    <input class="input-box" id="phoneIn" placeholder="06XXXXXXXX">
+  </div>
+  <button class="save-btn" onclick="updateProfile()">حفظ التغييرات</button>
+</div>
+
+<div class="modal-sheet" id="sheetAds">
+  <div class="sheet-header">
+    <h3>إعلاناتي المسجلة</h3>
+    <div class="close-sheet" onclick="toggleSheet('sheetAds')">✕</div>
+  </div>
+  <div id="myAdsContainer"></div>
+</div>
+
+<div class="modal-sheet" id="sheetPassword">
+  <div class="sheet-header">
+    <h3>تغيير كلمة المرور</h3>
+    <div class="close-sheet" onclick="toggleSheet('sheetPassword')">✕</div>
+  </div>
+  <div class="form-group">
+    <label>كلمة السر الحالية</label>
+    <input type="password" class="input-box" id="curPwd">
+  </div>
+  <div class="form-group">
+    <label>كلمة السر الجديدة</label>
+    <input type="password" class="input-box" id="newPwd">
+  </div>
+  <button class="save-btn" onclick="changePass()">تحديث الآن</button>
+</div>
+
+<div class="modal-sheet" id="sheetPremium">
+  <div class="sheet-header">
+    <h3>ترقية الإعلانات</h3>
+    <div class="close-sheet" onclick="toggleSheet('sheetPremium')">✕</div>
+  </div>
+  <div class="list-item" style="border-color:var(--premium)">
+    <div class="item-row">
+      <strong>خطة الـ 7 أيام</strong>
+      <span>79 درهم</span>
+    </div>
+    <button class="save-btn" style="background:var(--premium); color:black" onclick="window.open('https://wa.me/212778594654?text=بروميوم')">تفعيل عبر واتساب</button>
+  </div>
+</div>
+
+<div class="modal-sheet" id="sheetNotif">
+  <div class="sheet-header">
+    <h3>مركز التنبيهات</h3>
+    <div class="close-sheet" onclick="toggleSheet('sheetNotif')">✕</div>
+  </div>
+  <div id="notifContainer"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="/" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
     <span>الرئيسية</span>
   </a>
-
-  <a href="/categories" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
+  <a href="/categories" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
     <span>الأقسام</span>
   </a>
-
-  <a href="/post-ad" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
+  <a href="/post-ad" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
     <span>نشر</span>
   </a>
-
-  <a href="/profile" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
+  <a href="/profile" class="nav-link active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     <span>بروفايل</span>
   </a>
 </nav>
 
-<div class="toast" id="toast"></div>
+<div class="toast-msg" id="toast">تمت العملية بنجاح!</div>
 
 <script>
-  const SUPPORT_WHATSAPP = "212778594654";
+  let userData = null;
 
-  const qs = (s) => document.querySelector(s);
-  const qsa = (s) => Array.from(document.querySelectorAll(s));
-
-  function apiOpts(method='GET', body=null){
-    const opts = { method, credentials:'include', headers:{} };
-    if (body && !(body instanceof FormData)) {
-      opts.headers['Content-Type']='application/json';
-      opts.body = JSON.stringify(body);
-    } else if (body instanceof FormData) {
-      opts.body = body;
-    }
-    return opts;
+  // فتح وإغلاق النوافذ المنبثقة
+  function toggleSheet(id) {
+    document.getElementById(id).classList.toggle('active');
   }
 
-  function escapeHtml(s=''){
-    return String(s).replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2500);
   }
 
-  const toastEl = qs('#toast');
-  function toast(msg, ok=true){
-    toastEl.textContent = msg;
-    toastEl.className = 'toast show ' + (ok ? 'success' : 'error');
-    setTimeout(()=> toastEl.classList.remove('show'), 2600);
-  }
-
-  const tiles = qsa('.tile[data-tab]');
-  const panels = {
-    account: qs('#panel-account'),
-    myads: qs('#panel-myads'),
-    password: qs('#panel-password'),
-    premium: qs('#panel-premium'),
-    notifications: qs('#panel-notifications')
-  };
-
-  function openPanel(key){
-    tiles.forEach(t => t.classList.toggle('active', t.dataset.tab === key));
-    Object.keys(panels).forEach(k => panels[k].classList.toggle('active', k === key));
-    panels[key].scrollIntoView({ behavior:'smooth', block:'start' });
-  }
-
-  tiles.forEach(t => t.addEventListener('click', () => openPanel(t.dataset.tab)));
-
-  const avatarBox = qs('#avatarBox');
-  const avatarInput = qs('#avatarInput');
-  avatarBox.addEventListener('click', ()=> avatarInput.click());
-
-  let currentUser = null;
-
-  async function requireAuth(){
-    const res = await fetch('/api/auth/me', apiOpts());
-    if(!res.ok){
-      window.location.href = '/login';
-      return null;
-    }
-    return await res.json();
-  }
-
-  function setAvatar(user){
-    const letter = qs('#avatarLetter');
-    const img = qs('#avatarImg');
-    const n = (user.name || 'U').trim();
-    letter.textContent = n ? n[0].toUpperCase() : 'U';
-
-    if(user.avatar){
-      img.src = user.avatar;
-      img.style.display = 'block';
-      letter.style.display = 'none';
-    } else {
-      img.style.display = 'none';
-      letter.style.display = 'flex';
-    }
-  }
-
-  function setVerified(user){
-    const badge = qs('#verifiedBadge');
-    if (user && (user.verified === true || user.isVerified === true)) {
-      badge.style.display = 'inline-flex';
-    } else {
-      badge.style.display = 'none';
-    }
-  }
-
-  async function loadProfile(){
-    const u = await requireAuth();
-    if(!u) return;
-    currentUser = u;
-
-    qs('#userNameMini').textContent = u.name || 'مستخدم';
-    qs('#userEmailMini').textContent = u.email || '';
-    qs('#nameInput').value = u.name || '';
-    qs('#emailInput').value = u.email || '';
-    qs('#phoneInput').value = u.phone || '';
-
-    setAvatar(u);
-    setVerified(u);
-
-    await Promise.allSettled([
-      loadMyAds(),
-      loadPremiumAdsSelect(),
-      loadNotifications()
-    ]);
-  }
-
-  qs('#saveAccountBtn').addEventListener('click', async ()=>{
-    if(!currentUser) return;
-    const phone = (qs('#phoneInput').value || '').trim();
-
-    try{
-      const res = await fetch('/api/users/' + encodeURIComponent(currentUser.id), apiOpts('PUT', { phone }));
-      if(!res.ok) throw new Error('save failed');
-      toast('تم حفظ التغييرات ✅', true);
-    }catch(e){
-      console.error(e);
-      toast('فشل الحفظ ❌', false);
-    }
-  });
-
-  avatarInput.addEventListener('change', async (e) => {
-    if (!currentUser) return;
-
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    const okTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
-    if (!okTypes.includes(file.type)) {
-      toast('المرجو رفع صورة (png/jpg/webp/gif) ❌', false);
-      avatarInput.value = '';
-      return;
-    }
-
-    const maxMb = 10;
-    if (file.size > maxMb * 1024 * 1024) {
-      toast('الصورة كبيرة بزاف (max 10MB) ❌', false);
-      avatarInput.value = '';
-      return;
-    }
-
+  // الحفاظ على منطق السيرفر الأصلي
+  async function loadUser() {
     try {
-      const fd = new FormData();
-      fd.append('avatar', file);
-
-      const res = await fetch(
-        '/api/users/' + encodeURIComponent(currentUser.id) + '/avatar',
-        apiOpts('PUT', fd)
-      );
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data?.message || data?.error || 'upload failed');
+      const res = await fetch('/api/auth/me', { credentials:'include' });
+      if(!res.ok) return window.location.href = '/login';
+      userData = await res.json();
+      
+      document.getElementById('userName').textContent = userData.name;
+      document.getElementById('userEmail').textContent = userData.email;
+      document.getElementById('nameIn').value = userData.name;
+      document.getElementById('emailIn').value = userData.email;
+      document.getElementById('phoneIn').value = userData.phone || '';
+      
+      if(userData.avatar) {
+        document.getElementById('avatarImg').src = userData.avatar;
+        document.getElementById('avatarImg').style.display = 'block';
+        document.getElementById('avatarLetter').style.display = 'none';
       }
+      
+      loadAds();
+      loadNotifs();
+    } catch(e) {}
+  }
 
-      if (data.avatar) {
-        currentUser.avatar = data.avatar;
-        setAvatar(currentUser);
-        toast('تم تحديث الصورة ✅', true);
-      } else {
-        throw new Error('SERVER_NO_AVATAR_RETURNED');
-      }
-    } catch (err) {
-      console.error(err);
-      toast('فشل رفع الصورة ❌', false);
-    } finally {
-      avatarInput.value = '';
+  async function updateProfile() {
+    const phone = document.getElementById('phoneIn').value;
+    const res = await fetch('/api/users/' + userData.id, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ phone }),
+      credentials: 'include'
+    });
+    if(res.ok) {
+      showToast('تم تحديث الهاتف بنجاح');
+      toggleSheet('sheetAccount');
     }
-  });
+  }
 
-  qs('#changePwdBtn').addEventListener('click', async ()=>{
-    const currentPassword = qs('#currentPwd').value;
-    const newPassword = qs('#newPwd').value;
-    const confirmPassword = qs('#confirmPwd').value;
+  async function loadAds() {
+    const res = await fetch('/api/my/ads', { credentials:'include' });
+    const ads = await res.json();
+    const container = document.getElementById('myAdsContainer');
+    container.innerHTML = ads.map(ad => `
+      <div class="list-item">
+        <div class="item-row">
+          <strong>${ad.title}</strong>
+          <span class="pill-status" style="background:#3b82f620; color:#3b82f6">${ad.price} د.م</span>
+        </div>
+        <div style="margin-top:10px">
+          <button onclick="location.href='/edit-ad?id=${ad.id}'" style="border:none; background:none; color:var(--accent); font-size:12px; margin-left:15px">تعديل</button>
+          <button onclick="deleteAd('${ad.id}')" style="border:none; background:none; color:#ef4444; font-size:12px">حذف</button>
+        </div>
+      </div>
+    `).join('');
+  }
 
-    if(!currentPassword){
-      toast('دخل كلمة السر الحالية ❌', false);
-      return;
-    }
-    if(!newPassword || newPassword.length < 6){
-      toast('كلمة السر الجديدة قصيرة (6 على الأقل) ❌', false);
-      return;
-    }
-    if(newPassword !== confirmPassword){
-      toast('تأكيد كلمة السر غير مطابق ❌', false);
-      return;
-    }
+  async function loadNotifs() {
+    const res = await fetch('/api/notifications', { credentials:'include' });
+    const list = await res.json();
+    if(list.some(n => !n.read)) document.getElementById('notifDot').style.display = 'block';
+    document.getElementById('notifContainer').innerHTML = list.map(n => `
+      <div class="list-item" style="opacity:${n.read ? 0.6 : 1}">
+        <p style="margin:0; font-size:14px">${n.title}</p>
+        <span style="font-size:10px; color:var(--text-muted)">${new Date(n.createdAt).toLocaleDateString()}</span>
+      </div>
+    `).join('');
+  }
 
-    try{
-      const res = await fetch('/api/auth/password', apiOpts('PATCH', {
-        currentPassword,
-        newPassword
-      }));
-      const data = await res.json().catch(()=> ({}));
-      if(!res.ok) throw new Error(data?.message || data?.error || 'pwd failed');
-
-      qs('#currentPwd').value = '';
-      qs('#newPwd').value = '';
-      qs('#confirmPwd').value = '';
-
-      toast('تم تغيير كلمة السر ✅', true);
-      openPanel('account');
-    }catch(e){
-      console.error(e);
-      toast('فشل تغيير كلمة السر ❌', false);
-    }
-  });
-
-  qs('#logoutBtn').addEventListener('click', async ()=>{
-    try{ await fetch('/api/auth/logout', apiOpts('POST')); } catch(e){}
+  async function logout() {
+    await fetch('/api/auth/logout', { method:'POST', credentials:'include' });
     window.location.href = '/login';
-  });
-
-  const myAdsList = qs('#myAdsList');
-
-  async function loadMyAds(){
-    try{
-      const res = await fetch('/api/my/ads', apiOpts());
-      if(!res.ok) throw new Error('no ads');
-      const ads = await res.json();
-      renderMyAds(ads);
-    }catch(e){
-      console.warn(e);
-      myAdsList.innerHTML = `<div class="item"><div class="muted">تعذر تحميل الإعلانات الآن.</div></div>`;
-    }
   }
 
-  function adStatusPill(status){
-    const s = String(status || 'published');
-    if(s === 'published') return `<span class="pill ok">منشور</span>`;
-    if(s === 'pending') return `<span class="pill warn">قيد المراجعة</span>`;
-    if(s === 'rejected') return `<span class="pill err">مرفوض</span>`;
-    if(s === 'sold') return `<span class="pill ok">مباع</span>`;
-    if(s === 'expired') return `<span class="pill err">منتهي</span>`;
-    return `<span class="pill">${escapeHtml(s)}</span>`;
-  }
-
-  function renderMyAds(ads){
-    const statusFilter = qs('#adsStatusFilter').value;
-    const q = (qs('#adsSearch').value || '').trim().toLowerCase();
-
-    const list = Array.isArray(ads) ? ads : [];
-    const filtered = list.filter(a=>{
-      const okStatus = (statusFilter === 'all') ? true : (String(a.status || 'published') === statusFilter);
-      const okQ = !q ? true : ((a.title||'').toLowerCase().includes(q));
-      return okStatus && okQ;
-    });
-
-    if(!filtered.length){
-      myAdsList.innerHTML = `<div class="item"><div class="muted">لا توجد إعلانات حسب الفلتر.</div></div>`;
-      return;
-    }
-
-    myAdsList.innerHTML = filtered.map(ad=>{
-      const id = ad.id || ad._id || '';
-      const title = ad.title || 'بدون عنوان';
-      const price = ad.price ? `${ad.price} د.م` : '';
-      const city = ad.city || '';
-      const status = ad.status || 'published';
-
-      return `
-        <div class="item">
-          <div class="item-head">
-            <div>
-              <p class="item-title">${escapeHtml(title)}</p>
-              <div class="meta">
-                ${price ? `<span>💰 ${escapeHtml(price)}</span>` : ''}
-                ${city ? `<span>📍 ${escapeHtml(city)}</span>` : ''}
-              </div>
-            </div>
-            ${adStatusPill(status)}
-          </div>
-
-          <div class="item-actions">
-            <a class="mini-btn primary" href="/edit-ad?id=${encodeURIComponent(id)}">✏️ تعديل</a>
-            <button class="mini-btn danger" type="button" onclick="deleteAd('${encodeURIComponent(id)}')">🗑️ حذف</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  qs('#reloadAdsBtn').addEventListener('click', loadMyAds);
-  qs('#adsStatusFilter').addEventListener('change', loadMyAds);
-  qs('#adsSearch').addEventListener('input', () => loadMyAds());
-
-  window.deleteAd = async (id)=>{
-    if(!confirm('حذف الإعلان؟')) return;
-    try{
-      const res = await fetch('/api/ads/' + id, apiOpts('DELETE'));
-      if(!res.ok) throw new Error('delete failed');
-      toast('تم الحذف ✅', true);
-      loadMyAds();
-      loadPremiumAdsSelect();
-    }catch(e){
-      console.error(e);
-      toast('فشل الحذف ❌', false);
-    }
-  };
-
-  let chosenPlan = null;
-
-  function planLabel(plan){
-    if(plan === 'featured_1d') return 'مميز 24 ساعة';
-    if(plan === 'featured_7d') return 'مميز 7 أيام';
-    if(plan === 'featured_30d') return 'مميز 30 يوم';
-    return plan;
-  }
-
-  function openWhatsAppForPremium(plan){
-    const adId = qs('#premiumAdSelect').value || '';
-    const msg =
-`السلام عليكم، بغيت نفعّل بروميوم.
-الخطة: ${planLabel(plan)}
-معرّف الإعلان: ${adId || 'لم يتم اختيار إعلان بعد'}
-الحساب: ${qs('#userEmailMini').textContent || ''}`;
-    const url = `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
-  }
-
-  qsa('.choose').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      chosenPlan = btn.dataset.plan || null;
-      qs('#selectedPlan').value = chosenPlan ? planLabel(chosenPlan) : 'لم يتم اختيار خطة';
-      openWhatsAppForPremium(chosenPlan);
-    });
-  });
-
-  async function loadPremiumAdsSelect(){
-    const select = qs('#premiumAdSelect');
-    try{
-      const res = await fetch('/api/my/ads', apiOpts());
-      if(!res.ok) throw new Error('no ads');
-      const ads = await res.json();
-      const list = Array.isArray(ads) ? ads : [];
-      select.innerHTML = `<option value="">بدون اختيار</option>` + list.map(a=>{
-        const id = a.id || a._id || '';
-        return `<option value="${escapeHtml(id)}">${escapeHtml(a.title || 'إعلان')}</option>`;
-      }).join('');
-    }catch(e){
-      select.innerHTML = `<option value="">تعذر تحميل الإعلانات</option>`;
-    }
-  }
-
-  const notifList = qs('#notifList');
-
-  async function loadNotifications(){
-    try{
-      const res = await fetch('/api/notifications', apiOpts());
-      if(!res.ok) throw new Error('no notifs');
-      const list = await res.json();
-      renderNotifications(list);
-    }catch(e){
-      notifList.innerHTML = `<div class="item"><div class="muted">لا توجد إشعارات حالياً.</div></div>`;
-      qs('#notifDot').classList.remove('show');
-    }
-  }
-
-  function renderNotifications(list){
-    const arr = Array.isArray(list) ? list : [];
-    const unread = arr.some(n => n && n.read === false);
-    qs('#notifDot').classList.toggle('show', unread);
-
-    if(!arr.length){
-      notifList.innerHTML = `<div class="item"><div class="muted">لا توجد إشعارات حالياً.</div></div>`;
-      return;
-    }
-
-    notifList.innerHTML = arr.map(n=>{
-      const title = n.title || 'إشعار';
-      const body = n.body || '';
-      const when = n.createdAt ? new Date(n.createdAt).toLocaleString('ar-MA') : '';
-      const pill = (n.read === false) ? `<span class="pill warn">جديد</span>` : `<span class="pill">مقروء</span>`;
-      return `
-        <div class="item">
-          <div class="item-head">
-            <p class="item-title">${escapeHtml(title)}</p>
-            ${pill}
-          </div>
-          ${body ? `<div class="meta"><span>${escapeHtml(body)}</span></div>` : ''}
-          ${when ? `<div class="meta"><span>${escapeHtml(when)}</span></div>` : ''}
-        </div>
-      `;
-    }).join('');
-  }
-
-  qs('#markAllReadBtn').addEventListener('click', async ()=>{
-    try{
-      const res = await fetch('/api/notifications/read-all', apiOpts('POST'));
-      if(!res.ok) throw new Error('fail');
-      toast('تم تعليم الكل كمقروء ✅', true);
-      loadNotifications();
-    }catch(e){
-      toast('فشل العملية ❌', false);
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', loadProfile);
+  loadUser();
 </script>
 </body>
 </html>

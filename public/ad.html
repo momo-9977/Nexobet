@@ -7,433 +7,356 @@
 
   <style>
     :root{
-      --bg-0:#071024;
-      --bg-1:#081426;
-      --card-bg:rgba(255,255,255,0.03);
-      --card-border:rgba(255,255,255,0.06);
-      --text:#e6eef8;
-      --muted:#9aa8c2;
-      --accent:#2ea3ff;
-      --accent-2:#60a5fa;
-      --premium:#fbbf24;
-      --danger:#ef4444;
+      --bg-0:#0a1227;
+      --bg-1:#0f172a;
+      --card-bg:rgba(255,255,255,0.05);
+      --card-border:rgba(255,255,255,0.08);
+      --text:#f1f5f9;
+      --muted:#94a3b8;
+      --accent:#3b82f6;
+      --accent-2:#0ea5e9;
+      --whatsapp:#25D366;
+      --price-bg:#1e293b;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:Inter,Arial,sans-serif;
-      background:
-        radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
-        linear-gradient(180deg,var(--bg-0),var(--bg-1));
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-0);
       color:var(--text);
-      padding-bottom:90px;
+      padding-bottom:100px;
+      line-height: 1.6;
     }
-    .page{max-width:980px;margin:18px auto;padding:16px}
+    .page{max-width:800px;margin:0 auto;padding:16px}
 
+    /* Topbar */
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      padding:12px 14px;
-      border-radius:16px;
-      background:rgba(255,255,255,0.04);
+      padding:15px;
+      border-radius:20px;
+      background:rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
       border:1px solid var(--card-border);
+      margin-bottom: 20px;
     }
     .btn{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.05);
       color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
+      padding:8px 16px;
+      border-radius:12px;
       cursor:pointer;
       text-decoration:none;
       display:inline-flex;
       align-items:center;
       gap:8px;
-      transition:.2s;
-      white-space:nowrap;
+      transition:all 0.3s ease;
+      font-size: 14px;
     }
-    .btn:hover{transform:translateY(-1px)}
-    .btn.primary{
-      border:none;
-      background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      color:#fff;
-      font-weight:800;
-    }
-    .btn.danger{
-      background:rgba(239,68,68,.12);
-      border:1px solid rgba(239,68,68,.35);
-      color:#fecaca;
-    }
+    .btn:active{transform:scale(0.95)}
 
+    /* Card */
     .card{
-      margin-top:14px;
       background:var(--card-bg);
       border:1px solid var(--card-border);
-      border-radius:18px;
+      border-radius:24px;
       overflow:hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
-    /* slider */
+    /* Slider & Swipe */
     .slider{
       position:relative;
-      height:320px;
-      background:rgba(255,255,255,.04);
+      height:380px;
+      background:#000;
       display:flex;
       align-items:center;
       justify-content:center;
+      overflow: hidden;
+      touch-action: pan-y; /* يسمح بالتمرير العمودي للمتصفح والأفقي للصور */
     }
     .slide{
       position:absolute;
       inset:0;
       opacity:0;
-      transition:opacity .35s ease;
+      transition: opacity .4s cubic-bezier(0.4, 0, 0.2, 1);
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:10px;
     }
-    .slide.active{opacity:1}
-
-    /* ✅ الصور والفيديو كاملين بلا تقطيع */
-    .slide img,
-    .slide video{
+    .slide.active{opacity:1; z-index: 2;}
+    .slide img, .slide video{
       max-width:100%;
       max-height:100%;
-      width:auto;
-      height:auto;
       object-fit:contain;
-      display:block;
-      border-radius:12px;
-      background:#0b1222;
-    }
-
-    .slide video{
-      width:100%;
-      height:100%;
     }
 
     .slider .nav{
       position:absolute;
       top:50%;
       transform:translateY(-50%);
-      width:42px;height:42px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(0,0,0,.25);
+      width:40px;height:40px;
+      border-radius:50%;
+      background:rgba(0,0,0,0.5);
       color:#fff;
       display:flex;align-items:center;justify-content:center;
       cursor:pointer;
-      user-select:none;
-      z-index:5;
+      z-index:10;
+      border: 1px solid rgba(255,255,255,0.2);
     }
     .slider .prev{left:12px}
     .slider .next{right:12px}
+    
     .dots{
       position:absolute;
-      bottom:12px;
-      left:50%;
-      transform:translateX(-50%);
+      bottom:15px;
       display:flex;
-      gap:8px;
-      z-index:5;
+      gap:6px;
+      z-index:10;
     }
     .dots span{
-      width:10px;height:10px;border-radius:999px;
-      background:rgba(255,255,255,.35);
-      cursor:pointer;
+      width:8px;height:8px;border-radius:50%;
+      background:rgba(255,255,255,0.3);
+      transition: 0.3s;
     }
-    .dots span.active{background:#fff}
+    .dots span.active{background:#fff; width:20px; border-radius:10px;}
 
-    .content{padding:14px}
-    .title{margin:0;font-size:20px;line-height:1.3}
+    /* Content Styling */
+    .content{padding:20px}
+    .title{margin:0;font-size:22px;font-weight:700;color:#fff}
+    
     .meta{
-      margin-top:6px;
+      margin-top:10px;
       display:flex;
       flex-wrap:wrap;
-      gap:10px;
+      gap:12px;
       color:var(--muted);
       font-size:13px;
     }
-    .price{
-      margin-top:10px;
-      font-size:20px;
-      font-weight:900;
-      color:#fff;
+
+    /* Price Card - New Style */
+    .price-tag {
+      display: inline-block;
+      margin-top: 15px;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid var(--accent);
+      padding: 10px 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
     }
-    .desc{
-      margin-top:12px;
-      color:rgba(255,255,255,.86);
-      line-height:1.8;
-      white-space:pre-wrap;
+    .price-value {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--accent);
     }
 
+    /* Description - New Style */
+    .desc-box {
+      margin-top: 20px;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 15px;
+      border-radius: 16px;
+      border-right: 4px solid var(--accent);
+      color: #cbd5e1;
+      font-size: 15px;
+      white-space: pre-wrap;
+    }
+
+    /* Actions & Buttons */
     .actions{
-      margin-top:14px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
+      margin-top: 25px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
-
-    .note{
-      margin-top:10px;
-      color:rgba(255,255,255,.65);
-      font-size:13px;
+    .btn-call {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      justify-content: center;
+      font-weight: 700;
+      border: none;
+      height: 50px;
     }
+    .btn-wa {
+      background: #25D366;
+      color: white;
+      justify-content: center;
+      font-weight: 700;
+      border: none;
+      height: 50px;
+    }
+    .btn-wa svg { fill: white; }
 
-    @media(max-width:700px){
-      .slider{height:260px}
+    @media(max-width:600px){
+      .slider{height:300px}
+      .actions{grid-template-columns: 1fr;}
     }
   </style>
 </head>
 
 <body>
   <div class="page">
-
     <div class="topbar">
       <a class="btn" href="/">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-        </svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         الرئيسية
       </a>
-
-      <div style="font-weight:900;">تفاصيل الإعلان</div>
-
+      <div style="font-weight:700;">تفاصيل الإعلان</div>
       <button class="btn" onclick="history.back()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
         رجوع
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M15 18l-6-6 6-6"/>
-        </svg>
       </button>
     </div>
 
     <div class="card" id="card">
-      <div class="content" id="statusBox" style="padding:18px;color:rgba(255,255,255,.7)">
-        جاري تحميل الإعلان...
+      <div class="content" id="statusBox" style="text-align:center; padding:50px; color:var(--muted)">
+        جاري تحميل البيانات الذكية...
       </div>
     </div>
-
   </div>
 
 <script>
   async function jget(url){
     const res = await fetch(url, { credentials:'include' });
     const data = await res.json().catch(()=> ({}));
-    if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
+    if(!res.ok) throw new Error('خطأ في الاتصال');
     return data;
   }
 
-  function safeText(s){ return String(s || '').trim(); }
-
   function formatPrice(p){
     const n = Number(p);
-    if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
-    return (p ? String(p) + ' د.م' : '');
+    return Number.isFinite(n) ? n.toLocaleString('fr-MA') + ' درهم' : (p ? p + ' درهم' : 'غير محدد');
   }
 
   function absUrlMaybe(u){
-    const v = safeText(u);
-    if(!v) return '';
-    if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
-    return v.startsWith('/') ? v : ('/' + v);
-  }
-
-  function getIdFromQuery(){
-    const sp = new URLSearchParams(location.search);
-    return sp.get('id') || '';
-  }
-
-  function normalizePhone(raw){
-    let p = String(raw || '').trim();
-    if(!p) return '';
-    p = p.replace(/[^\d+]/g,'');
-    return p;
-  }
-
-  function pickVideo(ad){
-    return absUrlMaybe(
-      ad.video ||
-      ad.video_url ||
-      ad.videoUrl ||
-      ''
-    );
+    if(!u) return '';
+    if(/^https?:\/\//i.test(u) || u.startsWith('data:')) return u;
+    return u.startsWith('/') ? u : ('/' + u);
   }
 
   function render(ad){
     const card = document.getElementById('card');
-
-    const title = safeText(ad.title) || '—';
-    const price = formatPrice(ad.price);
-    const city  = safeText(ad.city) || '';
-    const desc  = safeText(ad.description) || '';
-    const created = ad.created_at ? new Date(ad.created_at).toLocaleString('fr-MA') : '';
-
+    
+    // تجهيز الميديا
     let media = [];
-
-    // الصور
     if (Array.isArray(ad.images)) {
-      media = media.concat(
-        ad.images
-          .map(x => (typeof x === 'string' ? x : (x && x.url ? x.url : '')))
-          .map(absUrlMaybe)
-          .filter(Boolean)
-          .map(src => ({ type:'image', src }))
-      );
-    }
-
-    if (!media.length && ad.image) {
+      media = ad.images.map(x => ({ type:'image', src: absUrlMaybe(typeof x === 'string' ? x : x.url) }));
+    } else if (ad.image) {
       media.push({ type:'image', src: absUrlMaybe(ad.image) });
     }
-
-    // الفيديو
-    const videoSrc = pickVideo(ad);
-    if (videoSrc) {
-      media.push({ type:'video', src: videoSrc });
+    if (ad.video || ad.video_url) {
+      media.push({ type:'video', src: absUrlMaybe(ad.video || ad.video_url) });
     }
 
-    // placeholder إلا ما كان لا صورة لا فيديو
-    if (!media.length) {
-      media.push({
-        type:'image',
-        src:'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
-            <rect width="100%" height="100%" fill="#0b1222"/>
-            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#93a3bf" font-size="26" font-family="Arial">No Media</text>
-          </svg>`
-        )
-      });
-    }
-
-    const phone = normalizePhone(
-      ad.phone ||
-      ad.ownerPhone ||
-      (ad.owner && ad.owner.phone) ||
-      ad.owner_phone ||
-      ''
-    );
-    const ownerName = safeText(
-      ad.ownerName ||
-      ad.owner_name ||
-      (ad.owner && ad.owner.name) ||
-      ''
-    );
-    const waPhone = phone ? phone.replace(/^\+/, '') : '';
+    const phone = (ad.phone || (ad.owner && ad.owner.phone) || '').replace(/[^\d+]/g,'');
+    const waPhone = phone.replace(/^\+/, '');
 
     card.innerHTML = `
-      <div class="slider" id="slider">
+      <div class="slider" id="mainSlider">
         ${media.map((item, i)=>`
-          <div class="slide ${i===0?'active':''}">
-            ${
-              item.type === 'video'
-                ? `
-                  <video controls preload="metadata">
-                    <source src="${item.src}">
-                    متصفحك لا يدعم تشغيل الفيديو.
-                  </video>
-                `
-                : `
-                  <img src="${item.src}" alt="">
-                `
-            }
+          <div class="slide ${i===0?'active':''}" data-index="${i}">
+            ${item.type === 'video' 
+              ? `<video controls><source src="${item.src}"></video>` 
+              : `<img src="${item.src}" alt="">`}
           </div>
         `).join('')}
-
+        
         ${media.length > 1 ? `
-          <div class="nav prev" id="prevBtn">‹</div>
-          <div class="nav next" id="nextBtn">›</div>
-          <div class="dots" id="dots">
-            ${media.map((_, i)=>`<span class="${i===0?'active':''}" data-i="${i}"></span>`).join('')}
+          <div class="nav prev" onclick="changeSlide(-1)">‹</div>
+          <div class="nav next" onclick="changeSlide(1)">›</div>
+          <div class="dots" id="dotsContainer">
+            ${media.map((_, i)=>`<span class="${i===0?'active':''}"></span>`).join('')}
           </div>
-        ` : ``}
+        ` : ''}
       </div>
 
       <div class="content">
-        <h1 class="title">${title}</h1>
+        <h1 class="title">${ad.title || 'بدون عنوان'}</h1>
         <div class="meta">
-          ${city ? `<span>📍 ${city}</span>` : ``}
-          ${created ? `<span>🕒 ${created}</span>` : ``}
-          ${ownerName ? `<span>👤 ${ownerName}</span>` : ``}
+          <span>📍 ${ad.city || 'غير محدد'}</span>
+          <span>🕒 ${ad.created_at ? new Date(ad.created_at).toLocaleDateString('ar-MA') : ''}</span>
         </div>
 
-        <div class="price">${price}</div>
+        <div class="price-tag">
+          <span class="price-value">${formatPrice(ad.price)}</span>
+        </div>
 
-        ${desc ? `<div class="desc">${desc}</div>` : ``}
+        ${ad.description ? `<div class="desc-box">${ad.description}</div>` : ''}
 
         <div class="actions">
           ${phone ? `
-            <a class="btn primary" href="tel:${phone}">
-              <span>اتصال</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z"/>
-              </svg>
+            <a class="btn btn-call" href="tel:${phone}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z"></path></svg>
+              إتصال مباشر
             </a>
-
-            <a class="btn" target="_blank" rel="noopener" href="https://wa.me/${waPhone}">
-              <span>واتساب</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/>
-              </svg>
+            <a class="btn btn-wa" target="_blank" href="https://wa.me/${waPhone}">
+              <svg width="20" height="20" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.2-8.5-44.2-27.1-16.4-14.6-27.4-32.7-30.6-38.2-3.2-5.6-.3-8.6 2.5-11.3 2.5-2.5 5.5-6.5 8.3-9.7 2.8-3.3 3.7-5.5 5.5-9.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.3 5.7 23.7 9.1 31.7 11.7 13.3 4.2 25.5 3.6 35.2 2.2 10.8-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+              واتساب
             </a>
-          ` : `
-            <div class="note">⚠️ رقم الهاتف غير متوفر لهذا الإعلان.</div>
-          `}
+          ` : '<div class="note">رقم الهاتف غير متاح</div>'}
         </div>
-
-        <div class="note"></div>
       </div>
     `;
 
-    // slider logic
-    const slides = Array.from(card.querySelectorAll('.slide'));
+    initSliderLogic(media.length);
+  }
+
+  let currentSlide = 0;
+  function changeSlide(n) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dots span');
     if(slides.length <= 1) return;
 
-    const dots = Array.from(card.querySelectorAll('#dots span'));
-    let cur = 0;
-
-    const stopOtherVideos = (activeIndex) => {
-      slides.forEach((slide, index) => {
-        if(index !== activeIndex){
-          const video = slide.querySelector('video');
-          if(video){
-            video.pause();
-          }
-        }
-      });
-    };
-
-    const goTo = (i) => {
-      slides[cur].classList.remove('active');
-      dots[cur].classList.remove('active');
-      cur = i;
-      slides[cur].classList.add('active');
-      dots[cur].classList.add('active');
-      stopOtherVideos(cur);
-    };
-
-    card.querySelector('#prevBtn').onclick = () => goTo((cur - 1 + slides.length) % slides.length);
-    card.querySelector('#nextBtn').onclick = () => goTo((cur + 1) % slides.length);
-
-    dots.forEach(d => {
-      d.onclick = () => goTo(parseInt(d.dataset.i, 10));
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    
+    currentSlide = (currentSlide + n + slides.length) % slides.length;
+    
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+    
+    // إيقاف الفيديوهات في السلايدات الأخرى
+    slides.forEach((s, i) => {
+      const v = s.querySelector('video');
+      if(v && i !== currentSlide) v.pause();
     });
   }
 
-  (async function init(){
-    const id = getIdFromQuery();
-    const statusBox = document.getElementById('statusBox');
+  function initSliderLogic(count) {
+    if(count <= 1) return;
+    const slider = document.getElementById('mainSlider');
+    let touchStartX = 0;
+    let touchEndX = 0;
 
-    if(!id){
-      statusBox.textContent = 'الإعلان غير موجود (id ناقص).';
-      return;
+    slider.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    slider.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, {passive: true});
+
+    function handleSwipe() {
+      const threshold = 50; // الحد الأدنى للمسافة لاعتبارها حركة تمرير
+      if (touchStartX - touchEndX > threshold) {
+        changeSlide(1); // تمرير لليسار -> التالي
+      } else if (touchEndX - touchStartX > threshold) {
+        changeSlide(-1); // تمرير لليمين -> السابق
+      }
     }
+  }
 
+  (async function init(){
+    const id = new URLSearchParams(location.search).get('id');
+    if(!id) return document.getElementById('statusBox').textContent = 'معرف الإعلان مفقود';
     try{
       const ad = await jget('/api/ads/' + encodeURIComponent(id));
       render(ad);
     }catch(e){
-      statusBox.textContent = 'الإعلان غير موجود';
+      document.getElementById('statusBox').textContent = 'تعذر تحميل الإعلان';
     }
   })();
 </script>

@@ -2,622 +2,313 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>الرئيسية</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"/>
+<title>سمسار - الرئيسية</title>
 
 <style>
 :root{
-  --bg-0:#071024;
-  --bg-1:#081426;
-  --card-bg:rgba(255,255,255,0.03);
-  --card-border:rgba(255,255,255,0.05);
-  --text:#e6eef8;
-  --muted:#9aa8c2;
-  --accent:#2ea3ff;
-  --accent-2:#60a5fa;
+  --bg-main:#0a0f1d;
+  --card-bg:#161e2d;
+  --card-border:rgba(255,255,255,0.06);
+  --text-white:#ffffff;
+  --text-muted:#94a3b8;
+  --accent:#3b82f6;
+  --accent-light:#60a5fa;
   --premium:#fbbf24;
   --danger:#ef4444;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 body{
   margin:0;
-  font-family:Inter,Arial,sans-serif;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
-    linear-gradient(180deg,var(--bg-0),var(--bg-1));
-  color:var(--text);
-  padding-bottom:110px; /* nav + footer spacing */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color:var(--text-white);
+  padding-bottom:90px;
 }
-.page{max-width:1200px;margin:20px auto;padding:18px}
+.page{max-width:600px; margin:0 auto; padding:15px;}
 
 /* ================= HEADER ================= */
-.home-brand-bar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:14px;
-  padding:14px 18px;
-  border-radius:16px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid var(--card-border);
+.header-bar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 5px; margin-bottom:15px;
 }
-.logo-area{display:flex;align-items:center;gap:14px;min-width:0;}
-.logo-img{
-  width:54px;height:54px;border-radius:14px;
-  background:linear-gradient(135deg,#043b66,#0b7bd6);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;overflow:hidden;
-  flex-shrink:0;
+.brand-info{ display:flex; align-items:center; gap:10px; }
+.logo-circle{
+  width:45px; height:45px; border-radius:12px;
+  background: white; display:flex; align-items:center; justify-content:center;
+  overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.2);
 }
-.logo-img img{width:100%;height:100%;object-fit:cover;display:block}
-.brand-text{ text-align:right; min-width:0; }
-.brand-text h1{ margin:0; font-size:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.brand-text p{ margin:0; font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.logo-circle img{ width:85%; height:85%; object-fit:contain; }
 
-.header-actions{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.title-texts h1{ margin:0; font-size:17px; font-weight:800; }
+.title-texts p{ margin:0; font-size:11px; color:var(--text-muted); }
 
-.icon-btn{
-  width:44px;height:44px;border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.04);
-  display:flex;align-items:center;justify-content:center;
-  text-decoration:none;color:var(--text);
-  position:relative;
-  transition:.2s;
+.top-actions{ display:flex; gap:8px; }
+.round-btn{
+  width:38px; height:38px; border-radius:10px;
+  background: rgba(255,255,255,0.05); border:1px solid var(--card-border);
+  display:flex; align-items:center; justify-content:center;
+  color:white; position:relative; text-decoration:none;
 }
-.icon-btn:hover{transform:translateY(-2px); box-shadow:0 14px 28px rgba(0,0,0,.25)}
+.notif-dot{
+  position:absolute; top:8px; left:8px;
+  width:8px; height:8px; background:var(--danger);
+  border-radius:50%; border:2px solid var(--bg-main); display:none;
+}
+.has-unread .notif-dot{display:block;}
 
-.icon-btn .gold-badge{
-  position:absolute;top:-8px;left:-8px;
-  background:var(--premium);color:#111;
-  font-weight:900;font-size:11px;
-  padding:4px 8px;border-radius:999px;
-  box-shadow:0 12px 24px rgba(251,191,36,.22);
-}
-
-/* red dot for notifications */
-.icon-btn .red-dot{
-  position:absolute;
-  top:-6px;
-  left:-6px;
-  width:12px;height:12px;border-radius:999px;
-  background:var(--danger);
-  border:2px solid rgba(7,16,36,0.95);
-  box-shadow:0 10px 22px rgba(239,68,68,.25);
-  display:none;
-}
-.icon-btn.has-unread .red-dot{display:block}
-
-/* ================= HERO SLIDER (Avito-like) ================= */
-.hero{
-  margin-top:16px;
-  position:relative;
-  width:100%;
-  background:#0b1222;
-  overflow:hidden;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.06);
-  box-shadow:0 14px 36px rgba(0,0,0,.22);
-  height:clamp(170px, 26vw, 320px);
-}
-@media(max-width:700px){
-  .hero{ height:clamp(160px, 46vw, 240px); border-radius:12px; }
+/* ================= HERO BANNER ================= */
+.hero-container{
+  position:relative; width:100%; height:180px;
+  border-radius:20px; overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+  margin-bottom:20px; border:1px solid var(--card-border);
 }
 .hero-slide{
-  position:absolute;
-  inset:0;
-  display:block;
-  opacity:0;
-  transition:opacity .6s ease;
-  text-decoration:none;
+  position:absolute; inset:0; opacity:0; transition:opacity 0.6s ease;
 }
-.hero-slide.active{opacity:1}
-.hero-slide img{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:cover;
-  object-position:center;
-}
-.hero::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.22));
-  pointer-events:none;
-}
-.hero-dots{
-  position:absolute;
-  bottom:12px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:8px;
-  z-index:5;
-}
-.hero-dots span{
-  width:10px;height:10px;border-radius:50%;
-  background:rgba(255,255,255,.4);
-  cursor:pointer;
-}
-.hero-dots span.active{ background:#fff; }
+.hero-slide.active{ opacity:1; }
+.hero-slide img{ width:100%; height:100%; object-fit:cover; }
 
-/* ================= SEARCH ================= */
-.search-box{ margin-top:18px; display:flex; gap:10px; }
-.search-box input{
-  flex:1;
-  padding:14px;
-  border-radius:14px;
-  border:none;
-  background:rgba(255,255,255,.05);
-  color:white;
+.hero-indicators{
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+  display:flex; gap:5px; z-index:5;
 }
-.search-box button{
-  padding:14px 18px;
-  border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:white;
-  font-weight:700;
-  cursor:pointer;
+.hero-indicators span{
+  width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3);
+}
+.hero-indicators span.active{ background:white; width:15px; border-radius:4px; }
+
+/* ================= SEARCH BAR ================= */
+.search-wrapper{
+  position:relative; margin-bottom:25px;
+}
+.search-input{
+  width:100%; background:var(--card-bg); border:1px solid var(--card-border);
+  padding:12px 45px 12px 15px; border-radius:15px; color:white;
+  font-size:14px; outline:none; transition:0.3s;
+}
+.search-input:focus{ border-color:var(--accent); background:rgba(59,130,246,0.05); }
+.search-icon{
+  position:absolute; right:15px; top:50%; transform:translateY(-50%);
+  color:var(--text-muted); pointer-events:none;
 }
 
-/* ================= SECTION ================= */
-.section{ margin-top:26px; }
-.section-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:14px;
+/* ================= SECTIONS ================= */
+.section-title{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:12px; padding:0 5px;
 }
-.section-header h2{ margin:0; font-size:18px; }
-.section-header a{ color:var(--accent); text-decoration:none; font-size:14px; }
+.section-title h2{ margin:0; font-size:16px; font-weight:700; color:var(--text-white); }
+.section-title a{ font-size:12px; color:var(--accent-light); text-decoration:none; }
 
-/* ================= ADS GRID ================= */
-.ads-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-  gap:18px;
-}
-.ad-card{
-  background:var(--card-bg);
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid var(--card-border);
-  transition:.3s;
-  text-decoration:none;
-  color:inherit;
-  display:block;
-}
-.ad-card:hover{transform:translateY(-6px)}
-.ad-image{
-  width:100%;
-  height:180px;
-  object-fit:cover;
-  background:rgba(255,255,255,.04);
-}
-.ad-content{padding:14px}
-.ad-title{font-size:15px;margin:0 0 6px}
-.ad-price{font-weight:800}
-.premium-badge{
-  position:absolute;
-  top:10px;
-  left:10px;
-  background:var(--premium);
-  color:black;
-  padding:4px 8px;
-  border-radius:8px;
-  font-size:12px;
-  font-weight:700;
+.ads-scroll-grid{
+  display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+  margin-bottom:25px;
 }
 
-/* ================= FOOTER ================= */
-.site-footer{
-  max-width:1200px;
-  margin:18px auto 0;
-  padding:14px 18px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.03);
-  color:rgba(255,255,255,.72);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
+/* ================= AD CARD ================= */
+.ad-item{
+  background:var(--card-bg); border-radius:18px; overflow:hidden;
+  text-decoration:none; color:inherit; border:1px solid var(--card-border);
+  transition:0.2s; position:relative;
 }
-.site-footer a{
-  color:#bfdbfe;
-  text-decoration:none;
-  font-weight:900;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
+.ad-item:active{ transform:scale(0.97); }
+.ad-thumb{ width:100%; height:130px; object-fit:cover; background:#000; }
+.ad-info{ padding:10px; }
+.ad-name{ 
+  font-size:13px; font-weight:600; margin:0; 
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; 
 }
-@media(max-width:700px){
-  .site-footer{flex-direction:column; align-items:flex-start;}
+.ad-val{ font-size:14px; font-weight:800; color:var(--accent-light); margin-top:4px; }
+.feat-tag{
+  position:absolute; top:8px; left:8px; background:var(--premium);
+  color:black; font-size:9px; font-weight:900; padding:3px 7px; border-radius:6px;
 }
 
-/* ================= NAV (UNCHANGED) ================= */
-.modern-flat-nav{
-  position:fixed;
-  bottom:0; left:0; right:0;
-  height:70px;
-  background:#ffffff;
-  border-top:1px solid #e5e7eb;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  z-index:999;
+/* ================= BOTTOM NAV ================= */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
+  background: #ffffff; display: flex; align-items: center;
+  justify-content: space-around; z-index: 1000; border-top: 1px solid #eee;
+  padding-bottom: env(safe-area-inset-bottom);
 }
-.modern-flat-item{
-  flex:1;
-  text-align:center;
-  text-decoration:none;
-  color:#6b7280;
-  font-size:12px;
-  font-weight:600;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
+.nav-link {
+  display: flex; flex-direction: column; align-items: center;
+  text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 600; gap:4px;
 }
-.modern-flat-nav svg{ width:22px !important; height:22px !important; }
-.modern-flat-item.active{ color:#16a34a; }
+.nav-link.active { color: #16a34a; }
+.nav-link svg { width: 22px; height: 22px; }
+
+/* Empty State */
+.empty-msg{ text-align:center; padding:30px; color:var(--text-muted); font-size:13px; }
 </style>
 </head>
 
 <body>
 
 <div class="page">
-
-<header class="home-brand-bar">
-  <div class="logo-area">
-    <div class="logo-img" id="logoBox">LM</div>
-    <div class="brand-text">
-      <h1 id="platformName">Le Marché</h1>
-      <p id="platformSubtitle">Vendre et acheter facilement</p>
+  <header class="header-bar">
+    <div class="brand-info">
+      <div class="logo-circle" id="logoWrap">
+        <img src="" id="mainLogo" alt="">
+      </div>
+      <div class="title-texts">
+        <h1 id="pName">Samsar</h1>
+        <p id="pSub">بيع واشتري بكل سهولة</p>
+      </div>
     </div>
+    <div class="top-actions">
+      <a href="/support" class="round-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.38 8.38 0 0 1 3.8.9"></path><path d="M18 10l-4 4-2-2"></path></svg>
+      </a>
+      <a href="/profile" class="round-btn" id="notifArea">
+        <div class="notif-dot"></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      </a>
+    </div>
+  </header>
+
+  <div class="hero-container" id="heroBox">
+    <div class="hero-indicators" id="heroDots"></div>
   </div>
 
-  <div class="header-actions">
-    <!-- Notifications -->
-    <a class="icon-btn" id="notifBtn" href="/profile" title="الإشعارات" aria-label="الإشعارات">
-      <span class="red-dot" id="notifDot"></span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22">
-        <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"/>
-        <path d="M9 17a3 3 0 0 0 6 0"/>
-      </svg>
-    </a>
-
-    <!-- Support -->
-    <a class="icon-btn" href="/support" title="الدعم" aria-label="الدعم">
-      <span class="gold-badge">★</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22">
-        <path d="M4 12a8 8 0 0 1 16 0"/>
-        <path d="M4 12v4a2 2 0 0 0 2 2h2v-6H6a2 2 0 0 0-2 2z"/>
-        <path d="M20 12v4a2 2 0 0 1-2 2h-2v-6h2a2 2 0 0 1 2 2z"/>
-        <path d="M8 20h8"/>
-      </svg>
-    </a>
+  <div class="search-wrapper">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" class="search-input" id="searchIn" placeholder="عن ماذا تبحث اليوم؟">
   </div>
-</header>
 
-<!-- HERO -->
-<div class="hero" id="hero">
-  <div class="hero-dots" id="heroDots"></div>
+  <section>
+    <div class="section-title">
+      <h2>إعلانات مميزة ⭐</h2>
+    </div>
+    <div class="ads-scroll-grid" id="featGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-title">
+      <h2>أحدث الإعلانات</h2>
+      <a href="/categories">عرض الكل</a>
+    </div>
+    <div class="ads-scroll-grid" id="lastGrid"></div>
+  </section>
 </div>
 
-<!-- SEARCH -->
-<div class="search-box">
-  <input id="searchInput" placeholder="ابحث عن أي شيء...">
-  <button id="searchBtn">بحث</button>
-</div>
-
-<!-- FEATURED -->
-<div class="section">
-  <div class="section-header">
-    <h2>إعلانات مميزة</h2>
-  </div>
-  <div class="ads-grid" id="featuredGrid"></div>
-</div>
-
-<!-- LATEST -->
-<div class="section">
-  <div class="section-header">
-    <h2>أحدث الإعلانات</h2>
-    <a href="/categories">عرض الكل</a>
-  </div>
-  <div class="ads-grid" id="latestGrid"></div>
-</div>
-
-</div>
-
-<!-- Footer like Avito -->
-<footer class="site-footer">
-  <div>© Samsar Groupe 2026 protection utilisateur</div>
-  <a href="https://www.instagram.com/shou__med/" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
-      <rect x="3" y="3" width="18" height="18" rx="5"/>
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-      <path d="M17.5 6.5h.01"/>
-    </svg>
-    Instagram: shou__med
-  </a>
-</footer>
-
-<nav class="modern-flat-nav">
-  <a href="/" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
+<nav class="bottom-nav">
+  <a href="/" class="nav-link active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
     <span>الرئيسية</span>
   </a>
-
-  <a href="/categories" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
+  <a href="/categories" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
     <span>الأقسام</span>
   </a>
-
-  <a href="/post-ad" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
+  <a href="/post-ad" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
     <span>نشر</span>
   </a>
-
-  <a href="/profile" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
+  <a href="/profile" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     <span>بروفايل</span>
   </a>
 </nav>
 
 <script>
-/* ===========================
-   helpers
-=========================== */
-function safeText(s){ return String(s || '').trim(); }
-
-function absUrlMaybe(u){
-  const v = safeText(u);
-  if(!v) return '';
-  if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
-  return v.startsWith('/') ? v : ('/' + v);
-}
-
-function withCacheBust(u){
-  const v = absUrlMaybe(u);
-  if(!v || v.startsWith('data:')) return v;
-  const sep = v.includes('?') ? '&' : '?';
-  return v + sep + 'v=' + Date.now();
-}
-
+// الحفاظ على دوال السيرفر الأصلية
 async function jget(url){
-  const res = await fetch(url, {
-    credentials:'include',
-    cache: 'no-store',
-    headers: { 'Accept': 'application/json' }
-  });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
-  return data;
+  const res = await fetch(url, { credentials:'include', cache:'no-store' });
+  return await res.json();
+}
+
+function absUrl(u){
+  if(!u) return '';
+  return /^https?:\/\//i.test(u) || u.startsWith('data:') ? u : (u.startsWith('/') ? u : '/' + u);
 }
 
 function formatPrice(p){
-  const n = Number(p);
-  if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
-  return (p ? String(p) + ' د.م' : '');
+  return p ? Number(p).toLocaleString('fr-MA') + ' د.م' : '--';
 }
 
-function firstImage(ad){
-  if(ad && ad.image) return withCacheBust(ad.image);
-  if(ad && Array.isArray(ad.images) && ad.images.length) return withCacheBust(ad.images[0]);
-  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
-      <rect width="100%" height="100%" fill="#0b1222"/>
-      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
-    </svg>`
-  );
-}
-
-function isFeatured(ad){
-  return ad && (ad.featured === true || ad.featured === 'true' || ad.featured === 1);
-}
-
-function renderAdCard(ad, showBadge){
-  const id = ad.id;
-  const img = absUrlMaybe(firstImage(ad));
-  const title = safeText(ad.title);
-  const price = formatPrice(ad.price);
-  const href = '/ad?id=' + encodeURIComponent(id);
-  const badgeHtml = (showBadge && isFeatured(ad)) ? `<div class="premium-badge">مميز</div>` : ``;
-
+function renderCard(ad, isFeat){
+  const img = ad.image || (ad.images && ad.images[0]) || '';
   return `
-    <a class="ad-card" href="${href}">
-      <div style="position:relative">
-        <img class="ad-image" src="${img}" alt="" loading="lazy">
-        ${badgeHtml}
-      </div>
-      <div class="ad-content">
-        <div class="ad-title">${title || '—'}</div>
-        <div class="ad-price">${price || ''}</div>
+    <a href="/ad?id=${ad.id}" class="ad-item">
+      ${isFeat ? '<div class="feat-tag">مميز</div>' : ''}
+      <img src="${absUrl(img)}" class="ad-thumb" loading="lazy">
+      <div class="ad-info">
+        <p class="ad-name">${ad.title || 'بدون عنوان'}</p>
+        <div class="ad-val">${formatPrice(ad.price)}</div>
       </div>
     </a>
   `;
 }
 
-/* ===========================
-   Notifications red dot
-=========================== */
-async function loadNotificationsDot(){
-  const btn = document.getElementById('notifBtn');
-  if(!btn) return;
+// تحميل البيانات
+async function loadHome(){
+  try {
+    // 1. Settings
+    const sets = await jget('/api/settings');
+    document.getElementById('pName').textContent = sets.platformName || 'Samsar';
+    document.getElementById('pSub').textContent = sets.subtitle || 'بيع واشتري بسهولة';
+    if(sets.logoUrl) document.getElementById('mainLogo').src = absUrl(sets.logoUrl);
 
-  try{
-    const res = await fetch('/api/notifications', { credentials:'include', cache:'no-store' });
-    if(!res.ok) return;
-    const list = await res.json().catch(()=> ([]));
-    const arr = Array.isArray(list) ? list : (Array.isArray(list.items) ? list.items : []);
-    const hasUnread = arr.some(n => n && (n.read === false || n.is_read === false || n.unread === true));
-    btn.classList.toggle('has-unread', !!hasUnread);
-  }catch(_){}
-}
-
-/* ===========================
-   1) Brand
-=========================== */
-async function loadBrand(){
-  try{
-    const s = await jget('/api/settings');
-    const name = safeText(s.platformName) || 'Le Marché';
-    const sub  = safeText(s.subtitle) || 'Vendre et acheter facilement';
-    const logo = safeText(s.logoUrl);
-
-    document.getElementById('platformName').textContent = name;
-    document.getElementById('platformSubtitle').textContent = sub;
-
-    const logoBox = document.getElementById('logoBox');
-    if(logo){
-      logoBox.innerHTML = `<img src="${withCacheBust(logo)}" alt="logo">`;
-    }else{
-      logoBox.textContent = (name.split(' ').map(x=>x[0]).join('').slice(0,2) || 'LM').toUpperCase();
+    // 2. Banner
+    const slides = await jget('/api/home/slides');
+    const hero = document.getElementById('heroBox');
+    const dots = document.getElementById('heroDots');
+    if(slides.length){
+      slides.forEach((s, i)=>{
+        const div = document.createElement('div');
+        div.className = `hero-slide ${i===0?'active':''}`;
+        div.innerHTML = `<img src="${absUrl(s.imageUrl)}">`;
+        hero.appendChild(div);
+        
+        const dot = document.createElement('span');
+        if(i===0) dot.className = 'active';
+        dots.appendChild(dot);
+      });
+      startSlider();
     }
-  }catch(_){}
+
+    // 3. Featured
+    const feats = await jget('/api/ads/featured');
+    document.getElementById('featGrid').innerHTML = feats.length ? feats.map(a=>renderCard(a, true)).join('') : '<div class="empty-msg">لا توجد إعلانات مميزة حالياً</div>';
+
+    // 4. Latest
+    const lasts = await jget('/api/ads');
+    document.getElementById('lastGrid').innerHTML = lasts.length ? lasts.map(a=>renderCard(a, false)).join('') : '<div class="empty-msg">لا توجد إعلانات</div>';
+
+    // 5. Notifs
+    const notifs = await jget('/api/notifications');
+    const hasUnread = notifs.some(n => n.read === false || n.unread === true);
+    if(hasUnread) document.getElementById('notifArea').classList.add('has-unread');
+
+  } catch(e) { console.log(e); }
 }
 
-/* ===========================
-   2) Hero slides
-=========================== */
-let heroTimer = null;
-
-function startHero(slides, intervalMs){
-  const hero = document.getElementById('hero');
-  const dotsWrap = document.getElementById('heroDots');
-
-  hero.querySelectorAll('.hero-slide').forEach(x=>x.remove());
-  dotsWrap.innerHTML = '';
-
-  if(!slides.length){
-    slides = [{
-      imageUrl:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop'
-    }];
-  }
-
-  slides.forEach((sl, i)=>{
-    const d = document.createElement('a');
-    d.className = 'hero-slide' + (i===0 ? ' active' : '');
-    d.href = sl.linkUrl ? sl.linkUrl : '#';
-    d.style.textDecoration = 'none';
-    if(!sl.linkUrl) d.style.pointerEvents = 'none';
-
-    const img = document.createElement('img');
-    img.src = withCacheBust(sl.imageUrl);
-    img.alt = '';
-
-    d.appendChild(img);
-    hero.insertBefore(d, dotsWrap);
-
-    const dot = document.createElement('span');
-    if(i===0) dot.classList.add('active');
-    dot.onclick = ()=> goTo(i);
-    dotsWrap.appendChild(dot);
-  });
-
-  const heroSlides = hero.querySelectorAll('.hero-slide');
-  const dots = dotsWrap.querySelectorAll('span');
-  let current = 0;
-
-  function goTo(i){
-    heroSlides[current].classList.remove('active');
-    dots[current].classList.remove('active');
-    current = i;
-    heroSlides[current].classList.add('active');
-    dots[current].classList.add('active');
-  }
-
-  if(heroTimer) clearInterval(heroTimer);
-  heroTimer = setInterval(()=>{
-    goTo((current+1) % heroSlides.length);
-  }, Math.max(1500, intervalMs || 4000));
+function startSlider(){
+  let cur = 0;
+  const items = document.querySelectorAll('.hero-slide');
+  const dots = document.querySelectorAll('.hero-indicators span');
+  if(items.length < 2) return;
+  setInterval(()=>{
+    items[cur].classList.remove('active');
+    dots[cur].classList.remove('active');
+    cur = (cur + 1) % items.length;
+    items[cur].classList.add('active');
+    dots[cur].classList.add('active');
+  }, 4000);
 }
 
-async function loadHero(){
-  try{
-    const rows = await jget('/api/home/slides');
-    const slides = (Array.isArray(rows) ? rows : []).map(x=>({
-      imageUrl: x.imageUrl || x.image_url || '',
-      linkUrl: x.linkUrl || x.link_url || ''
-    })).filter(x=>x.imageUrl);
-
-    startHero(slides, 4000);
-  }catch(_){
-    startHero([], 4000);
+// Search Trigger
+document.getElementById('searchIn').addEventListener('keypress', (e)=>{
+  if(e.key === 'Enter'){
+    const q = e.target.value.trim();
+    if(q) window.location.href = '/categories?q=' + encodeURIComponent(q);
   }
-}
-
-/* ===========================
-   3) Ads
-=========================== */
-async function loadFeatured(){
-  const grid = document.getElementById('featuredGrid');
-  grid.innerHTML = '';
-  try{
-    const ads = await jget('/api/ads/featured');
-    const items = (Array.isArray(ads) ? ads : []).filter(isFeatured);
-
-    grid.innerHTML =
-      items.map(a=>renderAdCard(a, true)).join('') ||
-      `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات مميزة</div>`;
-  }catch(_){
-    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات</div>`;
-  }
-}
-
-async function loadLatest(){
-  const grid = document.getElementById('latestGrid');
-  grid.innerHTML = '';
-  try{
-    const ads = await jget('/api/ads');
-    const items = Array.isArray(ads) ? ads : [];
-
-    grid.innerHTML =
-      items.map(a=>renderAdCard(a, false)).join('') ||
-      `<div style="color:rgba(255,255,255,.65)">لا توجد إعلانات</div>`;
-  }catch(_){
-    grid.innerHTML = `<div style="color:rgba(255,255,255,.65)">تعذر تحميل أحدث الإعلانات</div>`;
-  }
-}
-
-/* ===========================
-   Search
-=========================== */
-document.getElementById('searchBtn').addEventListener('click', ()=>{
-  const q = document.getElementById('searchInput').value.trim();
-  if(!q) return;
-  window.location.href = '/categories?q=' + encodeURIComponent(q);
 });
 
-/* ===========================
-   Init
-=========================== */
-(async function init(){
-  await loadBrand();
-  await loadHero();
-  await loadFeatured();
-  await loadLatest();
-  await loadNotificationsDot();
-
-  setInterval(()=>{
-    loadFeatured();
-    loadLatest();
-    loadNotificationsDot();
-  }, 30000);
-})();
+loadHome();
 </script>
 
 </body>

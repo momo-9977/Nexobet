@@ -7,150 +7,260 @@
 
 <style>
 :root{
-  --bg-0:#071024;
-  --bg-1:#081426;
-  --card:rgba(255,255,255,0.05);
-  --stroke:rgba(255,255,255,0.09);
-  --text:#e6eef8;
-  --muted:#9aa8c2;
-  --accent:#2ea3ff;
-  --accent2:#60a5fa;
+  --bg-0:#050b18;
+  --bg-1:#0a1326;
+  --bg-2:#0f1d38;
+  --card-bg:rgba(255,255,255,0.06);
+  --card-border:rgba(255,255,255,0.10);
+  --text:#edf4ff;
+  --muted:#9fb0d0;
+  --accent:#38bdf8;
+  --accent2:#2563eb;
+  --premium:#f59e0b;
+  --premium-2:#fde68a;
   --danger:#ef4444;
   --ok:#34d399;
-  --shadow:0 26px 70px rgba(0,0,0,.55);
+  --shadow:0 30px 80px rgba(0,0,0,.45);
+  --glow:0 0 0 1px rgba(255,255,255,.05), 0 20px 50px rgba(37,99,235,.18);
 }
 
 *{box-sizing:border-box}
+
 body{
   margin:0;
-  font-family:Inter,Arial,sans-serif;
   min-height:100vh;
-  display:grid;
-  place-items:center;
-  padding:22px;
-  background:
-    radial-gradient(circle at 15% 15%, rgba(46,163,255,.22), transparent 35%),
-    radial-gradient(circle at 85% 55%, rgba(167,139,250,.18), transparent 40%),
-    linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  font-family:Inter,Arial,sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
   color:var(--text);
-}
-
-.wrap{
-  width:100%;
-  max-width:980px;
-  display:grid;
-  grid-template-columns:1.05fr .95fr;
-  gap:18px;
-}
-
-@media (max-width:900px){ .wrap{grid-template-columns:1fr} }
-
-.left{
-  border-radius:26px;
-  border:1px solid var(--stroke);
-  background:linear-gradient(135deg, rgba(46,163,255,.10), rgba(255,255,255,.03));
-  box-shadow:var(--shadow);
-  padding:26px;
-  position:relative;
-  overflow:hidden;
-  min-height:540px;
-}
-.left:before{
-  content:"";
-  position:absolute; inset:-120px;
   background:
-    radial-gradient(circle at 30% 30%, rgba(46,163,255,.35), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(244,114,182,.18), transparent 45%),
-    radial-gradient(circle at 20% 80%, rgba(96,165,250,.20), transparent 45%);
-  filter:blur(10px);
-  opacity:.9;
+    radial-gradient(circle at 15% 20%, rgba(56,189,248,.16), transparent 22%),
+    radial-gradient(circle at 85% 15%, rgba(245,158,11,.14), transparent 20%),
+    radial-gradient(circle at 50% 100%, rgba(37,99,235,.18), transparent 30%),
+    linear-gradient(180deg,var(--bg-0),var(--bg-1) 45%,var(--bg-2));
+  overflow-x:hidden;
 }
-.left-inner{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:14px}
 
-.brand{display:flex;align-items:center;gap:12px}
-.logo{
-  width:54px;height:54px;border-radius:16px;
-  display:grid;place-items:center;font-weight:900;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  box-shadow:0 18px 40px rgba(46,163,255,.25);
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  pointer-events:none;
+  z-index:0;
+  filter:blur(60px);
+  opacity:.55;
 }
-.brand h1{margin:0;font-size:24px}
-.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
 
-.note{
-  border-radius:20px;
-  border:1px solid rgba(255,255,255,0.10);
-  background:rgba(0,0,0,.22);
-  backdrop-filter:blur(12px);
-  padding:18px;
+body::before{
+  width:260px;height:260px;
+  top:6%;right:8%;
+  background:radial-gradient(circle, rgba(245,158,11,.28), transparent 70%);
 }
-.note h2{margin:0 0 8px;font-size:18px}
-.note ul{margin:0;padding:0 18px;color:rgba(248,250,252,.92);line-height:1.85;font-size:13.5px}
 
-.right{
-  border-radius:26px;
-  border:1px solid var(--stroke);
-  background:rgba(255,255,255,0.04);
-  backdrop-filter:blur(14px);
-  box-shadow:var(--shadow);
-  padding:26px;
+body::after{
+  width:320px;height:320px;
+  bottom:4%;left:6%;
+  background:radial-gradient(circle, rgba(56,189,248,.22), transparent 70%);
+}
+
+.auth-shell{
   position:relative;
+  z-index:1;
+  width:100%;
+  max-width:520px;
+}
+
+.auth-card{
+  position:relative;
+  border-radius:28px;
+  padding:28px;
+  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border:1px solid var(--card-border);
+  box-shadow:var(--shadow), var(--glow);
+  backdrop-filter:blur(18px);
   overflow:hidden;
 }
-.right:after{
+
+.auth-card::before{
   content:"";
   position:absolute;
-  top:-120px; left:-120px;
-  width:240px; height:240px;
-  background:radial-gradient(circle, rgba(46,163,255,.35), transparent 60%);
-  filter:blur(6px);
-  opacity:.6;
+  inset:0;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.10), transparent 30%, transparent 70%, rgba(255,255,255,.04));
+  pointer-events:none;
 }
 
-h3{margin:0 0 6px;font-size:26px;position:relative;z-index:2}
-.lead{margin:0 0 18px;color:var(--muted);font-size:14px;position:relative;z-index:2}
+.auth-card::after{
+  content:"";
+  position:absolute;
+  top:-90px;
+  left:-60px;
+  width:220px;
+  height:220px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(56,189,248,.18), transparent 70%);
+  pointer-events:none;
+}
 
-.field{position:relative;z-index:2;margin-bottom:14px}
-label{display:block;margin-bottom:8px;font-size:13px;font-weight:900}
-.input{
-  display:flex;align-items:center;gap:10px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,0.10);
-  background:rgba(0,0,0,.25);
-  padding:12px 14px;
-  transition:.18s ease;
+.brand-wrap{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  margin-bottom:22px;
 }
-.input:focus-within{
-  border-color:rgba(46,163,255,.45);
-  box-shadow:0 0 0 6px rgba(46,163,255,.10);
-}
-.input span{opacity:.9;font-size:18px}
-input{
-  width:100%;
-  border:none;
-  outline:none;
-  background:transparent;
-  color:white;
-  font-size:14px;
-}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:520px){.grid2{grid-template-columns:1fr}}
 
-.btn{
-  width:100%;
-  border:none;
-  cursor:pointer;
-  padding:14px;
-  border-radius:16px;
+.brand-badge{
+  width:84px;
+  height:84px;
+  border-radius:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg, rgba(245,158,11,.96), rgba(253,230,138,.95));
+  color:#0f172a;
+  font-size:30px;
   font-weight:900;
-  color:white;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  transition:.18s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.6),
+    0 18px 40px rgba(245,158,11,.28);
+  border:1px solid rgba(255,255,255,.35);
+  margin-bottom:14px;
+}
+
+.brand-title{
+  margin:0;
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.3px;
+  background:linear-gradient(135deg,#ffffff,#dbeafe 55%,#fde68a);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.msg{
+  display:none;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  margin-bottom:14px;
+  font-weight:800;
+  position:relative;
+  z-index:2;
+  background:rgba(0,0,0,.22);
+  backdrop-filter:blur(10px);
+}
+.msg.ok{
+  color:#bbf7d0;
+  border-color:rgba(52,211,153,.24);
+  background:rgba(52,211,153,.10);
+}
+.msg.err{
+  color:#fecaca;
+  border-color:rgba(239,68,68,.24);
+  background:rgba(239,68,68,.10);
+}
+
+form{
   position:relative;
   z-index:2;
 }
-.btn:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(46,163,255,.22)}
-.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+@media (max-width:560px){
+  .grid2{grid-template-columns:1fr}
+}
+
+.field{
+  margin-bottom:14px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  font-size:13px;
+  font-weight:800;
+  color:#dbe7ff;
+}
+
+.input{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.input span{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:18px;
+  opacity:.92;
+  pointer-events:none;
+}
+
+input{
+  width:100%;
+  height:56px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.045);
+  color:var(--text);
+  outline:none;
+  padding:0 48px 0 16px;
+  font-size:15px;
+  transition:.18s ease;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+input::placeholder{
+  color:#8da0c3;
+}
+
+input:focus{
+  border-color:rgba(56,189,248,.55);
+  background:rgba(255,255,255,.07);
+  box-shadow:
+    0 0 0 4px rgba(56,189,248,.10),
+    0 10px 30px rgba(37,99,235,.14);
+}
+
+.btn{
+  width:100%;
+  height:58px;
+  border:none;
+  cursor:pointer;
+  border-radius:18px;
+  font-size:16px;
+  font-weight:900;
+  color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 18px 35px rgba(37,99,235,.28);
+  transition:.18s ease;
+  margin-top:6px;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 24px 40px rgba(37,99,235,.34);
+}
+.btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+  transform:none;
+}
 
 .footer{
   margin-top:16px;
@@ -160,29 +270,43 @@ input{
   position:relative;
   z-index:2;
 }
-.footer a{color:#bfdbfe;text-decoration:none;font-weight:900}
-
-.msg{
-  display:none;
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.10);
-  background:rgba(0,0,0,.25);
-  margin-bottom:14px;
-  font-weight:900;
-  position:relative;
-  z-index:2;
+.footer a{
+  color:#fde68a;
+  text-decoration:none;
+  font-weight:800;
 }
-.msg.ok{color:#86efac;border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.08)}
-.msg.err{color:#fecaca;border-color:rgba(239,68,68,.22);background:rgba(239,68,68,.08)}
+
+@media (max-width:560px){
+  body{padding:16px}
+  .auth-card{
+    border-radius:24px;
+    padding:22px 18px;
+  }
+  .brand-badge{
+    width:72px;
+    height:72px;
+    border-radius:22px;
+    font-size:26px;
+  }
+  .brand-title{
+    font-size:24px;
+  }
+  input,.btn{
+    height:54px;
+    border-radius:16px;
+  }
+}
 </style>
 </head>
 
 <body>
 
-  <section class="right">
-    <h3>إنشاء حساب</h3>
-    <p class="lead">دخل معلوماتك باش تقدر تنشر وتستافد من الخدمات</p>
+<div class="auth-shell">
+  <section class="auth-card">
+    <div class="brand-wrap">
+      <div class="brand-badge">S</div>
+      <h1 class="brand-title">إنشاء حساب</h1>
+    </div>
 
     <div id="msg" class="msg"></div>
 
@@ -192,7 +316,7 @@ input{
           <label>الاسم الكامل</label>
           <div class="input">
             <span>👤</span>
-            <input id="nameInput" required autocomplete="name" placeholder="مثال: محمد...">
+            <input id="nameInput" required autocomplete="name" placeholder="مثال: محمد..." />
           </div>
         </div>
 
@@ -200,7 +324,7 @@ input{
           <label>رقم الهاتف</label>
           <div class="input">
             <span>📱</span>
-            <input id="phoneInput" required autocomplete="tel" placeholder="06XXXXXXXX">
+            <input id="phoneInput" required autocomplete="tel" placeholder="06XXXXXXXX" />
           </div>
         </div>
       </div>
@@ -209,7 +333,7 @@ input{
         <label>البريد الإلكتروني</label>
         <div class="input">
           <span>📧</span>
-          <input id="emailInput" type="email" required autocomplete="email" placeholder="name@email.com">
+          <input id="emailInput" type="email" required autocomplete="email" placeholder="name@email.com" />
         </div>
       </div>
 
@@ -218,7 +342,7 @@ input{
           <label>كلمة المرور</label>
           <div class="input">
             <span>🔑</span>
-            <input id="passInput" type="password" minlength="6" required autocomplete="new-password" placeholder="••••••••">
+            <input id="passInput" type="password" minlength="6" required autocomplete="new-password" placeholder="••••••••" />
           </div>
         </div>
 
@@ -226,7 +350,7 @@ input{
           <label>تأكيد كلمة المرور</label>
           <div class="input">
             <span>✅</span>
-            <input id="confirmInput" type="password" minlength="6" required autocomplete="new-password" placeholder="••••••••">
+            <input id="confirmInput" type="password" minlength="6" required autocomplete="new-password" placeholder="••••••••" />
           </div>
         </div>
       </div>
@@ -246,14 +370,14 @@ const msg = document.getElementById('msg');
 const btn = document.getElementById('submitBtn');
 
 function showMsg(text, ok=true){
-  msg.style.display='block';
-  msg.className='msg ' + (ok ? 'ok' : 'err');
-  msg.textContent=text;
+  msg.style.display = 'block';
+  msg.className = 'msg ' + (ok ? 'ok' : 'err');
+  msg.textContent = text;
 }
 
 form.addEventListener('submit', async (e)=>{
   e.preventDefault();
-  msg.style.display='none';
+  msg.style.display = 'none';
 
   const name = document.getElementById('nameInput').value.trim();
   const phone = document.getElementById('phoneInput').value.trim();
@@ -280,7 +404,8 @@ form.addEventListener('submit', async (e)=>{
     const data = await res.json().catch(()=> ({}));
     if(!res.ok){
       showMsg(data.message || data.error || 'فشل إنشاء الحساب', false);
-      btn.disabled=false; btn.textContent='تسجيل الحساب';
+      btn.disabled = false;
+      btn.textContent = 'تسجيل الحساب';
       return;
     }
 
@@ -289,7 +414,8 @@ form.addEventListener('submit', async (e)=>{
 
   }catch(err){
     showMsg('خطأ في الاتصال بالسيرفر', false);
-    btn.disabled=false; btn.textContent='تسجيل الحساب';
+    btn.disabled = false;
+    btn.textContent = 'تسجيل الحساب';
   }
 });
 </script>

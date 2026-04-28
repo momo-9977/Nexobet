@@ -822,34 +822,45 @@ app.post('/api/auth/register', async (req, res) => {
     await ensureDbShape();
 
     const s = await getSettings();
-    if (!s || s.allow_register !== true) return res.status(403).json({ error: 'REGISTER_DISABLED' });
+    if (!s || s.allow_register !== true) {
+      return res.status(403).json({ error: 'REGISTER_DISABLED' });
+    }
 
     const schema = z.object({
       name: z.string().min(2),
+      phone: z.string().trim().min(6).max(30),
       email: z.string().email(),
       password: z.string().min(6)
     });
 
     const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR' });
+    }
 
-    const { name, email, password } = parsed.data;
+    const { name, phone, email, password } = parsed.data;
 
-    const exists = await q('SELECT id FROM users WHERE lower(email)=lower($1)', [email.trim()]);
-    if (exists.rows[0]) return res.status(409).json({ error: 'EMAIL_EXISTS' });
+    const exists = await q(
+      'SELECT id FROM users WHERE lower(email)=lower($1)',
+      [email.trim()]
+    );
+    if (exists.rows[0]) {
+      return res.status(409).json({ error: 'EMAIL_EXISTS' });
+    }
 
     const hash = await bcrypt.hash(password, 10);
     const id = crypto.randomUUID();
 
     await q(`
-      INSERT INTO users (id,name,email,password,disabled,is_admin,created_at)
-      VALUES ($1,$2,$3,$4,false,false,now())
-    `, [id, name, email.toLowerCase(), hash]);
+      INSERT INTO users (id, name, email, phone, password, disabled, is_admin, created_at)
+      VALUES ($1, $2, $3, $4, $5, false, false, now())
+    `, [id, name, email.toLowerCase(), phone, hash]);
 
     req.session.user = { id, is_admin: false };
     const u = await loadUser(id);
     res.json(safeUserRow(u));
   } catch (e) {
+    console.error(e);
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });

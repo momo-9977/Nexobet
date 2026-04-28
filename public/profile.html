@@ -337,10 +337,11 @@
       <img id="avatarImg" alt="avatar" style="display:none">
     </div>
     <div class="u-meta">
-      <h1 id="userNameMini">...</h1>
-      <p id="userEmailMini">...</p>
-      <span id="verifiedBadge" class="badge verified" style="display:none">✅ موثق</span>
-    </div>
+  <h1 id="userNameMini">...</h1>
+  <p id="userEmailMini">...</p>
+  <p id="userPhoneMini">...</p>
+  <span id="verifiedBadge" class="badge verified" style="display:none">✅ موثق</span>
+</div>
     <input id="avatarInput" type="file" accept="image/*" />
   </section>
 
@@ -666,6 +667,7 @@
 
     qs('#userNameMini').textContent = u.name || 'مستخدم';
     qs('#userEmailMini').textContent = u.email || '';
+    qs('#userPhoneMini').textContent = u.phone || '';
     qs('#nameInput').value = u.name || '';
     qs('#emailInput').value = u.email || '';
     qs('#phoneInput').value = u.phone || '';

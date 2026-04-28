@@ -4,259 +4,204 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>تفاصيل الإعلان</title>
-
   <style>
-    :root{
-      --bg-0:#0a0f1d;
-      --bg-1:#111827;
-      --card-bg:rgba(255,255,255,0.03);
-      --card-border:rgba(255,255,255,0.08);
-      --text:#f8fafc;
-      --muted:#94a3b8;
-      --accent:#3b82f6;
-      --premium-gold:#fbbf24;
-      --whatsapp-color:#25D366;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg-0);
-      color:var(--text);
-      padding-bottom:50px;
-    }
-    .page{max-width:900px;margin:0 auto;padding:15px}
-
-    /* Topbar */
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:12px;
-      margin-bottom:15px;
-      background: var(--card-bg);
-      border-radius:15px;
-      border:1px solid var(--card-border);
+    :root {
+      --primary: #3b82f6;
+      --secondary: #1e293b;
+      --accent: #25d366;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --glass: rgba(255, 255, 255, 0.03);
     }
 
-    /* Slider & Images */
-    .card{
-      background:var(--card-bg);
-      border:1px solid var(--card-border);
-      border-radius:20px;
-      overflow:hidden;
-    }
-    .slider{
-      position:relative;
-      height:350px;
-      background:#000;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-    }
-    .slide img, .slide video{
-      max-width:100%; max-height:100%;
-      object-fit:contain;
-      cursor: zoom-in; /* يشير إلى أن الصورة قابلة للتكبير */
-    }
-    .slide{position:absolute; inset:0; opacity:0; transition:0.3s; display:flex; align-items:center; justify-content:center;}
-    .slide.active{opacity:1; z-index:2;}
-
-    /* Layout Styling */
-    .content{padding:20px; display: flex; flex-direction: column; gap:15px;}
-    
-    .right-align{ text-align: right; }
-    .title{ margin:0; font-size:24px; font-weight:800; color:#fff; }
-    .date{ color:var(--muted); font-size:14px; margin-top:4px; display:block; }
-    
-    /* Price Card */
-    .price-box{
-      background: linear-gradient(90deg, rgba(59,130,246,0.1), transparent);
-      border-right: 4px solid var(--accent);
-      padding: 10px 15px;
-      margin: 10px 0;
-    }
-    .price-value{ font-size: 26px; font-weight: 900; color: var(--accent); }
-
-    /* Description - Centered */
-    .desc-container{
-      background: rgba(255,255,255,0.02);
-      padding: 20px;
-      border-radius: 15px;
-      text-align: center; /* الوصف في الوسط كما طلبت */
-      line-height: 1.8;
-      border: 1px dashed var(--card-border);
-      color: #cbd5e1;
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg); color: var(--text-main); line-height: 1.5;
     }
 
-    /* Premium Buttons */
-    .actions{ display: grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:10px; }
-    .btn-premium{
-      height: 55px;
-      border-radius: 16px;
-      display: flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      font-weight: 800;
-      text-decoration:none;
-      transition: 0.3s;
-      border:none;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .btn-call{
-      background: linear-gradient(135deg, #1e40af, #3b82f6);
-      color: white;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-    }
-    .btn-whatsapp{
-      background: linear-gradient(135deg, #059669, #25D366);
-      color: white;
-      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-    }
-    .btn-premium:hover{ transform: translateY(-3px); filter: brightness(1.1); }
+    .container { max-width: 500px; margin: 0 auto; padding: 12px; }
 
-    /* Modal - تظهر فوق الصفحة */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      inset: 0;
-      background: rgba(0,0,0,0.95);
-      align-items: center;
-      justify-content: center;
+    /* Header Nav */
+    .nav-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; margin-bottom: 10px;
     }
-    .modal.active { display: flex; }
-    .modal img { max-width: 95%; max-height: 90%; object-fit: contain; border-radius: 8px; }
-    .close-modal {
-      position: absolute; top: 20px; right: 20px;
-      color: white; font-size: 35px; cursor: pointer; font-weight: bold;
+    .back-btn {
+      background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
+      color: white; padding: 6px 14px; border-radius: 10px; cursor: pointer; font-size: 13px;
     }
 
-    /* Utilities */
-    .nav-btn{ position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; padding:15px; cursor:pointer; z-index:10; border-radius:50%; }
-    .prev{left:10px} .next{right:10px}
-
-    @media(max-width:600px){
-      .actions{ grid-template-columns: 1fr; }
-      .slider{ height: 280px; }
+    /* Media Slider */
+    .main-card {
+      background: var(--card-bg); border-radius: 24px; overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);
     }
+    .slider-area {
+      position: relative; height: 320px; background: #000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .slide {
+      position: absolute; inset: 0; opacity: 0; transition: 0.4s ease;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .slide.active { opacity: 1; z-index: 2; }
+    .slide img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; }
+
+    /* Info Section */
+    .info-section { padding: 20px; }
+    .top-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .title { margin: 0; font-size: 19px; font-weight: 700; flex: 1; }
+    .price-tag {
+      background: rgba(59, 130, 246, 0.15); color: #60a5fa;
+      padding: 4px 12px; border-radius: 8px; font-weight: 800; font-size: 17px; white-space: nowrap;
+    }
+    .date { color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block; }
+
+    /* Description Box */
+    .description-box {
+      margin-top: 18px; padding: 15px; background: rgba(0,0,0,0.2);
+      border-radius: 16px; font-size: 14px; color: #cbd5e1; text-align: center;
+    }
+    .desc-label { display: block; color: var(--primary); font-weight: bold; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; }
+
+    /* Premium Buttons Layout */
+    .action-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;
+    }
+    .action-btn {
+      height: 48px; border-radius: 14px; border: none; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; transition: 0.2s; text-decoration: none; font-size: 14px;
+    }
+    .btn-call { background: var(--primary); color: white; }
+    .btn-whatsapp { background: var(--accent); color: white; }
+    .action-btn:active { transform: scale(0.96); }
+
+    /* Fullscreen Lightbox */
+    .lightbox {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+      z-index: 9999; align-items: center; justify-content: center;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 95%; max-height: 85%; object-fit: contain; }
+
+    /* Indicators */
+    .dots { position: absolute; bottom: 12px; display: flex; gap: 5px; z-index: 10; }
+    .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 50%; }
+    .dot.active { background: white; width: 15px; border-radius: 4px; }
+
+    @media (max-width: 400px) { .slider-area { height: 260px; } }
   </style>
 </head>
 <body>
 
-<div class="page">
-  <div class="topbar">
-    <button class="btn-premium" style="height:40px; font-size:14px; background:rgba(255,255,255,0.05); color:white; padding:0 15px;" onclick="location.href='/'">الرئيسية</button>
-    <div style="font-weight:bold;">تفاصيل الإعلان</div>
-    <button class="btn-premium" style="height:40px; font-size:14px; background:rgba(255,255,255,0.05); color:white; padding:0 15px;" onclick="history.back()">رجوع</button>
+<div class="container">
+  <div class="nav-header">
+    <button class="back-btn" onclick="history.back()">✕ إغلاق</button>
+    <div style="font-size: 14px; font-weight: 600; opacity: 0.8;">تفاصيل الإعلان</div>
+    <button class="back-btn" onclick="location.href='/'">الرئيسية</button>
   </div>
 
-  <div class="card" id="mainCard">
-    <div id="loading" style="padding:50px; text-align:center; color:var(--muted);">جاري تحميل الإعلان...</div>
+  <div id="content-loader">
+    <div style="text-align:center; padding:40px; color:var(--text-muted);">جاري التحميل...</div>
   </div>
 </div>
 
-<div class="modal" id="imgModal" onclick="this.classList.remove('active')">
-  <span class="close-modal">&times;</span>
-  <img id="modalImg" src="" alt="">
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('open')">
+  <img id="lightbox-img" src="">
 </div>
 
 <script>
-  async function fetchData() {
-    const id = new URLSearchParams(location.search).get('id');
+  async function loadAd() {
+    const id = new URLSearchParams(window.location.search).get('id');
     if(!id) return;
     try {
       const res = await fetch('/api/ads/' + id);
       const ad = await res.json();
-      renderAd(ad);
-    } catch(e) { console.error(e); }
+      renderUI(ad);
+    } catch (err) { console.error("Error fetching ad"); }
   }
 
-  function renderAd(ad) {
-    const container = document.getElementById('mainCard');
-    const title = ad.title || 'بدون عنوان';
-    const price = ad.price ? Number(ad.price).toLocaleString('fr-MA') + ' درهم' : 'ثمن غير محدد';
-    const date = ad.created_at ? new Date(ad.created_at).toLocaleDateString('ar-MA') : '';
+  function renderUI(ad) {
+    const root = document.getElementById('content-loader');
+    const media = ad.images || [];
+    if(ad.image && !media.includes(ad.image)) media.unshift(ad.image);
+    
+    const formattedPrice = ad.price ? Number(ad.price).toLocaleString('fr-MA') + " د.م" : "اتصل للثمن";
     const phone = String(ad.phone || '').replace(/[^\d+]/g,'');
 
-    let mediaHTML = '';
-    let mediaArr = ad.images || [];
-    if(ad.image && !mediaArr.includes(ad.image)) mediaArr.unshift(ad.image);
-
-    container.innerHTML = `
-      <div class="slider" id="slider">
-        ${mediaArr.map((src, i) => `
-          <div class="slide ${i===0?'active':''}" data-index="${i}">
-            <img src="${src}" onclick="openModal('${src}')" alt="image">
+    root.innerHTML = `
+      <div class="main-card">
+        <div class="slider-area" id="slider-area">
+          ${media.map((m, i) => `
+            <div class="slide ${i===0?'active':''}" data-idx="${i}">
+              <img src="${m}" onclick="openZoom('${m}')">
+            </div>
+          `).join('')}
+          <div class="dots">
+            ${media.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('')}
           </div>
-        `).join('')}
-        ${mediaArr.length > 1 ? `
-          <button class="nav-btn prev" onclick="moveSlide(-1)">❮</button>
-          <button class="nav-btn next" onclick="moveSlide(1)">❯</button>
-        ` : ''}
-      </div>
-
-      <div class="content">
-        <div class="right-align">
-          <h1 class="title">${title}</h1>
-          <span class="date">تاريخ النشر: ${date}</span>
         </div>
 
-        <div class="price-box right-align">
-          <div class="price-value">${price}</div>
-        </div>
+        <div class="info-section">
+          <div class="top-meta">
+            <h1 class="title">${ad.title || 'إعلان بدون عنوان'}</h1>
+            <div class="price-tag">${formattedPrice}</div>
+          </div>
+          <span class="date">📅 نُشر في: ${ad.created_at ? new Date(ad.created_at).toLocaleDateString('ar-MA') : 'اليوم'}</span>
 
-        <div class="desc-container">
-          <div style="font-weight:bold; margin-bottom:10px; color:var(--accent);">الوصف</div>
-          ${ad.description || 'لا يوجد وصف متاح'}
-        </div>
+          <div class="description-box">
+            <span class="desc-label">وصف الإعلان</span>
+            ${ad.description || 'لا يوجد وصف متاح حالياً.'}
+          </div>
 
-        <div class="actions">
-          <a href="tel:${phone}" class="btn-premium btn-call">
-            <span>اتصال هاتفي</span>
-          </a>
-          <a href="https://wa.me/${phone.replace('+','')}" target="_blank" class="btn-premium btn-whatsapp">
-            <span>مراسلة واتساب</span>
-          </a>
+          <div class="action-grid">
+            <a href="tel:${phone}" class="action-btn btn-call">
+              <span>📞 إتصال</span>
+            </a>
+            <a href="https://wa.me/${phone.replace('+','')}" target="_blank" class="action-btn btn-whatsapp">
+              <span>💬 واتساب</span>
+            </a>
+          </div>
         </div>
       </div>
     `;
-    
-    initTouchSwipe();
+    setupSwipe();
   }
 
-  // وظيفة فتح الصورة فوق الصفحة
-  function openModal(src) {
-    const modal = document.getElementById('imgModal');
-    const modalImg = document.getElementById('modalImg');
-    modalImg.src = src;
-    modal.classList.add('active');
+  function openZoom(src) {
+    const lb = document.getElementById('lightbox');
+    document.getElementById('lightbox-img').src = src;
+    lb.classList.add('open');
   }
 
-  // السلايدر والتمرير باللمس
   let currentIdx = 0;
-  function moveSlide(step) {
+  function setupSwipe() {
+    const area = document.getElementById('slider-area');
+    if(!area) return;
+    let startX = 0;
+    area.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+    area.addEventListener('touchend', e => {
+      const diff = startX - e.changedTouches[0].clientX;
+      if(Math.abs(diff) > 40) move(diff > 0 ? 1 : -1);
+    });
+  }
+
+  function move(dir) {
     const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
     if(slides.length <= 1) return;
     slides[currentIdx].classList.remove('active');
-    currentIdx = (currentIdx + step + slides.length) % slides.length;
+    dots[currentIdx].classList.remove('active');
+    currentIdx = (currentIdx + dir + slides.length) % slides.length;
     slides[currentIdx].classList.add('active');
+    dots[currentIdx].classList.add('active');
   }
 
-  function initTouchSwipe() {
-    const slider = document.getElementById('slider');
-    let startX = 0;
-    slider.addEventListener('touchstart', e => startX = e.touches[0].clientX, {passive:true});
-    slider.addEventListener('touchend', e => {
-      let diff = startX - e.changedTouches[0].clientX;
-      if(Math.abs(diff) > 50) moveSlide(diff > 0 ? 1 : -1);
-    }, {passive:true});
-  }
-
-  fetchData();
+  loadAd();
 </script>
 
 </body>

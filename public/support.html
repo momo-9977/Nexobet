@@ -3,179 +3,294 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Le Marché — الدعم</title>
+<title>Samsar — مركز الدعم الاحترافي</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg-0:#071024;
-  --bg-1:#081426;
-  --card-bg:rgba(255,255,255,0.04);
-  --card-border:rgba(255,255,255,0.06);
-  --text:#e6eef8;
-  --muted:#9aa8c2;
-  --accent:#2ea3ff;
-  --accent-2:#60a5fa;
-  --shadow:0 20px 45px rgba(0,0,0,.4);
+:root {
+  --primary: #6366f1;
+  --accent: #0ea5e9;
+  --bg-dark: #030712;
+  --card-bg: rgba(17, 24, 39, 0.7);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --premium-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Inter,Arial,sans-serif;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
-    linear-gradient(180deg,var(--bg-0),var(--bg-1));
-  color:var(--text);
-  padding-bottom:90px;
+* {
+  box-sizing: border-box;
+  font-family: 'Tajawal', sans-serif;
 }
 
-.back-btn{
-  position:fixed;
-  top:20px;
-  right:20px;
-  width:48px;height:48px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,.08);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  backdrop-filter:blur(6px);
-  z-index:100;
-  transition:.2s;
-}
-.back-btn:hover{transform:translateY(-3px)}
-
-.page{
-  max-width:1100px;
-  margin:80px auto 40px;
-  padding:20px;
+body {
+  margin: 0;
+  background-color: var(--bg-dark);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.1) 0, transparent 50%);
+  color: var(--text-main);
+  padding-bottom: 60px;
+  min-height: 100vh;
 }
 
-.card{
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  border-radius:24px;
-  padding:24px;
-  margin-bottom:20px;
-  backdrop-filter:blur(12px);
-  box-shadow:var(--shadow);
+/* زر الرجوع المطور */
+.back-btn {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  width: 50px;
+  height: 50px;
+  border-radius: 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.back-btn:hover {
+  transform: translateX(-5px);
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
-.support-hero{
-  border-radius:22px;
-  padding:30px;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:white;
-}
-.support-hero h1{margin:0 0 8px;font-size:30px}
-.support-hero p{margin:0;font-size:14px;line-height:1.8;opacity:.95}
-
-.support-grid{
-  display:grid;
-  grid-template-columns:1.2fr .8fr;
-  gap:20px;
-}
-@media(max-width:900px){
-  .support-grid{grid-template-columns:1fr}
+.page {
+  max-width: 1000px;
+  margin: 100px auto 40px;
+  padding: 0 20px;
 }
 
-.faq-item{
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:18px;
-  margin-bottom:12px;
-  overflow:hidden;
+/* الهيرو سيكشن - واجهة الدعم */
+.support-hero {
+  position: relative;
+  border-radius: 32px;
+  padding: 50px 40px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(14, 165, 233, 0.8));
+  color: white;
+  margin-bottom: 30px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
 }
-.faq-question{
-  width:100%;
-  padding:16px;
-  background:none;
-  border:none;
-  color:white;
-  font-weight:800;
-  text-align:right;
-  cursor:pointer;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.faq-answer{
-  display:none;
-  padding:0 16px 16px;
-  color:var(--muted);
-  font-size:14px;
-  line-height:1.8;
-}
-.faq-item.active .faq-answer{display:block}
 
-.contact-box h3{margin-top:0}
-.support-actions{display:grid;gap:12px;margin-top:12px}
-
-.support-btn{
-  padding:14px;
-  border-radius:18px;
-  text-decoration:none;
-  font-weight:800;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  color:white;
-  transition:.2s;
+.support-hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  filter: blur(60px);
 }
-.support-btn:hover{transform:translateY(-3px)}
-.whatsapp{background:linear-gradient(135deg,#16a34a,#22c55e)}
-.email{background:linear-gradient(135deg,#2563eb,#3b82f6)}
-.telegram{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}
 
-.muted{color:var(--muted);font-size:14px;line-height:1.8}
-.small{font-size:12px;color:rgba(255,255,255,.65)}
+.support-hero h1 {
+  margin: 0 0 15px;
+  font-size: 36px;
+  font-weight: 900;
+  position: relative;
+  z-index: 1;
+}
+
+.support-hero p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.9;
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  border-radius: 28px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 25px;
+}
+
+@media(max-width: 900px) {
+  .support-grid { grid-template-columns: 1fr; }
+  .support-hero { padding: 40px 25px; text-align: center; }
+  .support-hero p { margin: 0 auto; }
+}
+
+/* ستايل الأسئلة الشائعة FAQ */
+h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.faq-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 20px;
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 16px;
+  text-align: right;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.faq-question span:last-child {
+  width: 28px;
+  height: 28px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.faq-answer {
+  display: none;
+  padding: 0 20px 20px;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.7;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 15px;
+}
+
+.faq-item.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.faq-item.active .faq-answer { display: block; }
+.faq-item.active .faq-question span:last-child {
+  transform: rotate(45deg);
+  background: var(--primary);
+}
+
+/* أزرار التواصل الملونة */
+.support-actions {
+  display: grid;
+  gap: 15px;
+}
+
+.support-btn {
+  padding: 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: white;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.support-btn:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.whatsapp { background: linear-gradient(135deg, #128c7e, #25d366); }
+.email { background: linear-gradient(135deg, #4f46e5, #0ea5e9); }
+.telegram { background: linear-gradient(135deg, #0088cc, #33aaff); }
+
+.muted { color: var(--text-muted); font-size: 15px; }
+.small { font-size: 13px; color: rgba(255,255,255,0.5); text-align: center; }
+
+/* تأثير تحميل نيون */
+.loading-glow {
+  color: var(--primary);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 </style>
 </head>
 
 <body>
-<div class="back-btn" onclick="history.back()">←</div>
+<div class="back-btn" onclick="history.back()">🔙</div>
 
 <div class="page">
 
-  <div class="card support-hero">
-    <h1>كيف نقدر نعاونك؟</h1>
-    <p>هنا غادي تلقى أهم الأجوبة على المشاكل الشائعة، وإذا ما لقيتيش الحل تقدر تتواصل معنا مباشرة.</p>
+  <div class="support-hero">
+    <h1>كيف يمكننا مساعدتك؟</h1>
+    <p>فريق سامسار (Samsar) متواجد دائماً لضمان أفضل تجربة لك. تصفح الأسئلة الشائعة أو تواصل معنا مباشرة عبر القنوات المتاحة.</p>
   </div>
 
   <div class="support-grid">
 
-    <!-- FAQ -->
     <div class="card">
-      <h3 style="margin-top:0">الأسئلة الشائعة</h3>
-      <p class="muted" style="margin-top:6px"></p>
-
-      <div id="faqWrap" style="margin-top:14px">
-        <div class="small">... جاري التحميل</div>
+      <h3><span>💎</span> الأسئلة الشائعة</h3>
+      
+      <div id="faqWrap">
+        <div class="small loading-glow">جاري جلب البيانات من السيرفر...</div>
       </div>
     </div>
 
-    <!-- CONTACT -->
     <div class="card contact-box">
-      <h3>تواصل معنا مباشرة</h3>
-      <p class="muted">إلا كان عندك مشكل آخر، استعمل واحدة من وسائل التواصل التالية.</p>
+      <h3><span>💬</span> تواصل مباشر</h3>
+      <p class="muted">هل لا تزال بحاجة لمساعدة؟ اختر الطريقة المناسبة لك:</p>
 
       <div class="support-actions" id="supportActions">
-        <a class="support-btn whatsapp" id="waBtn" href="#" target="_blank" rel="noopener">🟢 واتساب</a>
-        <a class="support-btn email" id="mailBtn" href="#">📧 إيميل</a>
-        <a class="support-btn telegram" id="tgBtn" href="#" target="_blank" rel="noopener">✈️ تيليجرام</a>
+        <a class="support-btn whatsapp" id="waBtn" href="#" target="_blank" rel="noopener">
+          <span>🟢</span> واتساب الدعم
+        </a>
+        <a class="support-btn email" id="mailBtn" href="#">
+          <span>📧</span> المراسلة البريدية
+        </a>
+        <a class="support-btn telegram" id="tgBtn" href="#" target="_blank" rel="noopener">
+          <span>✈️</span> قناة التيليجرام
+        </a>
       </div>
 
-      <div class="small" id="supportNote" style="margin-top:10px"></div>
+      <div class="small" id="supportNote" style="margin-top:20px"></div>
     </div>
 
   </div>
 </div>
 
 <script>
+/* السكريبت الأصلي لضمان بقاء السيرفر شغالاً دون تغيير */
 function toggleFaq(btn){
   btn.parentElement.classList.toggle("active");
 }
@@ -190,12 +305,11 @@ async function jget(url){
 function safeText(s){ return String(s || '').trim(); }
 
 function buildWaLink(raw){
-  // accept: "2126..." or "+2126..." or "06...."
   let p = safeText(raw).replace(/\s+/g,'');
   if(!p) return '';
   p = p.replace(/^\+/, '');
   if(p.startsWith('0')) p = '212' + p.slice(1);
-  if(!p.startsWith('212')) p = '212' + p; // fallback
+  if(!p.startsWith('212')) p = '212' + p;
   return 'https://wa.me/' + p;
 }
 
@@ -212,32 +326,17 @@ async function loadSupportSettings(){
     const em = safeText(s.email);
     const tg = safeText(s.telegram);
 
-    // WhatsApp
-    if(wa){
-      waBtn.href = buildWaLink(wa);
-      waBtn.style.display = 'flex';
-    }else{
-      waBtn.style.display = 'none';
-    }
+    if(wa){ waBtn.href = buildWaLink(wa); waBtn.style.display = 'flex'; }
+    else { waBtn.style.display = 'none'; }
 
-    // Email
-    if(em){
-      mailBtn.href = 'mailto:' + em;
-      mailBtn.style.display = 'flex';
-    }else{
-      mailBtn.style.display = 'none';
-    }
+    if(em){ mailBtn.href = 'mailto:' + em; mailBtn.style.display = 'flex'; }
+    else { mailBtn.style.display = 'none'; }
 
-    // Telegram
-    if(tg){
-      tgBtn.href = tg.startsWith('http') ? tg : ('https://t.me/' + tg.replace('@',''));
-      tgBtn.style.display = 'flex';
-    }else{
-      tgBtn.style.display = 'none';
-    }
+    if(tg){ tgBtn.href = tg.startsWith('http') ? tg : ('https://t.me/' + tg.replace('@','')); tgBtn.style.display = 'flex'; }
+    else { tgBtn.style.display = 'none'; }
 
     if(!wa && !em && !tg){
-      note.textContent = '⚠️ لم يتم إعداد وسائل الدعم بعد من لوحة التحكم.';
+      note.textContent = '⚠️ لم يتم إعداد وسائل الدعم بعد.';
     }else{
       note.textContent = '';
     }

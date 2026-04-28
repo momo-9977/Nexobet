@@ -2,484 +2,458 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Samsar - نشر إعلان</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<title>سمسار - نشر إعلان</title>
 
 <style>
-/* نفس التنسيق السابق بدون تغيير النافيكاسيون */
-
 :root{
-  --bg-0:#071024;
-  --bg-1:#081426;
-  --card-bg:rgba(255,255,255,0.04);
-  --card-border:rgba(255,255,255,0.05);
-  --text:#e6eef8;
-  --accent:#2ea3ff;
-  --danger:#ef4444;
-  --success:#34d399;
+  --bg-main:#0a0f1d;
+  --card-bg:#161e2d;
+  --card-border:rgba(255,255,255,0.06);
+  --text-white:#ffffff;
+  --text-muted:#94a3b8;
+  --accent:#3b82f6;
+  --accent-glow:rgba(59,130,246,0.3);
+  --success:#10b981;
 }
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 
 body{
   margin:0;
-  font-family:Inter,Arial,sans-serif;
-  background:linear-gradient(180deg,var(--bg-0),var(--bg-1));
-  color:var(--text);
-  padding-bottom:90px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color:var(--text-white);
+  padding-bottom:100px;
 }
 
 .container{
-  max-width:900px;
-  margin:80px auto;
-  padding:20px;
+  max-width:550px;
+  margin:20px auto;
+  padding:15px;
+}
+
+.header-title {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header-title h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.header-title p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 5px;
 }
 
 .card{
   background:var(--card-bg);
-  padding:25px;
-  border-radius:18px;
+  padding:20px;
+  border-radius:24px;
   border: 1px solid var(--card-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-input,select,textarea{
+.form-group {
+  margin-bottom: 18px;
+}
+
+label{
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding-right: 5px;
+}
+
+input, select, textarea {
   width:100%;
-  padding:12px;
-  margin:10px 0;
-  border-radius:10px;
-  border:none;
-  background:rgba(255,255,255,.05);
+  padding:12px 15px;
+  border-radius:14px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,.03);
   color:white;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  outline: none;
 }
 
-/* ✅ FIX select dropdown colors (white issue) */
-select{
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
-  background:rgba(255,255,255,.05);
-  color:#fff;
-  border:1px solid rgba(255,255,255,0.10);
-}
-select:focus{
-  outline:none;
-  box-shadow:0 0 0 4px rgba(46,163,255,0.15);
-  border-color:rgba(46,163,255,0.35);
-}
-option{
-  background:#0b172a; /* dark dropdown */
-  color:#fff;
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.05);
+  box-shadow: 0 0 0 4px var(--accent-glow);
 }
 
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Custom Image Upload UI */
+.file-upload-wrapper {
+  position: relative;
+  border: 2px dashed var(--card-border);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  background: rgba(255,255,255,0.01);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.file-upload-wrapper:hover {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.file-upload-wrapper input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Images Preview */
 .preview-grid{
-  display:flex;
-  flex-wrap:wrap;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
   gap:10px;
+  margin-top: 15px;
 }
 
 .image-box{
   position:relative;
+  aspect-ratio: 1/1;
+  border-radius:12px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
 }
 
 .image-box img{
-  width:90px;
-  height:90px;
-  border-radius:10px;
+  width:100%;
+  height:100%;
   object-fit:cover;
-  display:block;
 }
 
 .remove-btn{
   position:absolute;
-  top:-6px;
-  left:-6px;
-  background:red;
+  top:5px;
+  left:5px;
+  background: rgba(239, 68, 68, 0.9);
   color:white;
-  width:20px;
-  height:20px;
+  width:22px;
+  height:22px;
   border-radius:50%;
-  font-size:12px;
+  font-size:14px;
   display:flex;
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  user-select:none;
+  z-index: 5;
+}
+
+/* Progress Bar */
+.progress-container {
+  margin-top: 20px;
+  display: none;
+}
+.progress-container.active { display: block; }
+
+.progress-text {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-muted); margin-bottom: 5px;
 }
 
 .progress{
-  height:6px;
-  background:#1f2937;
+  height:8px;
+  background:rgba(255,255,255,0.05);
   border-radius:10px;
   overflow:hidden;
-  margin-top: 10px;
 }
 
 .progress span{
   display:block;
   height:100%;
   width:0%;
-  background:var(--accent);
+  background: linear-gradient(90deg, var(--accent), #60a5fa);
+  transition: width 0.3s ease;
 }
 
-button{
-  background:var(--accent);
+button[type="submit"]{
+  background: var(--accent);
   color:white;
-  padding:14px;
+  padding:15px;
   border:none;
-  border-radius:10px;
+  border-radius:16px;
   cursor:pointer;
   width:100%;
   font-weight: 800;
+  font-size: 16px;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px var(--accent-glow);
+  transition: 0.3s;
 }
+
+button[type="submit"]:active { transform: scale(0.98); }
+button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .toast{
   position:fixed;
-  top:20px;
+  bottom:90px;
   left:50%;
   transform:translateX(-50%);
   background:var(--success);
-  padding:12px 20px;
-  border-radius:10px;
+  color: white;
+  padding:12px 25px;
+  border-radius:12px;
   display:none;
-  z-index: 9999;
+  z-index: 10000;
+  font-weight: 700;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
 
-/* ================= NAV (UNCHANGED) ================= */
-
-.modern-flat-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:70px;
-  background:#ffffff;
-  border-top:1px solid #e5e7eb;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  z-index:999;
+/* ================= NAV (UNIFIED) ================= */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
+  background: #ffffff; display: flex; align-items: center;
+  justify-content: space-around; z-index: 1000; border-top: 1px solid #eee;
+  padding-bottom: env(safe-area-inset-bottom);
 }
-
-.modern-flat-item{
-  flex:1;
-  text-align:center;
-  text-decoration:none;
-  color:#6b7280;
-  font-size:12px;
-  font-weight:600;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
+.nav-link {
+  display: flex; flex-direction: column; align-items: center;
+  text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 600; gap:4px;
 }
+.nav-link.active { color: #16a34a; }
+.nav-link svg { width: 22px; height: 22px; }
 
-.modern-flat-nav svg{
-  width:22px !important;
-  height:22px !important;
-}
+/* Select Options Styling */
+option { background: #161e2d; color: white; }
 
-.modern-flat-item.active{
-  color:#16a34a;
-}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-<div class="card">
+  <div class="header-title">
+    <h2>نشر إعلان جديد</h2>
+    <p>املأ البيانات التالية لبيع سلعتك بسرعة</p>
+  </div>
 
-<h2>نشر إعلان جديد</h2>
+  <div class="card">
+    <form id="postForm">
+      <input type="hidden" id="csrf" name="csrf">
 
-<form id="postForm">
+      <div class="form-group">
+        <label>عنوان الإعلان</label>
+        <input id="title" name="title" placeholder="مثلاً: iPhone 13 Pro Max..." required>
+      </div>
 
-<input type="hidden" id="csrf" name="csrf">
+      <div class="form-group">
+        <label>التصنيف</label>
+        <select id="category" name="category" required>
+          <option value="">تحميل التصنيفات...</option>
+        </select>
+      </div>
 
-<label>العنوان</label>
-<input id="title" name="title" required>
+      <div class="form-group">
+        <label>الثمن (درهم)</label>
+        <input type="number" id="price" name="price" min="0" placeholder="0.00" required>
+      </div>
 
-<label>الوصف</label>
-<textarea id="description" name="description" required></textarea>
+      <div class="form-group">
+        <label>المدينة</label>
+        <input id="city" name="city" placeholder="الدار البيضاء، طنجة..." required>
+      </div>
 
-<label>الثمن</label>
-<input type="number" id="price" name="price" min="0" required>
+      <div class="form-group">
+        <label>وصف الإعلان</label>
+        <textarea id="description" name="description" placeholder="اكتب تفاصيل الإعلان هنا..." required></textarea>
+      </div>
 
-<label>المدينة</label>
-<input id="city" name="city" placeholder="المدينة..." required>
+      <div class="form-group">
+        <label>الصور (حد أقصى 6)</label>
+        <div class="file-upload-wrapper">
+          <span class="upload-icon">📸</span>
+          <span style="font-size: 12px; color: var(--text-muted);">اضغط هنا لاختيار الصور</span>
+          <input type="file" id="images" name="images" multiple accept="image/*">
+        </div>
+        <div class="preview-grid" id="imagePreview"></div>
+      </div>
 
-<label>التصنيف</label>
-<select id="category" name="category" required>
-  <!-- ✅ will be filled from API, fallback if fails -->
-  <option value="">تحميل التصنيفات...</option>
-</select>
+      <div class="form-group">
+        <label>الفيديو (اختياري)</label>
+        <div class="file-upload-wrapper">
+          <span class="upload-icon">🎥</span>
+          <span style="font-size: 12px; color: var(--text-muted);">تحميل فيديو توضيحي</span>
+          <input type="file" id="video" name="video" accept="video/*">
+        </div>
+        <video id="videoPreview" controls style="display:none;width:100%;margin-top:10px;border-radius:12px;"></video>
+      </div>
 
-<label>الصور (حد أقصى 6)</label>
-<input type="file" id="images" name="images" multiple accept="image/*">
-<div class="preview-grid" id="imagePreview"></div>
+      <div class="progress-container" id="progressArea">
+        <div class="progress-text">
+          <span>جاري الرفع...</span>
+          <span id="percentLabel">0%</span>
+        </div>
+        <div class="progress"><span id="progressBar"></span></div>
+      </div>
 
-<label>الفيديو (حد أقصى 1GB)</label>
-<input type="file" id="video" name="video" accept="video/*">
-<video id="videoPreview" controls style="display:none;width:200px"></video>
-
-<div class="progress"><span id="progressBar"></span></div>
-
-<button type="submit" id="submitBtn">نشر الإعلان</button>
-
-</form>
-
+      <button type="submit" id="submitBtn">نشر الإعلان الآن</button>
+    </form>
+  </div>
 </div>
-</div>
 
-<div class="toast" id="toast">تم نشر الإعلان بنجاح ✔</div>
+<div class="toast" id="toast">تم نشر إعلانك بنجاح! 🎉</div>
 
-<!-- NAVIGATION (UNCHANGED) -->
-<nav class="modern-flat-nav">
-
-  <a href="/" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
+<nav class="bottom-nav">
+  <a href="/" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
     <span>الرئيسية</span>
   </a>
-
-  <a href="/categories" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
+  <a href="/categories" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
     <span>الأقسام</span>
   </a>
-
-  <a href="/post-ad" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
+  <a href="/post-ad" class="nav-link active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
     <span>نشر</span>
   </a>
-
-  <a href="/profile" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
+  <a href="/profile" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     <span>بروفايل</span>
   </a>
-
 </nav>
 
 <script>
+// المنطق البرمجي (بدون أي تعديل على روابط السيرفر)
 const MAX_IMAGES = 6;
 const MAX_VIDEO = 1024 * 1024 * 1024;
-
 const imagesInput = document.getElementById('images');
 const preview = document.getElementById('imagePreview');
 const categorySelect = document.getElementById('category');
 const progressBar = document.getElementById('progressBar');
+const progressArea = document.getElementById('progressArea');
+const percentLabel = document.getElementById('percentLabel');
 const submitBtn = document.getElementById('submitBtn');
 
 let selectedImages = [];
 let categoriesLoaded = false;
 
-/* =========================
-   ✅ CATEGORIES API
-   GET /api/categories
-   IMPORTANT: لازم يرجّع id الحقيقي (uuid أو text) اللي كيوافق ads.category_id
-========================= */
-
 async function loadCategories(){
   try{
     const res = await fetch('/api/categories', { credentials:'include' });
-
-    if(!res.ok){
-      const text = await res.text();
-      console.error('Categories API error:', text);
-      throw new Error('API failed');
-    }
-
+    if(!res.ok) throw new Error('API failed');
     const cats = await res.json();
-    console.log('Categories loaded:', cats);
-
     categorySelect.innerHTML = '<option value="">اختر التصنيف</option>';
-
-    if(!Array.isArray(cats) || !cats.length){
-      categorySelect.innerHTML = '<option value="">لا توجد تصنيفات</option>';
-      categoriesLoaded = false;
-      return;
+    if(Array.isArray(cats)){
+      cats.forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = String(c.id);
+        opt.textContent = c.name;
+        categorySelect.appendChild(opt);
+      });
+      categoriesLoaded = true;
     }
-
-    cats.forEach(c=>{
-      if(!c || !c.id) return;
-
-      const opt = document.createElement('option');
-      opt.value = String(c.id);
-      opt.textContent = c.name || 'بدون اسم';
-      categorySelect.appendChild(opt);
-    });
-
-    categoriesLoaded = true;
-
   }catch(e){
-    console.error('Failed loading categories:', e);
-    categoriesLoaded = false;
     categorySelect.innerHTML = '<option value="">فشل تحميل التصنيفات</option>';
   }
 }
-
 loadCategories();
 
-
-/* =========================
-   ✅ IMAGES (append + remove)
-========================= */
 imagesInput.addEventListener('change', (e) => {
   const newFiles = Array.from(e.target.files || []);
-  if(!newFiles.length) return;
-
-  const merged = selectedImages.concat(newFiles);
-
-  if (merged.length > MAX_IMAGES) {
+  if(selectedImages.length + newFiles.length > MAX_IMAGES) {
     alert('الحد الأقصى 6 صور');
-    imagesInput.value = '';
     return;
   }
-
-  selectedImages = merged;
-  applySelectedImagesToInput();
+  selectedImages = selectedImages.concat(newFiles);
   renderSelectedImages();
 });
 
 function renderSelectedImages(){
   preview.innerHTML = '';
-
   selectedImages.forEach((file, idx) => {
     const box = document.createElement('div');
     box.className = 'image-box';
-
     const img = document.createElement('img');
     img.src = URL.createObjectURL(file);
-    img.onload = () => URL.revokeObjectURL(img.src);
-
     const remove = document.createElement('div');
     remove.className = 'remove-btn';
     remove.textContent = '×';
-    remove.addEventListener('click', () => {
+    remove.onclick = () => {
       selectedImages.splice(idx, 1);
-      applySelectedImagesToInput();
       renderSelectedImages();
-    });
-
+    };
     box.appendChild(img);
     box.appendChild(remove);
     preview.appendChild(box);
   });
 }
 
-function applySelectedImagesToInput(){
-  const dt = new DataTransfer();
-  selectedImages.forEach(f => dt.items.add(f));
-  imagesInput.files = dt.files;
-}
-
-/* =========================
-   ✅ VIDEO (limit 1GB + preview)
-========================= */
 document.getElementById('video').addEventListener('change', e=>{
   const file = e.target.files[0];
-  if(!file) return;
-
-  if(file.size > MAX_VIDEO){
+  if(file && file.size > MAX_VIDEO){
     alert('الفيديو أكبر من 1GB');
     e.target.value='';
-    const v = document.getElementById('videoPreview');
-    v.style.display='none';
-    v.src='';
     return;
   }
-
-  const video = document.getElementById('videoPreview');
-  video.src = URL.createObjectURL(file);
-  video.style.display='block';
+  if(file){
+    const video = document.getElementById('videoPreview');
+    video.src = URL.createObjectURL(file);
+    video.style.display='block';
+  }
 });
 
-/* =========================
-   ✅ SUBMIT
-   POST /api/ads
-   fields: title, description, price, city, category, images[], video
-========================= */
 document.getElementById('postForm').addEventListener('submit', (e)=>{
   e.preventDefault();
-
-  if(!categoriesLoaded){
-    alert('التصنيفات ما تحمّلاتش. دخل للأدمن وزيد تصنيفات أو حدّث الصفحة.');
-    return;
-  }
-
-  if(!categorySelect.value){
-    alert('اختر التصنيف');
-    return;
-  }
-
+  if(!categorySelect.value) return alert('اختر التصنيف');
+  
   submitBtn.disabled = true;
   submitBtn.textContent = 'جاري النشر...';
-  progressBar.style.width = '0%';
+  progressArea.classList.add('active');
 
   const formData = new FormData();
-  formData.append('title', document.getElementById('title').value.trim());
-  formData.append('description', document.getElementById('description').value.trim());
+  formData.append('title', document.getElementById('title').value);
+  formData.append('description', document.getElementById('description').value);
   formData.append('price', document.getElementById('price').value);
-  formData.append('city', document.getElementById('city').value.trim());
+  formData.append('city', document.getElementById('city').value);
   formData.append('category', categorySelect.value);
-
-  selectedImages.slice(0, MAX_IMAGES).forEach(f => formData.append('images', f));
-
+  selectedImages.forEach(f => formData.append('images', f));
   const videoFile = document.getElementById('video').files[0];
   if(videoFile) formData.append('video', videoFile);
 
   const xhr = new XMLHttpRequest();
   xhr.open('POST','/api/ads');
   xhr.withCredentials = true;
-
   xhr.upload.onprogress = (ev) => {
     if(ev.lengthComputable){
-      const percent = (ev.loaded / ev.total) * 100;
-      progressBar.style.width = percent + '%';
+      const p = Math.round((ev.loaded / ev.total) * 100);
+      progressBar.style.width = p + '%';
+      percentLabel.textContent = p + '%';
     }
   };
-
   xhr.onload = () => {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'نشر الإعلان';
-
     if (xhr.status >= 200 && xhr.status < 300){
       document.getElementById('toast').style.display='block';
-      setTimeout(()=>location.href='/profile', 900);
-      return;
+      setTimeout(()=>location.href='/profile', 1500);
+    } else {
+      alert('حدث خطأ: ' + xhr.responseText);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'نشر الإعلان الآن';
     }
-
-    if (xhr.status === 401){
-      alert('خاصك تسجل الدخول');
-      window.location.href = '/login';
-      return;
-    }
-
-    // ✅ عرض الخطأ الحقيقي من السيرفر
-    let msg = 'فشل نشر الإعلان';
-    try{
-      const j = JSON.parse(xhr.responseText || '{}');
-      msg = j.message || j.error || msg;
-      // إذا كان UUID مشكل كيبان غالباً فـ error
-    }catch(_){
-      if(xhr.responseText) msg = xhr.responseText.slice(0, 200);
-    }
-    alert(msg);
-    progressBar.style.width = '0%';
   };
-
-  xhr.onerror = () => {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'نشر الإعلان';
-    alert('خطأ في الاتصال');
-    progressBar.style.width = '0%';
-  };
-
   xhr.send(formData);
 });
 </script>

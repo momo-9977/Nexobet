@@ -2,804 +2,267 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>الأقسام</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<title>الأقسام - سمسار</title>
 
 <style>
   :root{
-    --bg0:#071024;
-    --bg1:#0c1524;
-    --card:rgba(255,255,255,0.04);
-    --border:rgba(255,255,255,0.06);
-    --text:#e6eef8;
-    --muted:#9aa8c2;
-    --accent:#2ea3ff;
-    --accent2:#60a5fa;
-    --shadow:0 18px 45px rgba(0,0,0,.35);
+    --bg-main:#0a0f1d;
+    --card-bg:#161e2d;
+    --card-border:rgba(255,255,255,0.06);
+    --text-white:#ffffff;
+    --text-muted:#94a3b8;
+    --accent:#3b82f6;
+    --accent-light:#60a5fa;
   }
-  *{box-sizing:border-box}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{
     margin:0;
-    font-family:Inter,Arial,sans-serif;
-    background:
-      radial-gradient(circle at 10% 10%, rgba(46,163,255,0.08), transparent 20%),
-      linear-gradient(180deg,var(--bg0),var(--bg1));
-    color:var(--text);
-    padding-bottom:90px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-main);
+    color:var(--text-white);
+    padding-bottom:100px;
   }
 
+  /* Top Bar */
   .top-bar{
-    position:sticky;
-    top:0;
-    z-index:1000;
-    background:rgba(15,23,42,0.78);
-    backdrop-filter:blur(18px);
-    border-bottom:1px solid rgba(255,255,255,0.06);
-    padding:14px 18px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:14px;
-  }
-  .title-wrap{
-    display:flex;
-    align-items:center;
-    gap:12px;
+    position:sticky; top:0; z-index:1000;
+    background:rgba(10, 15, 29, 0.8);
+    backdrop-filter:blur(15px);
+    border-bottom:1px solid var(--card-border);
+    padding:12px 18px;
+    display:flex; align-items:center; justify-content:space-between;
   }
   .back-btn{
-    width:40px;
-    height:40px;
-    border-radius:14px;
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.08);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    user-select:none;
-    transition:.15s;
+    width:38px; height:38px; border-radius:12px;
+    background: rgba(255,255,255,0.05); border:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:white;
   }
-  .back-btn:hover{transform:translateY(-1px)}
-  .top-title{
-    font-weight:900;
-    letter-spacing:.2px;
-  }
+  .top-title{ font-size:17px; font-weight:800; color:white; }
 
-  .page{
-    max-width:1200px;
-    margin:18px auto;
-    padding:18px;
-  }
+  .page{ max-width:600px; margin:0 auto; padding:15px; }
 
+  /* Category Grid */
   .category-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
-    gap:12px;
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;
   }
   .cat-card{
-    border-radius:22px;
-    overflow:hidden;
-    background:rgba(255,255,255,0.035);
-    border:1px solid rgba(255,255,255,0.06);
-    box-shadow:var(--shadow);
-    text-decoration:none;
-    color:inherit;
-    cursor:pointer;
-    transition:.2s;
+    border-radius:20px; overflow:hidden;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    text-decoration:none; color:inherit; transition:0.2s;
   }
-  .cat-card:hover{transform:translateY(-4px)}
-  .cat-img{
-    width:100%;
-    height:130px;
-    object-fit:cover;
-    display:block;
-    background:rgba(255,255,255,0.05);
+  .cat-card:active{ transform:scale(0.96); }
+  .cat-img{ width:100%; height:110px; object-fit:cover; background:rgba(0,0,0,0.2); }
+  .cat-body{ padding:12px; text-align:center; }
+  .cat-name{ margin:0; font-size:14px; font-weight:800; }
+
+  /* Filter Controls */
+  .filter-box{
+    background: var(--card-bg); border-radius:20px; padding:15px;
+    margin-bottom:20px; border:1px solid var(--card-border);
   }
-  .cat-body{
-    padding:10px;
+  .filter-row{ display:flex; gap:8px; margin-top:10px; }
+  .input-field{
+    flex:1; background:rgba(0,0,0,0.2); border:1px solid var(--card-border);
+    padding:10px; border-radius:12px; color:white; font-size:13px; outline:none;
   }
-  .cat-name{
-    margin:0;
-    font-size:14px;
-    font-weight:800;
-    line-height:1.2;
-  }
-  .cat-desc{
-    margin:4px 0 0;
-    color:rgba(255,255,255,.6);
-    font-size:11px;
-    min-height:auto;
+  .input-field:focus{ border-color:var(--accent); }
+  .btn-apply{
+    background: var(--accent); color:white; border:none; padding:10px 20px;
+    border-radius:12px; font-weight:800; cursor:pointer; font-size:13px;
   }
 
-  .controls{
-    margin-top:10px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .controls-left{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    align-items:center;
-    flex:1;
-  }
-  .input{
-    padding:12px 14px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.10);
-    background:rgba(255,255,255,0.06);
-    color:var(--text);
-    outline:none;
-    min-width:220px;
-  }
-  .input.small{
-    min-width:140px;
-    width:140px;
-  }
-  .btn{
-    padding:12px 14px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.10);
-    background:rgba(255,255,255,0.06);
-    color:var(--text);
-    cursor:pointer;
-    user-select:none;
-    transition:.15s;
-    white-space:nowrap;
-  }
-  .btn:hover{transform:translateY(-1px)}
-  .btn.primary{
-    border:none;
-    background:linear-gradient(135deg,var(--accent),var(--accent2));
-    color:#fff;
-    font-weight:900;
-  }
-
+  /* Ads Grid */
   .ads-grid{
-    margin-top:16px;
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-    gap:18px;
+    display:grid; grid-template-columns: 1fr 1fr; gap:12px;
   }
-  .ad-card{
-    border-radius:22px;
-    overflow:hidden;
-    background:rgba(255,255,255,0.035);
-    border:1px solid rgba(255,255,255,0.06);
-    box-shadow:var(--shadow);
-    text-decoration:none;
-    color:inherit;
-    transition:.2s;
+  .ad-item{
+    background:var(--card-bg); border-radius:18px; overflow:hidden;
+    text-decoration:none; color:inherit; border:1px solid var(--card-border);
+    position:relative; transition:0.2s;
   }
-  .ad-card:hover{transform:translateY(-4px)}
-  .ad-img{
-    width:100%;
-    height:190px;
-    object-fit:cover;
-    display:block;
-    background:rgba(255,255,255,0.05);
-  }
-  .ad-body{padding:14px}
-  .ad-title{
-    margin:0;
-    font-size:16px;
-    font-weight:900;
-    line-height:1.3;
-  }
-  .ad-meta{
-    margin-top:8px;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    color:rgba(255,255,255,.68);
-    font-size:12px;
-  }
-  .ad-price{
-    margin-top:10px;
-    font-size:18px;
-    font-weight:900;
-    color:#fff;
-  }
+  .ad-item:active{ transform:scale(0.97); }
+  .ad-thumb{ width:100%; height:120px; object-fit:cover; }
+  .ad-info{ padding:10px; }
+  .ad-name{ font-size:13px; font-weight:700; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ad-val{ font-size:14px; font-weight:900; color:var(--accent-light); margin-top:5px; }
 
+  /* Skeleton Loading */
   .skeleton{
-    border-radius:22px;
-    background:linear-gradient(90deg,#1f2937 25%,#374151 50%,#1f2937 75%);
-    background-size:200% 100%;
-    animation:loading 1.5s infinite;
-    border:1px solid rgba(255,255,255,0.04);
+    background: linear-gradient(90deg, #161e2d 25%, #1c263b 50%, #161e2d 75%);
+    background-size: 200% 100%; animation: loading 1.5s infinite; border-radius:15px;
   }
-  .sk-cat{height:260px}
-  .sk-ad{height:280px}
+  @keyframes loading{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-  @keyframes loading{
-    0%{background-position:200% 0}
-    100%{background-position:-200% 0}
+  /* Bottom Navigation (Matched with Homepage) */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
+    background: #ffffff; display: flex; align-items: center;
+    justify-content: space-around; z-index: 1000; border-top: 1px solid #eee;
+    padding-bottom: env(safe-area-inset-bottom);
   }
-  .empty{
-    margin-top:40px;
-    text-align:center;
-    color:var(--muted);
+  .nav-link {
+    display: flex; flex-direction: column; align-items: center;
+    text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 600; gap:4px;
   }
+  .nav-link.active { color: #16a34a; }
+  .nav-link svg { width: 22px; height: 22px; }
 
-  .modern-flat-nav{
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    height:70px;
-    background:#ffffff;
-    border-top:1px solid #e5e7eb;
-    display:flex;
-    justify-content:space-around;
-    align-items:center;
-    z-index:999;
-  }
-  .modern-flat-item{
-    flex:1;
-    text-align:center;
-    text-decoration:none;
-    color:#6b7280;
-    font-size:12px;
-    font-weight:600;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:4px;
-  }
-  .modern-flat-nav svg{
-    width:22px !important;
-    height:22px !important;
-  }
-  .modern-flat-item.active{
-    color:#16a34a;
-  }
-
-  @media(max-width:560px){
-    .input{min-width:160px}
-    .input.small{min-width:120px; width:120px;}
-  }
-  
-  @media(max-width:600px){
-  .category-grid{
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-  }
-}
+  .empty-state{ text-align:center; padding:40px; color:var(--text-muted); font-size:14px; }
 </style>
 </head>
 
 <body>
 
 <div class="top-bar">
-  <div class="title-wrap">
-    <div class="back-btn" id="backBtn">←</div>
-    <div class="top-title" id="topTitle">الأقسام</div>
+  <div class="back-btn" id="backBtn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
   </div>
-</div>
+  <div class="top-title" id="topTitle">الأقسام</div>
+  <div style="width:38px;"></div> </div>
 
 <div class="page">
 
   <section id="catsView">
     <div id="catsGrid" class="category-grid">
-      <div class="skeleton sk-cat"></div>
-      <div class="skeleton sk-cat"></div>
-      <div class="skeleton sk-cat"></div>
+      <div class="skeleton" style="height:160px"></div>
+      <div class="skeleton" style="height:160px"></div>
     </div>
-    <div id="catsEmpty" class="empty" style="display:none;">لا توجد أقسام</div>
   </section>
 
   <section id="adsView" style="display:none;">
-    <div class="controls">
-      <div class="controls-left">
-        <input id="adsSearch" class="input" placeholder="بحث داخل هذا القسم..." />
-        <input id="minPrice" class="input small" type="number" min="0" placeholder="من (د.م)" />
-        <input id="maxPrice" class="input small" type="number" min="0" placeholder="إلى (د.م)" />
-        <button id="applyFilters" class="btn primary">تحديث</button>
+    <div class="filter-box">
+      <div style="font-size:12px; font-weight:700; color:var(--accent-light); margin-bottom:10px;">تصفية النتائج</div>
+      <input id="adsSearch" class="input-field" style="width:100%" placeholder="ابحث عن إعلان محدد..." />
+      <div class="filter-row">
+        <input id="minPrice" class="input-field" type="number" placeholder="الثمن من" />
+        <input id="maxPrice" class="input-field" type="number" placeholder="إلى" />
+        <button id="applyFilters" class="btn-apply">تطبيق</button>
       </div>
     </div>
 
-    <div id="adsGrid" class="ads-grid" style="margin-top:14px;">
-      <div class="skeleton sk-ad"></div>
-      <div class="skeleton sk-ad"></div>
-      <div class="skeleton sk-ad"></div>
-    </div>
-    <div id="adsEmpty" class="empty" style="display:none;">لا توجد إعلانات في هذا القسم</div>
+    <div id="adsGrid" class="ads-grid"></div>
   </section>
 
 </div>
 
-<nav class="modern-flat-nav">
-
-  <a href="/" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1v-9.5z"/>
-    </svg>
+<nav class="bottom-nav">
+  <a href="/" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
     <span>الرئيسية</span>
   </a>
-
-  <a href="/categories" class="modern-flat-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 6h7v7H3V6zm11 0h7v7h-7V6zM3 15h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-    </svg>
+  <a href="/categories" class="nav-link active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
     <span>الأقسام</span>
   </a>
-
-  <a href="/post-ad" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14"/>
-    </svg>
+  <a href="/post-ad" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
     <span>نشر</span>
   </a>
-
-  <a href="/profile" class="modern-flat-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    </svg>
+  <a href="/profile" class="nav-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     <span>بروفايل</span>
   </a>
-
 </nav>
 
 <script>
-function esc(s=''){
-  return String(s).replace(/[&<>"']/g, m => (
-    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
-  ));
-}
-
-function absUrlMaybe(u){
-  const v = String(u || '').trim();
-  if(!v) return '';
-  if(/^https?:\/\//i.test(v) || v.startsWith('data:')) return v;
-  return v.startsWith('/') ? v : ('/' + v);
+// الدوال المساعدة (بدون تغيير في منطق السيرفر)
+function absUrl(u){
+  if(!u) return '';
+  return /^https?:\/\//i.test(u) || u.startsWith('data:') ? u : (u.startsWith('/') ? u : '/' + u);
 }
 
 function formatPrice(p){
-  const n = Number(p);
-  if(Number.isFinite(n)) return n.toLocaleString('fr-MA') + ' د.م';
-  return p ? (String(p) + ' د.م') : '';
+  return p ? Number(p).toLocaleString('fr-MA') + ' د.م' : '--';
 }
 
 async function jget(url){
   const res = await fetch(url, { credentials:'include' });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  return data;
+  return await res.json();
 }
-
-function getParam(name){
-  const sp = new URLSearchParams(location.search);
-  return String(sp.get(name) || '').trim();
-}
-
-function setCategoryInUrl(cat){
-  const sp = new URLSearchParams(location.search);
-  if(cat) sp.set('category', cat);
-  else sp.delete('category');
-  const next = location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
-  history.pushState({}, '', next);
-}
-
-function norm(v){
-  return String(v || '').trim().toLowerCase();
-}
-
-const placeholderCat = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520">
-    <defs>
-      <linearGradient id="g" x1="0" x2="1">
-        <stop offset="0" stop-color="#0b1222"/>
-        <stop offset="1" stop-color="#0e1a33"/>
-      </linearGradient>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#g)"/>
-    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-          fill="#93a3bf" font-size="28" font-family="Arial">SAMSAR</text>
-  </svg>`
-);
-
-const placeholderAd = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520">
-    <rect width="100%" height="100%" fill="#0b1222"/>
-    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-          fill="#93a3bf" font-size="26" font-family="Arial">No Image</text>
-  </svg>`
-);
-
-const els = {
-  backBtn: document.getElementById('backBtn'),
-  topTitle: document.getElementById('topTitle'),
-
-  catsView: document.getElementById('catsView'),
-  catsGrid: document.getElementById('catsGrid'),
-  catsEmpty: document.getElementById('catsEmpty'),
-
-  adsView: document.getElementById('adsView'),
-  adsGrid: document.getElementById('adsGrid'),
-  adsEmpty: document.getElementById('adsEmpty'),
-
-  adsSearch: document.getElementById('adsSearch'),
-  minPrice: document.getElementById('minPrice'),
-  maxPrice: document.getElementById('maxPrice'),
-  applyFilters: document.getElementById('applyFilters'),
-};
 
 const state = {
-  categories: [],
-  selectedCategory: null,
-  categoryAds: []
+  allAds: [],
+  selectedCategory: null
 };
 
-function getCatId(cat){
-  return String(cat.id || '').trim();
-}
-
-function getCatKey(cat){
-  return String(cat.key || '').trim();
-}
-
-function getCatName(cat){
-  return String(cat.name || cat.title || '').trim();
-}
-
-function getCatDesc(cat){
-  return String(cat.description || cat.desc || '').trim();
-}
-
-function getCatImage(cat){
-  return absUrlMaybe(cat.image_url || cat.imageUrl || cat.image || cat.cover || cat.photo || '');
-}
-
-function showCats(){
-  els.catsView.style.display = '';
-  els.adsView.style.display = 'none';
-  els.topTitle.textContent = 'الأقسام';
-}
-
-function showAds(){
-  els.catsView.style.display = 'none';
-  els.adsView.style.display = '';
-  els.topTitle.textContent = state.selectedCategory?.name || 'إعلانات القسم';
-}
-
-function catsSkeleton(){
-  els.catsGrid.innerHTML = `
-    <div class="skeleton sk-cat"></div>
-    <div class="skeleton sk-cat"></div>
-    <div class="skeleton sk-cat"></div>
-  `;
-  els.catsEmpty.style.display = 'none';
-}
-
-function adsSkeleton(){
-  els.adsGrid.innerHTML = `
-    <div class="skeleton sk-ad"></div>
-    <div class="skeleton sk-ad"></div>
-    <div class="skeleton sk-ad"></div>
-  `;
-  els.adsEmpty.style.display = 'none';
-}
-
-function findCategoryByAny(value){
-  const v = norm(value);
-  if(!v) return null;
-
-  return state.categories.find(cat => {
-    return (
-      norm(getCatId(cat)) === v ||
-      norm(getCatKey(cat)) === v ||
-      norm(getCatName(cat)) === v
-    );
-  }) || null;
-}
-
-function renderCategories(items){
-  els.catsGrid.innerHTML = '';
-
-  if(!items.length){
-    els.catsEmpty.style.display = 'block';
-    return;
-  }
-
-  els.catsEmpty.style.display = 'none';
-
-  items.forEach(cat => {
-    const id   = getCatId(cat);
-    const key  = getCatKey(cat);
-    const name = getCatName(cat) || '—';
-    const desc = getCatDesc(cat) || '—';
-    const img  = getCatImage(cat) || placeholderCat;
-    const urlValue = id || key || name;
-
-    const card = document.createElement('a');
-    card.className = 'cat-card';
-    card.href = '/categories?category=' + encodeURIComponent(urlValue);
-    card.innerHTML = `
-      <img class="cat-img" src="${esc(img)}" alt="${esc(name)}">
-      <div class="cat-body">
-        <h3 class="cat-name">${esc(name)}</h3>
-        <div class="cat-desc">${esc(desc)}</div>
-      </div>
-    `;
-
-    card.addEventListener('click', (e) => {
-      e.preventDefault();
-      openCategory(cat);
-    });
-
-    els.catsGrid.appendChild(card);
-  });
-}
-
-function adImage(ad){
-  if(ad.image) return absUrlMaybe(ad.image);
-
-  if(Array.isArray(ad.images) && ad.images.length){
-    const first = ad.images[0];
-    if(typeof first === 'string') return absUrlMaybe(first);
-    if(first && first.url) return absUrlMaybe(first.url);
-  }
-
-  return placeholderAd;
-}
-
-function adBelongsToSelectedCategory(ad){
-  if(!state.selectedCategory) return false;
-
-  const targetValues = [
-    state.selectedCategory.id,
-    state.selectedCategory.key,
-    state.selectedCategory.name
-  ].map(norm).filter(Boolean);
-
-  const adValues = [
-    ad.category_id,
-    ad.categoryId,
-    ad.category,
-    ad.category_key,
-    ad.categoryKey,
-    ad.category_name,
-    ad.categoryName,
-    ad.category_title,
-    ad.categoryTitle
-  ].map(norm).filter(Boolean);
-
-  return targetValues.some(v => adValues.includes(v));
-}
-
-function applyAdsFilters(items){
-  const q = norm(els.adsSearch.value);
-  const minP = els.minPrice.value === '' ? null : Number(els.minPrice.value);
-  const maxP = els.maxPrice.value === '' ? null : Number(els.maxPrice.value);
-
-  return items.filter(ad => {
-    const title = norm(ad.title);
-    const desc = norm(ad.description);
-    const price = Number(ad.price);
-
-    if(q && !title.includes(q) && !desc.includes(q)) return false;
-    if(minP !== null && Number.isFinite(minP)){
-      if(!Number.isFinite(price) || price < minP) return false;
-    }
-    if(maxP !== null && Number.isFinite(maxP)){
-      if(!Number.isFinite(price) || price > maxP) return false;
-    }
-    return true;
-  });
-}
-
-function renderAds(items){
-  els.adsGrid.innerHTML = '';
-
-  if(!items.length){
-    els.adsEmpty.style.display = 'block';
-    return;
-  }
-
-  els.adsEmpty.style.display = 'none';
-
-  items.forEach(ad => {
-    const id = String(ad.id || ad._id || '').trim();
-    const title = String(ad.title || '').trim() || '—';
-    const city = String(ad.city || '').trim();
-    const created = ad.created_at ? new Date(ad.created_at).toLocaleString('fr-MA') : '';
-    const price = formatPrice(ad.price);
-    const img = adImage(ad);
-
-    const card = document.createElement('a');
-    card.className = 'ad-card';
-    card.href = '/ad?id=' + encodeURIComponent(id);
-    card.innerHTML = `
-      <img class="ad-img" src="${esc(img)}" alt="${esc(title)}">
-      <div class="ad-body">
-        <h3 class="ad-title">${esc(title)}</h3>
-        <div class="ad-meta">
-          ${city ? `<span>📍 ${esc(city)}</span>` : ``}
-          ${created ? `<span>🕒 ${esc(created)}</span>` : ``}
-        </div>
-        <div class="ad-price">${esc(price)}</div>
-      </div>
-    `;
-
-    els.adsGrid.appendChild(card);
-  });
-}
-
-function refreshAdsView(){
-  const filtered = applyAdsFilters(state.categoryAds);
-  renderAds(filtered);
-}
-
+// تحميل الأقسام
 async function loadCategories(){
-  showCats();
-  catsSkeleton();
-
-  try{
+  const catsGrid = document.getElementById('catsGrid');
+  try {
     const cats = await jget('/api/categories');
-    state.categories = Array.isArray(cats) ? cats : [];
-    renderCategories(state.categories);
-  }catch(e){
-    console.error(e);
-    els.catsGrid.innerHTML = '';
-    els.catsEmpty.style.display = 'block';
-  }
+    catsGrid.innerHTML = cats.map(cat => `
+      <a href="#" class="cat-card" onclick="openCategory('${cat.id || cat.key || cat.name}', '${cat.name}')">
+        <img src="${absUrl(cat.image_url || cat.image)}" class="cat-img">
+        <div class="cat-body">
+          <div class="cat-name">${cat.name}</div>
+        </div>
+      </a>
+    `).join('');
+  } catch(e) { catsGrid.innerHTML = '<div class="empty-state">حدث خطأ أثناء تحميل الأقسام</div>'; }
 }
 
-async function loadAdsForSelectedCategory(){
-  adsSkeleton();
-  state.categoryAds = [];
+// فتح قسم محدد وتحميل إعلاناته مع الفلترة
+async function openCategory(catId, catName){
+  document.getElementById('catsView').style.display = 'none';
+  document.getElementById('adsView').style.display = 'block';
+  document.getElementById('topTitle').textContent = catName;
+  document.getElementById('adsGrid').innerHTML = '<div class="skeleton" style="height:200px; grid-column:span 2"></div>';
 
-  if(!state.selectedCategory){
-    els.adsGrid.innerHTML = '';
-    els.adsEmpty.style.display = 'block';
+  try {
+    const ads = await jget('/api/ads?category=' + encodeURIComponent(catId));
+    state.allAds = ads;
+    renderAds(ads);
+  } catch(e) { renderAds([]); }
+}
+
+function renderAds(ads){
+  const grid = document.getElementById('adsGrid');
+  const q = document.getElementById('adsSearch').value.toLowerCase();
+  const min = parseFloat(document.getElementById('minPrice').value) || 0;
+  const max = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+
+  const filtered = ads.filter(ad => {
+    const price = parseFloat(ad.price) || 0;
+    const title = (ad.title || '').toLowerCase();
+    return title.includes(q) && price >= min && price <= max;
+  });
+
+  if(filtered.length === 0){
+    grid.innerHTML = '<div class="empty-state" style="grid-column:span 2">لا توجد إعلانات تطابق بحثك</div>';
     return;
   }
 
-  try{
-    let items = [];
-
-    const tryValue =
-      state.selectedCategory.key ||
-      state.selectedCategory.id ||
-      state.selectedCategory.name;
-
-    if(tryValue){
-      try{
-        const byServerFilter = await jget('/api/ads?category=' + encodeURIComponent(tryValue) + '&limit=100');
-        if(Array.isArray(byServerFilter) && byServerFilter.length){
-          items = byServerFilter;
-        }
-      }catch(_){}
-    }
-
-    if(!items.length){
-      const allAds = await jget('/api/ads?limit=100');
-      const allItems = Array.isArray(allAds) ? allAds : [];
-      items = allItems.filter(adBelongsToSelectedCategory);
-    }
-
-    state.categoryAds = items;
-    refreshAdsView();
-  }catch(e){
-    console.error(e);
-    els.adsGrid.innerHTML = '';
-    els.adsEmpty.style.display = 'block';
-  }
+  grid.innerHTML = filtered.map(ad => `
+    <a href="/ad?id=${ad.id}" class="ad-item">
+      <img src="${absUrl(ad.image || (ad.images && ad.images[0]))}" class="ad-thumb">
+      <div class="ad-info">
+        <div class="ad-name">${ad.title || 'بدون عنوان'}</div>
+        <div class="ad-val">${formatPrice(ad.price)}</div>
+      </div>
+    </a>
+  `).join('');
 }
 
-async function openCategory(cat){
-  state.selectedCategory = {
-    id: getCatId(cat),
-    key: getCatKey(cat),
-    name: getCatName(cat),
-    description: getCatDesc(cat),
-    image: getCatImage(cat)
-  };
-
-  const urlValue =
-    state.selectedCategory.id ||
-    state.selectedCategory.key ||
-    state.selectedCategory.name;
-
-  setCategoryInUrl(urlValue);
-  els.adsSearch.value = '';
-  els.minPrice.value = '';
-  els.maxPrice.value = '';
-
-  showAds();
-  await loadAdsForSelectedCategory();
-}
-
-els.backBtn.addEventListener('click', () => {
-  location.href = '/';
+// تطبيق الفلترة عند الضغط على زر التحديث
+document.getElementById('applyFilters').addEventListener('click', () => {
+  renderAds(state.allAds);
 });
 
-els.applyFilters.addEventListener('click', () => {
-  refreshAdsView();
-});
-
-[els.adsSearch, els.minPrice, els.maxPrice].forEach(el => {
-  el.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter') refreshAdsView();
-  });
-});
-
-window.addEventListener('popstate', async () => {
-  const categoryParam = getParam('category');
-
-  if(!state.categories.length){
-    try{
-      const cats = await jget('/api/categories');
-      state.categories = Array.isArray(cats) ? cats : [];
-    }catch(_){}
-  }
-
-  if(categoryParam){
-    const found = findCategoryByAny(categoryParam);
-    if(found){
-      state.selectedCategory = {
-        id: getCatId(found),
-        key: getCatKey(found),
-        name: getCatName(found),
-        description: getCatDesc(found),
-        image: getCatImage(found)
-      };
-    }else{
-      state.selectedCategory = {
-        id: categoryParam,
-        key: categoryParam,
-        name: categoryParam
-      };
-    }
-
-    showAds();
-    await loadAdsForSelectedCategory();
-  }else{
-    state.selectedCategory = null;
-    await loadCategories();
+// العودة للخلف
+document.getElementById('backBtn').addEventListener('click', () => {
+  if(document.getElementById('adsView').style.display === 'block'){
+    document.getElementById('adsView').style.display = 'none';
+    document.getElementById('catsView').style.display = 'block';
+    document.getElementById('topTitle').textContent = 'الأقسام';
+  } else {
+    location.href = '/';
   }
 });
 
-(async function init(){
-  try{
-    const cats = await jget('/api/categories');
-    state.categories = Array.isArray(cats) ? cats : [];
-  }catch(e){
-    state.categories = [];
-  }
-
-  const categoryParam = getParam('category');
-
-  if(categoryParam){
-    const found = findCategoryByAny(categoryParam);
-    if(found){
-      state.selectedCategory = {
-        id: getCatId(found),
-        key: getCatKey(found),
-        name: getCatName(found),
-        description: getCatDesc(found),
-        image: getCatImage(found)
-      };
-    }else{
-      state.selectedCategory = {
-        id: categoryParam,
-        key: categoryParam,
-        name: categoryParam
-      };
-    }
-
-    showAds();
-    await loadAdsForSelectedCategory();
-  }else{
-    renderCategories(state.categories);
-    showCats();
-  }
-})();
+// البدء
+loadCategories();
 </script>
 
 </body>

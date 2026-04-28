@@ -197,6 +197,55 @@ async function ensureSchema(req) {
     );
   `);
 
+router.post('/notifications/send', requireAdmin, async (req, res) => {
+  try {
+    await ensureSchema(req);
+    const pool = getPool(req);
+    const b = req.body || {};
+
+    const target = String(b.target || 'all').trim(); // "all" | "user"
+    const userId = b.userId ? String(b.userId).trim() : null;
+    const title = String(b.title || '').trim();
+    const body = String(b.body || '').trim();
+
+    if (!title || !body) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'title/body required' });
+    }
+
+    // ✅ إرسال لمستخدم واحد
+    if (target === 'user') {
+      if (!userId) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'userId required' });
+
+      await pool.query(
+        `INSERT INTO notifications(user_id,title,body,read,created_at)
+         VALUES($1,$2,$3,false,NOW())`,
+        [userId, title, body]
+      );
+
+      await audit(req, 'notifications.send', userId, { target, title });
+      return res.json({ ok: true, inserted: 1 });
+    }
+
+    // ✅ إرسال للجميع (مرة وحدة بلا loop)
+    const r = await pool.query(
+      `INSERT INTO notifications(user_id,title,body,read,created_at)
+       SELECT u.id::text, $1, $2, false, NOW()
+       FROM users u`,
+      [title, body]
+    );
+
+    await audit(req, 'notifications.send', null, { target: 'all', title });
+
+    // r.rowCount كيعطيك عدد rows اللي تزاد
+    res.json({ ok: true, inserted: r.rowCount || 0 });
+
+  } catch (e) {
+    console.error('NOTIF_SEND_ERROR:', e);
+    // ✅ رجّع message باش تعرف الخطأ الحقيقي فـ Network
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS notification_templates(
       key TEXT PRIMARY KEY,
@@ -1305,78 +1354,46 @@ router.post('/notifications/send', requireAdmin, async (req, res) => {
     const pool = getPool(req);
     const b = req.body || {};
 
-    const target = String(b.target || 'all');
+    const target = String(b.target || 'all').trim(); // "all" | "user"
     const userId = b.userId ? String(b.userId).trim() : null;
     const title = String(b.title || '').trim();
     const body = String(b.body || '').trim();
 
-    if (!title || !body) return res.status(400).json({ error: 'VALIDATION_ERROR' });
-
-    if (target === 'user') {
-      if (!userId) return res.status(400).json({ error: 'VALIDATION_ERROR' });
-      await pool.query(
-        `INSERT INTO notifications(id,user_id,title,body,read,created_at)
-         VALUES($1,$2,$3,$4,false,NOW())`,
-        [crypto.randomUUID(), userId, title, body]
-      );
-    } else {
-      const users = await pool.query(`SELECT id FROM users`);
-      for (const u of users.rows) {
-        await pool.query(
-          `INSERT INTO notifications(id,user_id,title,body,read,created_at)
-           VALUES($1,$2,$3,$4,false,NOW())`,
-          [crypto.randomUUID(), u.id, title, body]
-        );
-      }
+    if (!title || !body) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'title/body required' });
     }
 
-    await audit(req, 'notifications.send', null, { target, userId, title });
-    res.json({ ok: true });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR' });
-  }
-});
+    // ✅ إرسال لمستخدم واحد
+    if (target === 'user') {
+      if (!userId) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'userId required' });
 
-router.get('/notifications/templates', requireAdmin, async (req, res) => {
-  try {
-    await ensureSchema(req);
-    const pool = getPool(req);
-    const r = await pool.query(`SELECT key, title, body, json, updated_at FROM notification_templates ORDER BY key ASC`);
-    res.json({ items: r.rows });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR' });
-  }
-});
+      await pool.query(
+        `INSERT INTO notifications(user_id,title,body,read,created_at)
+         VALUES($1,$2,$3,false,NOW())`,
+        [userId, title, body]
+      );
 
-router.put('/notifications/templates/:key', requireAdmin, async (req, res) => {
-  try {
-    await ensureSchema(req);
-    const pool = getPool(req);
-    const key = String(req.params.key || '').trim();
-    if (!key) return res.status(400).json({ error: 'VALIDATION_ERROR' });
+      await audit(req, 'notifications.send', userId, { target, title });
+      return res.json({ ok: true, inserted: 1 });
+    }
 
-    const json = req.body && typeof req.body === 'object' ? req.body : {};
-    const title = String(json.title || '').trim() || null;
-    const body = String(json.body || '').trim() || null;
-
-    await pool.query(
-      `INSERT INTO notification_templates(key,title,body,json,updated_at)
-       VALUES($1,$2,$3,$4,NOW())
-       ON CONFLICT (key) DO UPDATE SET
-         title=EXCLUDED.title,
-         body=EXCLUDED.body,
-         json=EXCLUDED.json,
-         updated_at=NOW()`,
-      [key, title, body, JSON.stringify(json)]
+    // ✅ إرسال للجميع (مرة وحدة بلا loop)
+    const r = await pool.query(
+      `INSERT INTO notifications(user_id,title,body,read,created_at)
+       SELECT u.id::text, $1, $2, false, NOW()
+       FROM users u`,
+      [title, body]
     );
 
-    await audit(req, 'notifications.template.upsert', key, { title });
-    res.json({ ok: true });
+    await audit(req, 'notifications.send', null, { target: 'all', title });
+
+    // r.rowCount كيعطيك عدد rows اللي تزاد
+    res.json({ ok: true, inserted: r.rowCount || 0 });
+
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'SERVER_ERROR' });
+    console.error('NOTIF_SEND_ERROR:', e);
+    // ✅ رجّع message باش تعرف الخطأ الحقيقي فـ Network
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });
 

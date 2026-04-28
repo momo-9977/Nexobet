@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Samsar — البروفايل</title>
+<title>البروفايل</title>
 
 <style>
   :root{
@@ -18,6 +18,8 @@
     --success:#34d399;
     --danger:#ef4444;
     --warn:#f59e0b;
+    --premium:#fbbf24;
+    --premium-2:#fde68a;
     --shadow:0 18px 45px rgba(0,0,0,.35);
   }
 
@@ -108,32 +110,67 @@
   @media (max-width:560px){ .tiles{grid-template-columns:1fr} }
 
   .tile{
-    border-radius:18px;
+    border-radius:20px;
     padding:14px;
-    background:rgba(255,255,255,0.03);
+    background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
     border:1px solid rgba(255,255,255,0.08);
     cursor:pointer;
     transition:.18s ease;
     display:flex;
     align-items:center;
     gap:12px;
-    min-height:86px;
+    min-height:92px;
     user-select:none;
+    position:relative;
+    overflow:hidden;
   }
-  .tile:hover{transform:translateY(-2px);background:rgba(255,255,255,0.04)}
+  .tile::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(135deg, rgba(255,255,255,0.06), transparent 50%);
+    pointer-events:none;
+  }
+  .tile:hover{transform:translateY(-2px);background:rgba(255,255,255,0.05)}
   .tile.active{
-    background:rgba(46,163,255,0.16);
-    border-color:rgba(46,163,255,0.24);
+    background:linear-gradient(180deg, rgba(46,163,255,0.18), rgba(96,165,250,0.10));
+    border-color:rgba(46,163,255,0.30);
+    box-shadow:0 14px 34px rgba(46,163,255,0.12);
   }
 
   .tile-icon{
-    width:52px;height:52px;border-radius:16px;
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.10);
+    width:56px;height:56px;border-radius:18px;
+    border:1px solid rgba(255,255,255,0.14);
     display:flex;align-items:center;justify-content:center;
-    font-size:22px;
+    font-size:23px;
     flex-shrink:0;
+    color:#fff;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.18),
+      0 10px 28px rgba(0,0,0,0.25);
   }
+
+  .tile[data-tab="account"] .tile-icon{
+    background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  }
+  .tile[data-tab="myads"] .tile-icon{
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  }
+  .tile[data-link="post-ad"] .tile-icon{
+    background:linear-gradient(135deg,#10b981,#22c55e);
+  }
+  .tile[data-tab="password"] .tile-icon{
+    background:linear-gradient(135deg,#f59e0b,#fbbf24);
+    color:#111827;
+  }
+  .tile[data-tab="premium"] .tile-icon{
+    background:linear-gradient(135deg,#f59e0b,#fde68a);
+    color:#111827;
+  }
+  .tile[data-tab="notifications"] .tile-icon{
+    background:linear-gradient(135deg,#ec4899,#f43f5e);
+  }
+
   .tile-text{min-width:0}
   .tile-title{margin:0;font-size:15px;font-weight:900}
   .tile-desc{
@@ -222,7 +259,7 @@
   @media (max-width:860px){.premium-grid{grid-template-columns:1fr}}
   .plan{
     border-radius:18px;padding:14px;
-    background:rgba(255,255,255,0.03);
+    background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));
     border:1px solid rgba(255,255,255,0.08);
   }
   .plan h3{margin:0 0 6px;font-size:14px}
@@ -350,6 +387,14 @@
       </div>
     </a>
 
+    <div class="tile" data-tab="password">
+      <div class="tile-icon">🔒</div>
+      <div class="tile-text">
+        <h3 class="tile-title">تغيير كلمة السر</h3>
+        <p class="tile-desc">تحديث كلمة المرور الخاصة بك</p>
+      </div>
+    </div>
+
     <div class="tile" data-tab="premium">
       <div class="tile-icon">⭐</div>
       <div class="tile-text">
@@ -422,6 +467,28 @@
       </div>
 
       <div class="list" id="myAdsList" style="margin-top:12px"></div>
+    </section>
+
+    <section class="card panel" id="panel-password">
+      <h2>تغيير كلمة السر</h2>
+
+      <div class="form-grid">
+        <div class="full">
+          <label>كلمة السر الحالية</label>
+          <input id="currentPwd" type="password" placeholder="••••••••" />
+        </div>
+        <div>
+          <label>كلمة السر الجديدة</label>
+          <input id="newPwd" type="password" placeholder="••••••••" />
+        </div>
+        <div>
+          <label>تأكيد كلمة السر</label>
+          <input id="confirmPwd" type="password" placeholder="••••••••" />
+        </div>
+        <div class="full">
+          <button class="btn primary" id="changePwdBtn" type="button">حفظ كلمة السر</button>
+        </div>
+      </div>
     </section>
 
     <section class="card panel" id="panel-premium">
@@ -569,6 +636,7 @@
   const panels = {
     account: qs('#panel-account'),
     myads: qs('#panel-myads'),
+    password: qs('#panel-password'),
     premium: qs('#panel-premium'),
     notifications: qs('#panel-notifications')
   };
@@ -703,6 +771,44 @@
       toast('فشل رفع الصورة ❌', false);
     } finally {
       avatarInput.value = '';
+    }
+  });
+
+  qs('#changePwdBtn').addEventListener('click', async ()=>{
+    const currentPassword = qs('#currentPwd').value;
+    const newPassword = qs('#newPwd').value;
+    const confirmPassword = qs('#confirmPwd').value;
+
+    if(!currentPassword){
+      toast('دخل كلمة السر الحالية ❌', false);
+      return;
+    }
+    if(!newPassword || newPassword.length < 6){
+      toast('كلمة السر الجديدة قصيرة (6 على الأقل) ❌', false);
+      return;
+    }
+    if(newPassword !== confirmPassword){
+      toast('تأكيد كلمة السر غير مطابق ❌', false);
+      return;
+    }
+
+    try{
+      const res = await fetch('/api/auth/password', apiOpts('PATCH', {
+        currentPassword,
+        newPassword
+      }));
+      const data = await res.json().catch(()=> ({}));
+      if(!res.ok) throw new Error(data?.message || data?.error || 'pwd failed');
+
+      qs('#currentPwd').value = '';
+      qs('#newPwd').value = '';
+      qs('#confirmPwd').value = '';
+
+      toast('تم تغيير كلمة السر ✅', true);
+      openPanel('account');
+    }catch(e){
+      console.error(e);
+      toast('فشل تغيير كلمة السر ❌', false);
     }
   });
 

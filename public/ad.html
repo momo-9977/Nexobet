@@ -110,9 +110,11 @@
 
 <script>
   async function jget(url){
-    const res = await fetch(url, { credentials:'include' });
-    return await res.json();
-  }
+  const res = await fetch(url, { credentials:'include' });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+  return data;
+}
 
   function absUrl(u){
     if(!u) return '';
@@ -139,8 +141,16 @@
     if (media.length === 0 && ad.image) media.push(absUrl(ad.image));
     if (media.length === 0) media.push('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" fill="%23161e2d"><rect width="100%25" height="100%25"/></svg>');
 
-    const phone = String(ad.phone || '').replace(/[^\d+]/g,'');
-    const price = ad.price ? Number(ad.price).toLocaleString('fr-MA') + " د.م" : "اتصل للثمن";
+    const phone = String(
+  ad.phone ||
+  ad.ownerPhone ||
+  (ad.owner && ad.owner.phone) ||
+  ad.owner_phone ||
+  ''
+).replace(/[^\d+]/g,'');
+const price = (ad.price !== undefined && ad.price !== null && ad.price !== '')
+  ? Number(ad.price).toLocaleString('fr-MA') + " د.م"
+  : "اتصل للثمن";
 
     container.innerHTML = `
       <div class="main-card">
@@ -168,9 +178,15 @@
           </div>
 
           <div class="btn-group">
-            <a href="tel:${phone}" class="action-btn btn-call">📞 إتصال</a>
-            <a href="https://wa.me/${phone.replace('+','')}" target="_blank" class="action-btn btn-wa">💬 واتساب</a>
-          </div>
+  ${phone ? `
+    <a href="tel:${phone}" class="action-btn btn-call">📞 إتصال</a>
+    <a href="https://wa.me/${phone.replace('+','')}" target="_blank" class="action-btn btn-wa">💬 واتساب</a>
+  ` : `
+    <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:10px 0;">
+      رقم الهاتف غير متوفر
+    </div>
+  `}
+</div>
         </div>
       </div>
     `;

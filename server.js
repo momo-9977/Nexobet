@@ -215,6 +215,24 @@ async function ensureDbShape() {
     );
   `).catch(() => {});
 
+// =========================
+  // notifications (for users + admin broadcast)
+  // =========================
+  await q(`
+    CREATE TABLE IF NOT EXISTS notifications(
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id TEXT,                -- NULL = broadcast to all
+      title TEXT NOT NULL,
+      body  TEXT NOT NULL,
+      read  BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `).catch(() => {});
+
+  // indexes (help performance)
+  await q(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);`).catch(()=>{});
+  await q(`CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);`).catch(()=>{});
+
   // pgcrypto for gen_random_uuid
   await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`).catch(() => {});
 
@@ -686,6 +704,50 @@ app.get('/api/ads/:id', async (req, res) => {
     res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
   }
 });
+
+// ===============================
+// Notifications (User)
+// GET /api/notifications
+// POST /api/notifications/read-all
+// ===============================
+app.get('/api/notifications', requireAuthApi, async (req, res) => {
+  try {
+    await ensureDbShape();
+    const userId = String(req.session.user.id);
+
+    const r = await q(`
+      SELECT id, title, body, read as "read", created_at as "createdAt"
+      FROM notifications
+      WHERE (user_id IS NULL OR user_id = $1)
+      ORDER BY created_at DESC
+      LIMIT 120
+    `, [userId]);
+
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
+app.post('/api/notifications/read-all', requireAuthApi, async (req, res) => {
+  try {
+    await ensureDbShape();
+    const userId = String(req.session.user.id);
+
+    await q(`
+      UPDATE notifications
+      SET read=true
+      WHERE (user_id IS NULL OR user_id = $1) AND read=false
+    `, [userId]);
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'SERVER_ERROR', message: String(e.message || e) });
+  }
+});
+
 /* =========================================================
    AUTH API
    ========================================================= */

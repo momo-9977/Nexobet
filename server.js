@@ -857,6 +857,7 @@ app.post('/api/auth/register', async (req, res) => {
     `, [id, name, email.toLowerCase(), phone, hash]);
 
     req.session.user = { id, is_admin: false };
+
     const u = await loadUser(id);
     res.json(safeUserRow(u));
   } catch (e) {

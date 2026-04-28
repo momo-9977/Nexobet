@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
 <title>البروفايل - سمسار</title>
 
 <style>
@@ -17,102 +17,200 @@
     --accent-2:#60a5fa;
     --success:#34d399;
     --danger:#ef4444;
+    --warn:#f59e0b;
+    --premium:#fbbf24;
+    --premium-2:#fde68a;
     --shadow:0 18px 45px rgba(0,0,0,.35);
   }
 
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{
     margin:0;
-    font-family: Inter, Arial, sans-serif;
-    background: radial-gradient(circle at 10% 10%, rgba(46,163,255,0.10), transparent 20%),
-                linear-gradient(180deg,var(--bg-0),var(--bg-1));
+    font-family:Inter,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(46,163,255,0.10), transparent 20%),
+      linear-gradient(180deg,var(--bg-0),var(--bg-1));
     color:var(--text);
-    padding-bottom:100px;
+    padding-bottom:110px;
   }
 
-  .page{max-width:600px; margin:20px auto; padding:16px}
+  .page{max-width:600px;margin:22px auto;padding:16px}
 
-  /* Header Style */
   .profile-header{
-    display:flex; align-items:center; gap:18px; padding:20px;
-    border-radius:24px; background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.09); margin-bottom: 25px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:20px;
+    border-radius:24px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.09);
+    box-shadow:var(--shadow);
+    margin-bottom: 25px;
   }
-  .avatar{
-    width:85px; height:85px; border-radius:50%; /* دائرية بريميوم */
-    background:linear-gradient(135deg,var(--accent),var(--accent-2));
-    display:flex; align-items:center; justify-content:center;
-    font-size:30px; font-weight:900; color:#fff;
-    overflow:hidden; cursor:pointer; border:2px solid var(--accent);
-  }
-  .avatar img{width:100%; height:100%; object-fit:cover;}
-  
-  .u-meta h1{ margin:0; font-size:19px; font-weight:800; }
-  .u-meta p{ margin:4px 0 0; color:var(--muted); font-size:13px; }
 
-  /* Tiles - قائمة واحدة مرتبة أسفل بعضها */
-  .tiles{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
-  
-  .tile{
-    border-radius:18px; padding:16px;
-    background: rgba(255,255,255,0.03);
-    border:1px solid var(--card-border);
-    cursor:pointer; transition:0.2s ease;
-    display:flex; align-items:center; gap:15px;
-    text-decoration:none; color:inherit;
+  .avatar{
+    width:85px;height:85px;border-radius:50%; /* دائرية Premium */
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;font-weight:900;color:#fff;
+    overflow:hidden;cursor:pointer;
+    border:3px solid var(--accent);
+    flex-shrink:0;
+    box-shadow: 0 0 15px rgba(46,163,255,0.3);
   }
-  .tile:active{ transform: scale(0.97); background: rgba(255,255,255,0.06); }
-  .tile.active{ border-color: var(--accent); background: rgba(46,163,255,0.08); }
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  input[type="file"]{display:none}
+
+  .u-meta{min-width:0}
+  .u-meta h1{
+    margin:0;
+    font-size:19px;
+    font-weight: 800;
+  }
+  .u-meta p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:10px;
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:800;
+    border:1px solid rgba(52,211,153,0.3);
+    background:rgba(52,211,153,0.1);
+    color:#34d399;
+  }
+
+  /* Tiles - قائمة طولية مرتبة للموبايل */
+  .tiles{
+    margin-top:14px;
+    display:flex;
+    flex-direction: column;
+    gap:12px;
+  }
+
+  .tile{
+    border-radius:20px;
+    padding:16px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--card-border);
+    cursor:pointer;
+    transition:.2s ease;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .tile:active{transform:scale(0.97); background:rgba(255,255,255,0.06)}
+  .tile.active{
+    background:rgba(46,163,255,0.1);
+    border-color:var(--accent);
+  }
 
   .tile-icon{
-    width:48px; height:48px; border-radius:12px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:22px; flex-shrink:0; background: rgba(255,255,255,0.05);
+    width:46px;height:46px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+    background: rgba(255,255,255,0.05);
   }
-  .tile-text h3{ margin:0; font-size:15px; font-weight:700; }
-  .tile-text p{ margin:3px 0 0; font-size:12px; color:var(--muted); }
 
-  /* Panels Styling */
-  .panel{ display:none; animation: fadeIn 0.3s ease; }
-  .panel.active{ display:block; }
-  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .tile-text h3{margin:0;font-size:15px;font-weight:700}
+  .tile-text p{
+    margin:2px 0 0;
+    color:var(--muted);
+    font-size:11px;
+  }
+
+  .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--danger);
+    margin-inline-start:auto;
+    display:none;
+  }
+  .dot.show{display:block}
+
+  .panel-wrap{margin-top:14px}
+  .panel{display:none}
+  .panel.active{display:block; animation: fadeIn 0.3s ease;}
+  @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
 
   .card{
-    background:var(--card-bg); border:1px solid var(--card-border);
-    border-radius:20px; padding:20px; margin-top: 15px;
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:22px;
+    padding:20px;
+    box-shadow:var(--shadow);
   }
 
-  /* Forms */
-  label{ display:block; margin-bottom:8px; font-size:13px; color:var(--muted); }
-  input, select, textarea{
-    width:100%; padding:12px; border-radius:12px; margin-bottom:15px;
-    border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03);
-    color:white; outline:none; font-size:14px;
+  label{display:block;margin-bottom:8px;font-size:13px;font-weight:700; color: var(--muted)}
+  input, textarea, select{
+    width:100%;
+    padding:12px 15px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.1);
+    background:rgba(255,255,255,0.03);
+    color:var(--text);
+    outline:none;
+    font-size:14px;
+    margin-bottom: 15px;
   }
+  input:focus { border-color: var(--accent); }
 
   .btn{
-    width:100%; padding:14px; border-radius:14px; border:none;
-    font-weight:800; cursor:pointer; transition:0.2s;
-    display:flex; align-items:center; justify-content:center; gap:8px;
+    border:none;border-radius:15px;
+    padding:15px;
+    font-weight:800;cursor:pointer;
+    transition:.2s;
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    width: 100%;
   }
-  .btn.primary{ background:var(--accent); color:white; }
-  .btn.danger{ background:var(--danger); color:white; margin-top: 15px; }
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.danger{background:var(--danger);color:#fff; margin-top:15px;}
 
-  /* Bottom Navigation - التوحيد مع بقية الصفحات */
+  /* Bottom Nav Unified */
   .modern-flat-nav{
-    position:fixed; bottom:0; left:0; right:0; height:75px;
-    background:#ffffff; border-top:1px solid #e5e7eb;
-    display:flex; justify-content:space-around; align-items:center; z-index:999;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    height:75px;
+    background:#ffffff;
+    border-top:1px solid #e5e7eb;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:999;
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .modern-flat-item{
-    flex:1; text-align:center; text-decoration:none; color:#6b7280;
-    font-size:11px; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:4px;
+    flex:1;
+    text-align:center;
+    text-decoration:none;
+    color:#94a3b8;
+    font-size:11px;
+    font-weight:600;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
   }
-  .modern-flat-item.active{ color:#16a34a; }
+  .modern-flat-item.active{color:#16a34a}
   .modern-flat-nav svg{ width:22px; height:22px; }
 
-  .dot{ width:8px; height:8px; background:var(--danger); border-radius:50%; display:none; margin-right:auto; }
-  .dot.show{ display:block; }
+  /* Toast */
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:90px;
+    background:rgba(16, 185, 129, 0.9); color:#fff; padding:10px 20px;
+    border-radius:12px; display:none; z-index:5000; font-weight:bold;
+  }
+  .toast.show { display: block; }
+
 </style>
 </head>
 
@@ -122,71 +220,103 @@
   <section class="profile-header">
     <div class="avatar" id="avatarBox">
       <span id="avatarLetter">U</span>
-      <img id="avatarImg" style="display:none">
+      <img id="avatarImg" alt="avatar" style="display:none">
     </div>
     <div class="u-meta">
       <h1 id="userNameMini">جاري التحميل...</h1>
       <p id="userEmailMini">...</p>
+      <span id="verifiedBadge" class="badge" style="display:none">✅ موثق</span>
     </div>
-    <input id="avatarInput" type="file" accept="image/*" style="display:none" />
+    <input id="avatarInput" type="file" accept="image/*" />
   </section>
 
-  <section class="tiles">
+  <section class="tiles" id="tiles">
     <div class="tile active" data-tab="account">
-      <div class="tile-icon" style="color:#0ea5e9">👤</div>
-      <div class="tile-text"><h3>حسابي</h3><p>تعديل الهاتف وصورة البروفايل</p></div>
+      <div class="tile-icon" style="color: #0ea5e9;">👤</div>
+      <div class="tile-text">
+        <h3 class="tile-title">حسابي</h3>
+        <p class="tile-desc">تعديل الهاتف وصورة البروفايل</p>
+      </div>
     </div>
 
     <div class="tile" data-tab="myads">
-      <div class="tile-icon" style="color:#8b5cf6">🧾</div>
-      <div class="tile-text"><h3>إعلاناتي</h3><p>إدارة وتعديل إعلاناتك</p></div>
+      <div class="tile-icon" style="color: #8b5cf6;">🧾</div>
+      <div class="tile-text">
+        <h3 class="tile-title">إعلاناتي</h3>
+        <p class="tile-desc">تعديل وحذف الإعلانات</p>
+      </div>
     </div>
 
-    <a href="/post-ad" class="tile">
-      <div class="tile-icon" style="color:#10b981">➕</div>
-      <div class="tile-text"><h3>نشر إعلان</h3><p>أضف إعلانك الجديد الآن</p></div>
+    <a class="tile" href="/post-ad">
+      <div class="tile-icon" style="color: #10b981;">➕</div>
+      <div class="tile-text">
+        <h3 class="tile-title">نشر إعلان</h3>
+        <p class="tile-desc">أضف إعلان جديد بسرعة</p>
+      </div>
     </a>
 
     <div class="tile" data-tab="password">
-      <div class="tile-icon" style="color:#f59e0b">🔒</div>
-      <div class="tile-text"><h3>تغيير كلمة السر</h3><p>تحديث أمان حسابك</p></div>
+      <div class="tile-icon" style="color: #f59e0b;">🔒</div>
+      <div class="tile-text">
+        <h3 class="tile-title">تغيير كلمة السر</h3>
+        <p class="tile-desc">تحديث كلمة المرور الخاصة بك</p>
+      </div>
+    </div>
+
+    <div class="tile" data-tab="premium">
+      <div class="tile-icon" style="color: #fbbf24;">⭐</div>
+      <div class="tile-text">
+        <h3 class="tile-title">بروميوم</h3>
+        <p class="tile-desc">تمييز إعلانك في الرئيسية</p>
+      </div>
     </div>
 
     <div class="tile" data-tab="notifications">
-      <div class="tile-icon" style="color:#ec4899">🔔</div>
-      <div class="tile-text"><h3>الإشعارات</h3><p>آخر التنبيهات والرسائل</p></div>
-      <div class="dot" id="notifDot"></div>
+      <div class="tile-icon" style="color: #ec4899;">🔔</div>
+      <div class="tile-text">
+        <h3 class="tile-title">الإشعارات</h3>
+        <p class="tile-desc">تحديثات حول الإعلانات</p>
+      </div>
+      <span class="dot" id="notifDot"></span>
     </div>
   </section>
 
-  <div class="panel-wrap">
-    
-    <div class="card panel active" id="panel-account">
+  <section class="panel-wrap">
+    <section class="card panel active" id="panel-account">
+      <h2>معلومات الحساب</h2>
       <label>رقم الهاتف</label>
       <input id="phoneInput" placeholder="06XXXXXXXX">
       <button class="btn primary" id="saveAccountBtn">حفظ التغييرات</button>
-    </div>
+    </section>
 
-    <div class="card panel" id="panel-myads">
-      <div id="myAdsList">جاري تحميل إعلاناتك...</div>
-    </div>
+    <section class="card panel" id="panel-myads">
+      <h2>إعلاناتي</h2>
+      <div id="myAdsList" style="margin-top:12px"></div>
+    </section>
 
-    <div class="card panel" id="panel-password">
+    <section class="card panel" id="panel-password">
+      <h2>تغيير كلمة السر</h2>
       <label>كلمة السر الحالية</label>
       <input id="currentPwd" type="password">
       <label>كلمة السر الجديدة</label>
       <input id="newPwd" type="password">
       <button class="btn primary" id="changePwdBtn">تحديث كلمة السر</button>
-    </div>
+    </section>
 
-    <div class="card panel" id="panel-notifications">
-      <div id="notifList">لا توجد إشعارات حالياً.</div>
-    </div>
+    <section class="card panel" id="panel-premium">
+      <h2>الخطط المميزة</h2>
+      <div class="premium-grid">
+         <button class="btn primary choose" data-plan="featured_7d">اختيار عبر واتساب</button>
+      </div>
+    </section>
 
-  </div>
+    <section class="card panel" id="panel-notifications">
+      <h2>الإشعارات</h2>
+      <div id="notifList"></div>
+    </section>
+  </section>
 
   <button class="btn danger" id="logoutBtn">🚪 تسجيل الخروج</button>
-
 </div>
 
 <nav class="modern-flat-nav">
@@ -208,12 +338,14 @@
   </a>
 </nav>
 
+<div class="toast" id="toast"></div>
+
 <script>
-  // نستخدم نفس منطق الـ JavaScript الخاص بك دون أي تغيير في السيرفر
+  // نستخدم منطق الـ JavaScript الخاص بك دون أي تغيير لضمان عمل السيرفر
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => document.querySelectorAll(s);
 
-  // تبديل التبويبات (Panels)
+  // تبديل الأقسام (Tabs)
   qsa('.tile[data-tab]').forEach(tile => {
     tile.addEventListener('click', () => {
       qsa('.tile').forEach(t => t.classList.remove('active'));
@@ -223,7 +355,7 @@
     });
   });
 
-  // دوال السيرفر الأصلية
+  // دوال السيرفر الأصلية كما هي
   async function loadProfile(){
     try {
       const res = await fetch('/api/auth/me', { credentials:'include' });
@@ -245,7 +377,6 @@
     window.location.href = '/login';
   });
 
-  // تشغيل عند التحميل
   document.getElementById('avatarBox').addEventListener('click', () => document.getElementById('avatarInput').click());
   loadProfile();
 </script>

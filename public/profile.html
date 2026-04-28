@@ -29,7 +29,7 @@
       radial-gradient(circle at 10% 10%, rgba(46,163,255,0.10), transparent 20%),
       linear-gradient(180deg,var(--bg-0),var(--bg-1));
     color:var(--text);
-    padding-bottom:90px; /* space for bottom nav */
+    padding-bottom:90px;
   }
 
   .page{max-width:1180px;margin:22px auto;padding:16px}
@@ -42,7 +42,6 @@
     box-shadow:0 14px 36px rgba(0,0,0,.25);
   }
 
-  /* ===== Profile header (simple like apps) ===== */
   .profile-header{
     display:flex;
     align-items:center;
@@ -99,7 +98,6 @@
     color:#bbf7d0;
   }
 
-  /* ===== App-like icons grid ===== */
   .tiles{
     margin-top:14px;
     display:grid;
@@ -153,7 +151,6 @@
   }
   .dot.show{display:inline-block}
 
-  /* Panels */
   .panel-wrap{margin-top:14px}
   .panel{display:none}
   .panel.active{display:block}
@@ -161,7 +158,6 @@
   .panel h2{margin:0 0 10px;font-size:16px}
   .muted{color:var(--muted)}
 
-  /* Forms */
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .form-grid .full{grid-column:1 / -1}
   @media (max-width:760px){.form-grid{grid-template-columns:1fr}}
@@ -185,7 +181,6 @@
   }
   textarea{min-height:110px;resize:vertical}
 
-  /* Lists */
   .list{display:grid;gap:10px}
   .item{
     padding:12px;border-radius:16px;
@@ -223,7 +218,6 @@
   .mini-btn.warn{background:rgba(245,158,11,0.16);border-color:rgba(245,158,11,0.22);color:#fde68a}
   .mini-btn:disabled{opacity:.6;cursor:not-allowed}
 
-  /* Premium cards */
   .premium-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   @media (max-width:860px){.premium-grid{grid-template-columns:1fr}}
   .plan{
@@ -239,11 +233,10 @@
   .select-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
   @media (max-width:860px){.select-row{grid-template-columns:1fr}}
 
-  /* Bottom actions (moved here) */
   .bottom-actions{
     margin-top:14px;
     display:grid;
-    grid-template-columns:repeat(3,1fr);
+    grid-template-columns:repeat(2,1fr);
     gap:10px;
   }
   @media (max-width:860px){ .bottom-actions{grid-template-columns:1fr} }
@@ -263,7 +256,6 @@
   .btn:hover{transform:translateY(-2px)}
   .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
-  /* Toast */
   .toast{
     position:fixed;left:50%;transform:translateX(-50%);
     bottom:88px;
@@ -284,36 +276,6 @@
   .toast.error{background:linear-gradient(135deg, rgba(239,68,68,0.35), rgba(220,38,38,0.22))}
   @keyframes pop { from{opacity:0;transform:translateX(-50%) translateY(6px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 
-  /* Modal */
-  .modal{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,0.6);
-    display:none;
-    align-items:center;justify-content:center;
-    z-index:6000;
-    padding:16px;
-  }
-  .modal.show{display:flex}
-  .modal-card{
-    width:100%;max-width:520px;
-    background:rgba(7,16,36,0.96);
-    border:1px solid rgba(255,255,255,0.14);
-    border-radius:18px;
-    box-shadow:0 26px 70px rgba(0,0,0,.55);
-    padding:14px;
-  }
-  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-  .modal-head h3{margin:0;font-size:15px}
-  .xbtn{
-    width:40px;height:40px;border-radius:14px;
-    border:1px solid rgba(255,255,255,0.14);
-    background:rgba(255,255,255,0.05);
-    color:var(--text);
-    cursor:pointer;
-    font-weight:900;
-  }
-
-  /* ===== MODERN BOTTOM NAV FIX (KEEP SAME NAV) ===== */
   .modern-flat-nav{
     position:fixed;
     bottom:0;left:0;right:0;
@@ -350,7 +312,6 @@
 <body>
 <div class="page">
 
-  <!-- Profile header only -->
   <section class="profile-header">
     <div class="avatar" id="avatarBox" title="تغيير صورة البروفايل">
       <span id="avatarLetter">U</span>
@@ -364,7 +325,6 @@
     <input id="avatarInput" type="file" accept="image/*" />
   </section>
 
-  <!-- App icons -->
   <section class="tiles" id="tiles">
     <div class="tile active" data-tab="account">
       <div class="tile-icon">👤</div>
@@ -378,9 +338,17 @@
       <div class="tile-icon">🧾</div>
       <div class="tile-text">
         <h3 class="tile-title">إعلاناتي</h3>
-        <p class="tile-desc">تعديل وحذف وإدارة الإعلانات</p>
+        <p class="tile-desc">تعديل وحذف الإعلانات</p>
       </div>
     </div>
+
+    <a class="tile" data-link="post-ad" href="/post-ad" style="text-decoration:none;color:inherit">
+      <div class="tile-icon">➕</div>
+      <div class="tile-text">
+        <h3 class="tile-title">نشر إعلان</h3>
+        <p class="tile-desc">أضف إعلان جديد بسرعة</p>
+      </div>
+    </a>
 
     <div class="tile" data-tab="premium">
       <div class="tile-icon">⭐</div>
@@ -398,28 +366,10 @@
       </div>
       <span class="dot" id="notifDot"></span>
     </div>
-
-    <div class="tile" data-tab="security">
-      <div class="tile-icon">🛡️</div>
-      <div class="tile-text">
-        <h3 class="tile-title">الأمان</h3>
-        <p class="tile-desc">جلسات وتسجيلات الدخول</p>
-      </div>
-    </div>
-
-    <div class="tile" data-tab="favorites">
-      <div class="tile-icon">❤️</div>
-      <div class="tile-text">
-        <h3 class="tile-title">المفضلة</h3>
-        <p class="tile-desc">إعلانات محفوظة للمشاهدة</p>
-      </div>
-    </div>
   </section>
 
-  <!-- Panels -->
   <section class="panel-wrap">
 
-    <!-- ACCOUNT -->
     <section class="card panel active" id="panel-account">
       <h2>معلومات الحساب</h2>
 
@@ -444,7 +394,6 @@
       </div>
     </section>
 
-    <!-- MY ADS -->
     <section class="card panel" id="panel-myads">
       <div class="item-head" style="margin-bottom:10px">
         <h2 style="margin:0">إعلاناتي</h2>
@@ -457,7 +406,6 @@
           <select id="adsStatusFilter">
             <option value="all">الكل</option>
             <option value="published">منشور</option>
-            <option value="hidden">مخفي</option>
             <option value="pending">قيد المراجعة</option>
             <option value="rejected">مرفوض</option>
             <option value="sold">مباع</option>
@@ -476,7 +424,6 @@
       <div class="list" id="myAdsList" style="margin-top:12px"></div>
     </section>
 
-    <!-- PREMIUM -->
     <section class="card panel" id="panel-premium">
       <h2>بروميوم</h2>
       <p class="muted" style="margin:0 0 12px;line-height:1.7">
@@ -535,7 +482,6 @@
       </div>
     </section>
 
-    <!-- NOTIFICATIONS -->
     <section class="card panel" id="panel-notifications">
       <div class="item-head" style="margin-bottom:10px">
         <h2 style="margin:0">الإشعارات</h2>
@@ -545,61 +491,17 @@
       <div class="list" id="notifList"></div>
     </section>
 
-    <!-- SECURITY (بدون تكرار تغيير كلمة السر) -->
-    <section class="card panel" id="panel-security">
-      <h2>الأمان</h2>
-
-      <div class="item">
-        <div class="item-head">
-          <div>
-            <p class="item-title">الجلسات النشطة</p>
-            <div class="meta"><span class="muted">عرض الأجهزة/الخروج من جهاز (لاحقاً)</span></div>
-          </div>
-          <span class="pill warn">قريباً</span>
-        </div>
-        <div class="item-actions">
-          <button class="mini-btn" type="button" disabled>إدارة الجلسات</button>
-        </div>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <div>
-            <p class="item-title">سجل تسجيل الدخول</p>
-            <div class="meta"><span class="muted">آخر العمليات الأمنية (لاحقاً)</span></div>
-          </div>
-          <span class="pill warn">قريباً</span>
-        </div>
-        <div class="item-actions">
-          <button class="mini-btn" type="button" disabled>عرض السجل</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAVORITES -->
-    <section class="card panel" id="panel-favorites">
-      <div class="item-head" style="margin-bottom:10px">
-        <h2 style="margin:0">المفضلة</h2>
-        <button class="mini-btn" type="button" id="reloadFavBtn">تحديث</button>
-      </div>
-
-      <div class="list" id="favList"></div>
-    </section>
-
   </section>
 
-  <!-- Bottom actions (moved here) -->
   <section class="card" style="margin-top:14px">
     <div class="bottom-actions">
       <a class="btn primary" href="/post-ad">➕ نشر إعلان</a>
-      <button class="btn ghost" id="openPasswordBtn" type="button">🔒 تغيير كلمة السر</button>
       <button class="btn danger" id="logoutBtn" type="button">🚪 تسجيل الخروج</button>
     </div>
   </section>
 
 </div>
 
-<!-- KEEP SAME NAVIGATION (UNCHANGED) -->
 <nav class="modern-flat-nav">
   <a href="/" class="modern-flat-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -631,48 +533,22 @@
   </a>
 </nav>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Password Modal -->
-<div class="modal" id="pwdModal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3>تغيير كلمة السر</h3>
-      <button class="xbtn" id="closePwdModal" type="button">✕</button>
-    </div>
-
-    <div class="form-grid">
-      <div class="full">
-        <label>كلمة السر الحالية</label>
-        <input id="currentPwd" type="password" placeholder="••••••••" />
-      </div>
-      <div>
-        <label>كلمة السر الجديدة</label>
-        <input id="newPwd" type="password" placeholder="••••••••" />
-      </div>
-      <div>
-        <label>تأكيد كلمة السر</label>
-        <input id="confirmPwd" type="password" placeholder="••••••••" />
-      </div>
-      <div class="full">
-        <button class="btn primary" id="changePwdBtn" type="button">حفظ كلمة السر</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-  // ===== Config (change later from admin/settings) =====
-  const SUPPORT_WHATSAPP = "212778594654"; // ← بدّلها لرقمك الحقيقي
+  const SUPPORT_WHATSAPP = "212778594654";
 
-  // Helpers
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => Array.from(document.querySelectorAll(s));
+
   function apiOpts(method='GET', body=null){
     const opts = { method, credentials:'include', headers:{} };
-    if (body && !(body instanceof FormData)) { opts.headers['Content-Type']='application/json'; opts.body = JSON.stringify(body); }
-    else if (body instanceof FormData) opts.body = body;
+    if (body && !(body instanceof FormData)) {
+      opts.headers['Content-Type']='application/json';
+      opts.body = JSON.stringify(body);
+    } else if (body instanceof FormData) {
+      opts.body = body;
+    }
     return opts;
   }
 
@@ -682,7 +558,6 @@
     }[m]));
   }
 
-  // Toast
   const toastEl = qs('#toast');
   function toast(msg, ok=true){
     toastEl.textContent = msg;
@@ -690,15 +565,12 @@
     setTimeout(()=> toastEl.classList.remove('show'), 2600);
   }
 
-  // Panels switching
-  const tiles = qsa('.tile');
+  const tiles = qsa('.tile[data-tab]');
   const panels = {
     account: qs('#panel-account'),
     myads: qs('#panel-myads'),
     premium: qs('#panel-premium'),
-    notifications: qs('#panel-notifications'),
-    security: qs('#panel-security'),
-    favorites: qs('#panel-favorites'),
+    notifications: qs('#panel-notifications')
   };
 
   function openPanel(key){
@@ -709,21 +581,6 @@
 
   tiles.forEach(t => t.addEventListener('click', () => openPanel(t.dataset.tab)));
 
-  // Password modal
-  const pwdModal = qs('#pwdModal');
-  function openPwdModal(){
-    pwdModal.classList.add('show');
-    pwdModal.setAttribute('aria-hidden','false');
-  }
-  function closePwdModal(){
-    pwdModal.classList.remove('show');
-    pwdModal.setAttribute('aria-hidden','true');
-  }
-  qs('#openPasswordBtn').addEventListener('click', openPwdModal);
-  qs('#closePwdModal').addEventListener('click', closePwdModal);
-  pwdModal.addEventListener('click', (e)=> { if(e.target === pwdModal) closePwdModal(); });
-
-  // Avatar upload
   const avatarBox = qs('#avatarBox');
   const avatarInput = qs('#avatarInput');
   avatarBox.addEventListener('click', ()=> avatarInput.click());
@@ -781,12 +638,10 @@
     await Promise.allSettled([
       loadMyAds(),
       loadPremiumAdsSelect(),
-      loadNotifications(),
-      loadFavorites(),
+      loadNotifications()
     ]);
   }
 
-  // Save account (phone only)
   qs('#saveAccountBtn').addEventListener('click', async ()=>{
     if(!currentUser) return;
     const phone = (qs('#phoneInput').value || '').trim();
@@ -801,96 +656,61 @@
     }
   });
 
-// Avatar upload (FIXED)
-avatarInput.addEventListener('change', async (e) => {
-  if (!currentUser) return;
+  avatarInput.addEventListener('change', async (e) => {
+    if (!currentUser) return;
 
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
 
-  // ✅ validate type + size (اختياري ولكن مفيد)
-  const okTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
-  if (!okTypes.includes(file.type)) {
-    toast('المرجو رفع صورة (png/jpg/webp/gif) ❌', false);
-    avatarInput.value = '';
-    return;
-  }
-
-  const maxMb = 10;
-  if (file.size > maxMb * 1024 * 1024) {
-    toast('الصورة كبيرة بزاف (max 10MB) ❌', false);
-    avatarInput.value = '';
-    return;
-  }
-
-  try {
-    const fd = new FormData();
-    fd.append('avatar', file);
-
-    // ✅ مهم: ما تزيدش Content-Type يدويا مع FormData
-    const res = await fetch(
-      '/api/users/' + encodeURIComponent(currentUser.id) + '/avatar',
-      apiOpts('PUT', fd)
-    );
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      throw new Error(data?.message || data?.error || 'upload failed');
-    }
-
-    if (data.avatar) {
-      currentUser.avatar = data.avatar;
-      setAvatar(currentUser);
-      toast('تم تحديث الصورة ✅', true);
-    } else {
-      throw new Error('SERVER_NO_AVATAR_RETURNED');
-    }
-  } catch (err) {
-    console.error(err);
-    toast('فشل رفع الصورة ❌', false);
-  } finally {
-    avatarInput.value = '';
-  }
-});
-
-  // Change password
-  qs('#changePwdBtn').addEventListener('click', async ()=>{
-    const currentPassword = qs('#currentPwd').value;
-    const newPassword = qs('#newPwd').value;
-    const confirm = qs('#confirmPwd').value;
-
-    if(!newPassword || newPassword.length < 6){
-      toast('كلمة السر قصيرة (6 على الأقل)', false);
-      return;
-    }
-    if(newPassword !== confirm){
-      toast('تأكيد كلمة السر غير مطابق', false);
+    const okTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!okTypes.includes(file.type)) {
+      toast('المرجو رفع صورة (png/jpg/webp/gif) ❌', false);
+      avatarInput.value = '';
       return;
     }
 
-    try{
-      const res = await fetch('/api/auth/password', apiOpts('PATCH', { currentPassword, newPassword }));
-      if(!res.ok) throw new Error('pwd failed');
+    const maxMb = 10;
+    if (file.size > maxMb * 1024 * 1024) {
+      toast('الصورة كبيرة بزاف (max 10MB) ❌', false);
+      avatarInput.value = '';
+      return;
+    }
 
-      qs('#currentPwd').value = '';
-      qs('#newPwd').value = '';
-      qs('#confirmPwd').value = '';
-      closePwdModal();
-      toast('تم تغيير كلمة السر ✅', true);
-    }catch(e){
-      console.error(e);
-      toast('فشل تغيير كلمة السر ❌', false);
+    try {
+      const fd = new FormData();
+      fd.append('avatar', file);
+
+      const res = await fetch(
+        '/api/users/' + encodeURIComponent(currentUser.id) + '/avatar',
+        apiOpts('PUT', fd)
+      );
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.message || data?.error || 'upload failed');
+      }
+
+      if (data.avatar) {
+        currentUser.avatar = data.avatar;
+        setAvatar(currentUser);
+        toast('تم تحديث الصورة ✅', true);
+      } else {
+        throw new Error('SERVER_NO_AVATAR_RETURNED');
+      }
+    } catch (err) {
+      console.error(err);
+      toast('فشل رفع الصورة ❌', false);
+    } finally {
+      avatarInput.value = '';
     }
   });
 
-  // Logout
   qs('#logoutBtn').addEventListener('click', async ()=>{
     try{ await fetch('/api/auth/logout', apiOpts('POST')); } catch(e){}
     window.location.href = '/login';
   });
 
-  // ===== My Ads =====
   const myAdsList = qs('#myAdsList');
 
   async function loadMyAds(){
@@ -908,7 +728,6 @@ avatarInput.addEventListener('change', async (e) => {
   function adStatusPill(status){
     const s = String(status || 'published');
     if(s === 'published') return `<span class="pill ok">منشور</span>`;
-    if(s === 'hidden') return `<span class="pill warn">مخفي</span>`;
     if(s === 'pending') return `<span class="pill warn">قيد المراجعة</span>`;
     if(s === 'rejected') return `<span class="pill err">مرفوض</span>`;
     if(s === 'sold') return `<span class="pill ok">مباع</span>`;
@@ -954,8 +773,6 @@ avatarInput.addEventListener('change', async (e) => {
 
           <div class="item-actions">
             <a class="mini-btn primary" href="/edit-ad?id=${encodeURIComponent(id)}">✏️ تعديل</a>
-            <button class="mini-btn" type="button" onclick="toggleVisibility('${encodeURIComponent(id)}','${escapeHtml(status)}')">👁️ إخفاء/إظهار</button>
-            <button class="mini-btn warn" type="button" onclick="markSold('${encodeURIComponent(id)}')">✅ مباع</button>
             <button class="mini-btn danger" type="button" onclick="deleteAd('${encodeURIComponent(id)}')">🗑️ حذف</button>
           </div>
         </div>
@@ -981,36 +798,6 @@ avatarInput.addEventListener('change', async (e) => {
     }
   };
 
-  window.toggleVisibility = async (id, status)=>{
-    try{
-      const next = (status === 'hidden') ? 'published' : 'hidden';
-      const res = await fetch('/api/ads/' + id + '/visibility', apiOpts('PATCH', { status: next }));
-      if(!res.ok){
-        await fetch('/api/ads/' + id, apiOpts('PATCH', { status: next }));
-      }
-      toast('تم تحديث الحالة ✅', true);
-      loadMyAds();
-    }catch(e){
-      console.error(e);
-      toast('فشل تحديث الحالة ❌', false);
-    }
-  };
-
-  window.markSold = async (id)=>{
-    try{
-      const res = await fetch('/api/ads/' + id + '/sold', apiOpts('PATCH', { sold:true }));
-      if(!res.ok){
-        await fetch('/api/ads/' + id, apiOpts('PATCH', { status:'sold' }));
-      }
-      toast('تم تعيينه كمباع ✅', true);
-      loadMyAds();
-    }catch(e){
-      console.error(e);
-      toast('فشل العملية ❌', false);
-    }
-  };
-
-  // ===== Premium (WhatsApp direct) =====
   let chosenPlan = null;
 
   function planLabel(plan){
@@ -1055,7 +842,6 @@ avatarInput.addEventListener('change', async (e) => {
     }
   }
 
-  // ===== Notifications =====
   const notifList = qs('#notifList');
 
   async function loadNotifications(){
@@ -1109,59 +895,6 @@ avatarInput.addEventListener('change', async (e) => {
     }
   });
 
-  // ===== Favorites =====
-  const favList = qs('#favList');
-  async function loadFavorites(){
-    try{
-      const res = await fetch('/api/favorites', apiOpts());
-      if(!res.ok) throw new Error('no fav');
-      const favs = await res.json();
-      renderFavorites(favs);
-    }catch(e){
-      favList.innerHTML = `<div class="item"><div class="muted">لا توجد مفضلة حالياً.</div></div>`;
-    }
-  }
-
-  function renderFavorites(favs){
-    const arr = Array.isArray(favs) ? favs : [];
-    if(!arr.length){
-      favList.innerHTML = `<div class="item"><div class="muted">لا توجد مفضلة حالياً.</div></div>`;
-      return;
-    }
-
-    favList.innerHTML = arr.map(f=>{
-      const id = f.id || f._id || '';
-      const adId = f.adId || (f.ad && (f.ad.id || f.ad._id)) || '';
-      const title = (f.ad && f.ad.title) || f.title || 'إعلان';
-      return `
-        <div class="item">
-          <div class="item-head">
-            <p class="item-title">${escapeHtml(title)}</p>
-            <span class="pill">مفضلة</span>
-          </div>
-          <div class="item-actions">
-            <a class="mini-btn primary" href="/ad?id=${encodeURIComponent(adId)}">👁️ عرض</a>
-            <button class="mini-btn danger" type="button" onclick="removeFav('${encodeURIComponent(id)}')">🗑️ إزالة</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  qs('#reloadFavBtn').addEventListener('click', loadFavorites);
-
-  window.removeFav = async (id)=>{
-    try{
-      const res = await fetch('/api/favorites/' + id, apiOpts('DELETE'));
-      if(!res.ok) throw new Error('fail');
-      toast('تمت الإزالة ✅', true);
-      loadFavorites();
-    }catch(e){
-      toast('فشل الإزالة ❌', false);
-    }
-  };
-
-  // Init
   document.addEventListener('DOMContentLoaded', loadProfile);
 </script>
 </body>

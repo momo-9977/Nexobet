@@ -76,6 +76,8 @@ body{
   opacity:0;
   transition:opacity 0.6s ease;
   pointer-events:none;
+  display:block;
+  text-decoration:none;
 }
 
 .hero-slide.active{
@@ -335,32 +337,42 @@ async function loadHome(){
     if(sets.logoUrl) document.getElementById('mainLogo').src = absUrl(sets.logoUrl);
 
     // 2. Banner
-    const slides = await jget('/api/home/slides');
-    const hero = document.getElementById('heroBox');
-    const dots = document.getElementById('heroDots');
+const slides = await jget('/api/home/slides');
+const hero = document.getElementById('heroBox');
+const dots = document.getElementById('heroDots');
 
-    hero.querySelectorAll('.hero-slide').forEach(el => el.remove());
-    dots.innerHTML = '';
+hero.querySelectorAll('.hero-slide').forEach(el => el.remove());
+dots.innerHTML = '';
 
-    if(slides.length){
-      slides.forEach((s, i)=>{
-        const div = document.createElement('div');
-        div.className = `hero-slide ${i===0?'active':''}`;
+if(slides.length){
+  slides.forEach((s, i)=>{
+    const imageUrl = s.imageUrl || s.image_url || '';
+    const linkUrl  = (s.linkUrl || s.link_url || '').trim();
 
-        const img = document.createElement('img');
-        img.src = withCacheBust(s.imageUrl || '');
-        img.alt = '';
+    const slide = document.createElement(linkUrl ? 'a' : 'div');
+    slide.className = `hero-slide ${i===0 ? 'active' : ''}`;
 
-        div.appendChild(img);
-        hero.insertBefore(div, dots);
-
-        const dot = document.createElement('span');
-        if(i===0) dot.className = 'active';
-        dots.appendChild(dot);
-      });
-
-      startSlider();
+    if(linkUrl){
+      slide.href = linkUrl;
+      slide.target = '_self';
+      slide.style.textDecoration = 'none';
+      slide.style.cursor = 'pointer';
     }
+
+    const img = document.createElement('img');
+    img.src = withCacheBust(imageUrl);
+    img.alt = 'banner';
+
+    slide.appendChild(img);
+    hero.insertBefore(slide, dots);
+
+    const dot = document.createElement('span');
+    if(i===0) dot.className = 'active';
+    dots.appendChild(dot);
+  });
+
+  startSlider();
+}
 
     // 3. Featured
     const feats = await jget('/api/ads/featured');

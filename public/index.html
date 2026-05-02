@@ -1,335 +1,625 @@
 <!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
+
 <head>
+
 <meta charset="utf-8"/>
+
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"/>
+
 <title>سمسار - الرئيسية</title>
 
+
+
 <style>
+
 :root{
+
   --bg-main:#0a0f1d;
+
   --card-bg:#161e2d;
+
   --card-border:rgba(255,255,255,0.06);
+
   --text-white:#ffffff;
+
   --text-muted:#94a3b8;
+
   --accent:#3b82f6;
+
   --accent-light:#60a5fa;
+
   --premium:#fbbf24;
+
   --danger:#ef4444;
+
 }
+
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+
 body{
+
   margin:0;
+
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
   background-color: var(--bg-main);
+
   color:var(--text-white);
+
   padding-bottom:90px;
+
 }
+
 .page{max-width:600px; margin:0 auto; padding:15px;}
 
+
+
 /* ================= HEADER ================= */
+
 .header-bar{
+
   display:flex; justify-content:space-between; align-items:center;
+
   padding:10px 5px; margin-bottom:15px;
+
 }
+
 .brand-info{ display:flex; align-items:center; gap:10px; }
+
 .logo-circle{
+
   width:45px; height:45px; border-radius:12px;
+
   background: white; display:flex; align-items:center; justify-content:center;
+
   overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.2);
+
 }
+
 .logo-circle img{ width:85%; height:85%; object-fit:contain; }
 
+
+
 .title-texts h1{ margin:0; font-size:17px; font-weight:800; }
+
 .title-texts p{ margin:0; font-size:11px; color:var(--text-muted); }
 
+
+
 .top-actions{ display:flex; gap:8px; }
+
 .round-btn{
+
   width:38px; height:38px; border-radius:10px;
+
   background: rgba(255,255,255,0.05); border:none;
+
   display:flex; align-items:center; justify-content:center;
+
   color:white; position:relative; text-decoration:none;
+
 }
+
 .notif-dot{
+
   position:absolute; top:8px; left:8px;
+
   width:8px; height:8px; background:var(--danger);
+
   border-radius:50%; border:2px solid var(--bg-main); display:none;
+
 }
+
 .has-unread .notif-dot{display:block;}
 
+
+
 /* ================= HERO BANNER ================= */
+
 .hero-container{
-  position: relative; /* تمت الإضافة لضبط الصور داخله */
-  height: 180px;
-  overflow: hidden;
-  border-radius: 15px; /* لمسة جمالية تتناسب مع التصميم */
-  margin-bottom: 25px;
+
+  height:180px;
+
+  overflow:hidden;
+
 }
 
-/* تمت إضافة هذه الكلاسات للتحكم في عرض الصور فوق بعضها */
-.hero-slide {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.5s ease-in-out;
-}
 
-.hero-slide.active {
-  opacity: 1;
-  z-index: 1;
-}
 
 .hero-slide img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* يحافظ على مقاسات الصورة بدون تشويه */
-  object-position: center;
+
+  width:100%;
+
+  height:100%;
+
+  object-fit:cover; /* رجعها cover */
+
 }
+
+
 
 .hero-indicators{
-  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 5px; z-index: 5;
+
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+
+  display:flex; gap:5px; z-index:5;
+
 }
+
 .hero-indicators span{
-  width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4);
-  transition: 0.3s;
+
+  width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3);
+
 }
-.hero-indicators span.active{ background: white; width: 15px; border-radius: 4px; }
+
+.hero-indicators span.active{ background:white; width:15px; border-radius:4px; }
+
+
 
 /* ================= SEARCH BAR ================= */
+
 .search-wrapper{
+
   position:relative; margin-bottom:25px;
+
 }
+
 .search-input{
+
   width:100%; background:var(--card-bg); border:1px solid var(--card-border);
+
   padding:12px 45px 12px 15px; border-radius:15px; color:white;
+
   font-size:14px; outline:none; transition:0.3s;
+
 }
+
 .search-input:focus{ border-color:var(--accent); background:rgba(59,130,246,0.05); }
+
 .search-icon{
+
   position:absolute; right:15px; top:50%; transform:translateY(-50%);
+
   color:var(--text-muted); pointer-events:none;
+
 }
+
+
 
 /* ================= SECTIONS ================= */
+
 .section-title{
+
   display:flex; justify-content:space-between; align-items:center;
+
   margin-bottom:12px; padding:0 5px;
+
 }
+
 .section-title h2{ margin:0; font-size:16px; font-weight:700; color:var(--text-white); }
+
 .section-title a{ font-size:12px; color:var(--accent-light); text-decoration:none; }
 
+
+
 .ads-scroll-grid{
+
   display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+
   margin-bottom:25px;
+
 }
+
+
 
 /* ================= AD CARD ================= */
+
 .ad-item{
+
   background:var(--card-bg); border-radius:18px; overflow:hidden;
+
   text-decoration:none; color:inherit; border:1px solid var(--card-border);
+
   transition:0.2s; position:relative;
+
 }
+
 .ad-item:active{ transform:scale(0.97); }
+
 .ad-thumb{ width:100%; height:130px; object-fit:cover; background:#000; }
+
 .ad-info{ padding:10px; }
-.ad-name{ 
-  font-size:13px; font-weight:600; margin:0; 
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; 
+
+.ad-name{
+
+  font-size:13px; font-weight:600; margin:0;
+
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+
 }
+
 .ad-val{ font-size:14px; font-weight:800; color:var(--accent-light); margin-top:4px; }
+
 .feat-tag{
+
   position:absolute; top:8px; left:8px; background:var(--premium);
+
   color:black; font-size:9px; font-weight:900; padding:3px 7px; border-radius:6px;
+
 }
+
+
 
 /* ================= BOTTOM NAV ================= */
+
 .bottom-nav {
+
   position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
+
   background: #ffffff; display: flex; align-items: center;
+
   justify-content: space-around; z-index: 1000; border-top: 1px solid #eee;
+
   padding-bottom: env(safe-area-inset-bottom);
+
 }
+
 .nav-link {
+
   display: flex; flex-direction: column; align-items: center;
+
   text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 600; gap:4px;
+
 }
+
 .nav-link.active { color: #16a34a; }
+
 .nav-link svg { width: 22px; height: 22px; }
 
+
+
 /* Empty State */
+
 .empty-msg{ text-align:center; padding:30px; color:var(--text-muted); font-size:13px; }
+
 </style>
+
 </head>
+
+
 
 <body>
 
+
+
 <div class="page">
+
   <header class="header-bar">
+
     <div class="brand-info">
+
       <div class="logo-circle" id="logoWrap">
+
         <img src="" id="mainLogo" alt="">
+
       </div>
+
       <div class="title-texts">
+
         <h1 id="pName">Samsar</h1>
+
         <p id="pSub">بيع واشتري بكل سهولة</p>
+
       </div>
+
     </div>
+
     <div class="top-actions">
+
       <a href="/support" class="round-btn">
+
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.38 8.38 0 0 1 3.8.9"></path><path d="M18 10l-4 4-2-2"></path></svg>
+
       </a>
+
       <a href="/profile" class="round-btn" id="notifArea">
+
         <div class="notif-dot"></div>
+
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+
       </a>
+
     </div>
+
   </header>
 
+
+
   <div class="hero-container" id="heroBox">
+
     <div class="hero-indicators" id="heroDots"></div>
+
   </div>
+
+
 
   <div class="search-wrapper">
+
     <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+
     <input type="text" class="search-input" id="searchIn" placeholder="عن ماذا تبحث اليوم؟">
+
   </div>
 
-  <section>
-    <div class="section-title">
-      <h2>إعلانات مميزة ⭐</h2>
-    </div>
-    <div class="ads-scroll-grid" id="featGrid"></div>
-  </section>
+
 
   <section>
+
     <div class="section-title">
-      <h2>أحدث الإعلانات</h2>
-      <a href="/categories">عرض الكل</a>
+
+      <h2>إعلانات مميزة ⭐</h2>
+
     </div>
-    <div class="ads-scroll-grid" id="lastGrid"></div>
+
+    <div class="ads-scroll-grid" id="featGrid"></div>
+
   </section>
+
+
+
+  <section>
+
+    <div class="section-title">
+
+      <h2>أحدث الإعلانات</h2>
+
+      <a href="/categories">عرض الكل</a>
+
+    </div>
+
+    <div class="ads-scroll-grid" id="lastGrid"></div>
+
+  </section>
+
 </div>
 
+
+
 <nav class="bottom-nav">
+
   <a href="/" class="nav-link active">
+
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+
     <span>الرئيسية</span>
+
   </a>
+
   <a href="/categories" class="nav-link">
+
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+
     <span>الأقسام</span>
+
   </a>
+
   <a href="/post-ad" class="nav-link">
+
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+
     <span>نشر</span>
+
   </a>
+
   <a href="/profile" class="nav-link">
+
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+
     <span>بروفايل</span>
+
   </a>
+
 </nav>
 
+
+
 <script>
+
 // الحفاظ على دوال السيرفر الأصلية
+
 async function jget(url){
+
   const res = await fetch(url, { credentials:'include', cache:'no-store' });
+
   return await res.json();
+
 }
+
+
 
 function absUrl(u){
+
   if(!u) return '';
+
   return /^https?:\/\//i.test(u) || u.startsWith('data:') ? u : (u.startsWith('/') ? u : '/' + u);
+
 }
+
+
 
 function formatPrice(p){
+
   return p ? Number(p).toLocaleString('fr-MA') + ' د.م' : '--';
+
 }
+
+
 
 function renderCard(ad, isFeat){
+
   const img = ad.image || (ad.images && ad.images[0]) || '';
+
   return `
+
     <a href="/ad?id=${ad.id}" class="ad-item">
+
       ${isFeat ? '<div class="feat-tag">مميز</div>' : ''}
+
       <img src="${absUrl(img)}" class="ad-thumb" loading="lazy">
+
       <div class="ad-info">
+
         <p class="ad-name">${ad.title || 'بدون عنوان'}</p>
+
         <div class="ad-val">${formatPrice(ad.price)}</div>
+
       </div>
+
     </a>
+
   `;
+
 }
+
+
 
 // تحميل البيانات
+
 async function loadHome(){
+
   try {
+
     // 1. Settings
+
     const sets = await jget('/api/settings');
+
     document.getElementById('pName').textContent = sets.platformName || 'Samsar';
+
     document.getElementById('pSub').textContent = sets.subtitle || 'بيع واشتري بسهولة';
+
     if(sets.logoUrl) document.getElementById('mainLogo').src = absUrl(sets.logoUrl);
 
+
+
     // 2. Banner
+
     const slides = await jget('/api/home/slides');
+
     const hero = document.getElementById('heroBox');
+
     const dots = document.getElementById('heroDots');
+
     if(slides.length){
+
       slides.forEach((s, i)=>{
+
         const div = document.createElement('div');
+
         div.className = `hero-slide ${i===0?'active':''}`;
+
         div.innerHTML = `<img src="${absUrl(s.imageUrl)}">`;
+
         hero.appendChild(div);
-        
+
+       
+
         const dot = document.createElement('span');
+
         if(i===0) dot.className = 'active';
+
         dots.appendChild(dot);
+
       });
+
       startSlider();
+
     }
 
+
+
     // 3. Featured
+
     const feats = await jget('/api/ads/featured');
+
     document.getElementById('featGrid').innerHTML = feats.length ? feats.map(a=>renderCard(a, true)).join('') : '<div class="empty-msg">لا توجد إعلانات مميزة حالياً</div>';
 
+
+
     // 4. Latest
+
     const lasts = await jget('/api/ads');
+
     document.getElementById('lastGrid').innerHTML = lasts.length ? lasts.map(a=>renderCard(a, false)).join('') : '<div class="empty-msg">لا توجد إعلانات</div>';
 
+
+
     // 5. Notifs
+
     const notifs = await jget('/api/notifications');
+
     const hasUnread = notifs.some(n => n.read === false || n.unread === true);
+
     if(hasUnread) document.getElementById('notifArea').classList.add('has-unread');
 
+
+
   } catch(e) { console.log(e); }
+
 }
+
+
 
 function startSlider(){
+
   let cur = 0;
+
   const items = document.querySelectorAll('.hero-slide');
+
   const dots = document.querySelectorAll('.hero-indicators span');
+
   if(items.length < 2) return;
+
   setInterval(()=>{
+
     items[cur].classList.remove('active');
+
     dots[cur].classList.remove('active');
+
     cur = (cur + 1) % items.length;
+
     items[cur].classList.add('active');
+
     dots[cur].classList.add('active');
+
   }, 4000);
+
 }
 
+
+
 // Search Trigger
+
 document.getElementById('searchIn').addEventListener('keypress', (e)=>{
+
   if(e.key === 'Enter'){
+
     const q = e.target.value.trim();
+
     if(q) window.location.href = '/categories?q=' + encodeURIComponent(q);
+
   }
+
 });
 
+
+
 loadHome();
+
 </script>
 
+
+
 </body>
-</html>

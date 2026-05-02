@@ -58,26 +58,65 @@ body{
 .has-unread .notif-dot{display:block;}
 
 /* ================= HERO BANNER ================= */
+/* ✅ تم إصلاح البانر فقط:
+   - بلا border
+   - بلا frame
+   - height ديناميكي حسب الصورة
+   - الصورة كاملة بلا crop
+*/
 .hero-container{
-  position:relative; width:100%; height:180px;
-  border-radius:20px; overflow:hidden;
-  box-shadow:0 10px 25px rgba(0,0,0,0.3);
-  margin-bottom:20px; border:1px solid var(--card-border);
+  position:relative;
+  width:100%;
+  margin-bottom:20px;
+  overflow:hidden;
+  border:none;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  aspect-ratio: 16 / 9; /* fallback فقط */
 }
+
 .hero-slide{
-  position:absolute; inset:0; opacity:0; transition:opacity 0.6s ease;
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:opacity 0.6s ease;
+  pointer-events:none;
 }
-.hero-slide.active{ opacity:1; }
-.hero-slide img{ width:100%; height:100%; object-fit:cover; }
+
+.hero-slide.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.hero-slide img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;   /* ✅ يظهر الصورة كاملة */
+  object-position:center;
+  background:transparent;
+}
 
 .hero-indicators{
-  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
-  display:flex; gap:5px; z-index:5;
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:5px;
+  z-index:5;
 }
 .hero-indicators span{
-  width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3);
+  width:6px; height:6px; border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  transition:all .25s ease;
 }
-.hero-indicators span.active{ background:white; width:15px; border-radius:4px; }
+.hero-indicators span.active{
+  background:white;
+  width:15px;
+  border-radius:4px;
+}
 
 /* ================= SEARCH BAR ================= */
 .search-wrapper{
@@ -225,6 +264,12 @@ function absUrl(u){
   return /^https?:\/\//i.test(u) || u.startsWith('data:') ? u : (u.startsWith('/') ? u : '/' + u);
 }
 
+function withCacheBust(u){
+  const v = absUrl(u);
+  if(!v || v.startsWith('data:')) return v;
+  return v + (v.includes('?') ? '&' : '?') + 'v=' + Date.now();
+}
+
 function formatPrice(p){
   return p ? Number(p).toLocaleString('fr-MA') + ' د.م' : '--';
 }
@@ -243,6 +288,60 @@ function renderCard(ad, isFeat){
   `;
 }
 
+/* ===========================
+   إصلاح البانر فقط
+=========================== */
+let heroTimer = null;
+
+function setHeroRatio(imgEl){
+  const hero = document.getElementById('heroBox');
+  if(!imgEl || !imgEl.naturalWidth || !imgEl.naturalHeight) return;
+  hero.style.aspectRatio = `${imgEl.naturalWidth} / ${imgEl.naturalHeight}`;
+}
+
+function applyCurrentHeroRatio(slides, index){
+  const img = slides[index]?.querySelector('img');
+  if(!img) return;
+
+  if(img.complete && img.naturalWidth){
+    setHeroRatio(img);
+  }else{
+    img.addEventListener('load', () => setHeroRatio(img), { once:true });
+  }
+}
+
+function startSlider(){
+  const items = Array.from(document.querySelectorAll('.hero-slide'));
+  const dots = Array.from(document.querySelectorAll('.hero-indicators span'));
+
+  if(!items.length) return;
+
+  let cur = 0;
+  applyCurrentHeroRatio(items, cur);
+
+  if(items.length < 2) return;
+
+  function goTo(nextIndex){
+    items[cur].classList.remove('active');
+    dots[cur].classList.remove('active');
+
+    cur = nextIndex;
+
+    items[cur].classList.add('active');
+    dots[cur].classList.add('active');
+    applyCurrentHeroRatio(items, cur);
+  }
+
+  if(heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(()=>{
+    goTo((cur + 1) % items.length);
+  }, 4000);
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => goTo(i));
+  });
+}
+
 // تحميل البيانات
 async function loadHome(){
   try {
@@ -256,48 +355,54 @@ async function loadHome(){
     const slides = await jget('/api/home/slides');
     const hero = document.getElementById('heroBox');
     const dots = document.getElementById('heroDots');
+
+    hero.querySelectorAll('.hero-slide').forEach(el => el.remove());
+    dots.innerHTML = '';
+
     if(slides.length){
       slides.forEach((s, i)=>{
         const div = document.createElement('div');
         div.className = `hero-slide ${i===0?'active':''}`;
-        div.innerHTML = `<img src="${absUrl(s.imageUrl)}">`;
-        hero.appendChild(div);
-        
+
+        const img = document.createElement('img');
+        img.src = withCacheBust(s.imageUrl || '');
+        img.alt = '';
+
+        div.appendChild(img);
+        hero.insertBefore(div, dots);
+
         const dot = document.createElement('span');
         if(i===0) dot.className = 'active';
         dots.appendChild(dot);
       });
+
       startSlider();
     }
 
     // 3. Featured
     const feats = await jget('/api/ads/featured');
-    document.getElementById('featGrid').innerHTML = feats.length ? feats.map(a=>renderCard(a, true)).join('') : '<div class="empty-msg">لا توجد إعلانات مميزة حالياً</div>';
+    document.getElementById('featGrid').innerHTML =
+      feats.length
+        ? feats.map(a=>renderCard(a, true)).join('')
+        : '<div class="empty-msg">لا توجد إعلانات مميزة حالياً</div>';
 
     // 4. Latest
     const lasts = await jget('/api/ads');
-    document.getElementById('lastGrid').innerHTML = lasts.length ? lasts.map(a=>renderCard(a, false)).join('') : '<div class="empty-msg">لا توجد إعلانات</div>';
+    document.getElementById('lastGrid').innerHTML =
+      lasts.length
+        ? lasts.map(a=>renderCard(a, false)).join('')
+        : '<div class="empty-msg">لا توجد إعلانات</div>';
 
     // 5. Notifs
-    const notifs = await jget('/api/notifications');
-    const hasUnread = notifs.some(n => n.read === false || n.unread === true);
-    if(hasUnread) document.getElementById('notifArea').classList.add('has-unread');
+    try{
+      const notifs = await jget('/api/notifications');
+      const hasUnread = Array.isArray(notifs) && notifs.some(n => n.read === false || n.unread === true);
+      if(hasUnread) document.getElementById('notifArea').classList.add('has-unread');
+    }catch(_){}
 
-  } catch(e) { console.log(e); }
-}
-
-function startSlider(){
-  let cur = 0;
-  const items = document.querySelectorAll('.hero-slide');
-  const dots = document.querySelectorAll('.hero-indicators span');
-  if(items.length < 2) return;
-  setInterval(()=>{
-    items[cur].classList.remove('active');
-    dots[cur].classList.remove('active');
-    cur = (cur + 1) % items.length;
-    items[cur].classList.add('active');
-    dots[cur].classList.add('active');
-  }, 4000);
+  } catch(e) {
+    console.log(e);
+  }
 }
 
 // Search Trigger

@@ -58,22 +58,16 @@ body{
 .has-unread .notif-dot{display:block;}
 
 /* ================= HERO BANNER ================= */
-/* ✅ تم إصلاح البانر فقط:
-   - بلا border
-   - بلا frame
-   - height ديناميكي حسب الصورة
-   - الصورة كاملة بلا crop
-*/
 .hero-container{
   position:relative;
   width:100%;
+  height:clamp(150px, 30vw, 210px);
   margin-bottom:20px;
   overflow:hidden;
   border:none;
-  border-radius:0;
-  box-shadow:none;
-  background:transparent;
-  aspect-ratio: 16 / 9; /* fallback فقط */
+  border-radius:18px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.28);
+  background:#0f172a;
 }
 
 .hero-slide{
@@ -93,9 +87,8 @@ body{
   width:100%;
   height:100%;
   display:block;
-  object-fit:contain;   /* ✅ يظهر الصورة كاملة */
+  object-fit:cover;
   object-position:center;
-  background:transparent;
 }
 
 .hero-indicators{
@@ -108,8 +101,10 @@ body{
   z-index:5;
 }
 .hero-indicators span{
-  width:6px; height:6px; border-radius:50%;
-  background:rgba(255,255,255,0.3);
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.35);
   transition:all .25s ease;
 }
 .hero-indicators span.active{
@@ -155,9 +150,9 @@ body{
 .ad-item:active{ transform:scale(0.97); }
 .ad-thumb{ width:100%; height:130px; object-fit:cover; background:#000; }
 .ad-info{ padding:10px; }
-.ad-name{ 
-  font-size:13px; font-weight:600; margin:0; 
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; 
+.ad-name{
+  font-size:13px; font-weight:600; margin:0;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .ad-val{ font-size:14px; font-weight:800; color:var(--accent-light); margin-top:4px; }
 .feat-tag{
@@ -181,6 +176,13 @@ body{
 
 /* Empty State */
 .empty-msg{ text-align:center; padding:30px; color:var(--text-muted); font-size:13px; }
+
+@media (max-width:480px){
+  .hero-container{
+    height:170px;
+    border-radius:16px;
+  }
+}
 </style>
 </head>
 
@@ -289,26 +291,9 @@ function renderCard(ad, isFeat){
 }
 
 /* ===========================
-   إصلاح البانر فقط
+   Slider
 =========================== */
 let heroTimer = null;
-
-function setHeroRatio(imgEl){
-  const hero = document.getElementById('heroBox');
-  if(!imgEl || !imgEl.naturalWidth || !imgEl.naturalHeight) return;
-  hero.style.aspectRatio = `${imgEl.naturalWidth} / ${imgEl.naturalHeight}`;
-}
-
-function applyCurrentHeroRatio(slides, index){
-  const img = slides[index]?.querySelector('img');
-  if(!img) return;
-
-  if(img.complete && img.naturalWidth){
-    setHeroRatio(img);
-  }else{
-    img.addEventListener('load', () => setHeroRatio(img), { once:true });
-  }
-}
 
 function startSlider(){
   const items = Array.from(document.querySelectorAll('.hero-slide'));
@@ -317,7 +302,6 @@ function startSlider(){
   if(!items.length) return;
 
   let cur = 0;
-  applyCurrentHeroRatio(items, cur);
 
   if(items.length < 2) return;
 
@@ -329,7 +313,6 @@ function startSlider(){
 
     items[cur].classList.add('active');
     dots[cur].classList.add('active');
-    applyCurrentHeroRatio(items, cur);
   }
 
   if(heroTimer) clearInterval(heroTimer);

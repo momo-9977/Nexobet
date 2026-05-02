@@ -59,24 +59,45 @@ body{
 
 /* ================= HERO BANNER ================= */
 .hero-container{
-  height:180px;
-  overflow:hidden;
+  position: relative; /* تمت الإضافة لضبط الصور داخله */
+  height: 180px;
+  overflow: hidden;
+  border-radius: 15px; /* لمسة جمالية تتناسب مع التصميم */
+  margin-bottom: 25px;
+}
+
+/* تمت إضافة هذه الكلاسات للتحكم في عرض الصور فوق بعضها */
+.hero-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  z-index: 1;
 }
 
 .hero-slide img{
-  width:100%;
-  height:100%;
-  object-fit:cover; /* رجعها cover */
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* يحافظ على مقاسات الصورة بدون تشويه */
+  object-position: center;
 }
 
 .hero-indicators{
-  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
-  display:flex; gap:5px; z-index:5;
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 5px; z-index: 5;
 }
 .hero-indicators span{
-  width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3);
+  width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4);
+  transition: 0.3s;
 }
-.hero-indicators span.active{ background:white; width:15px; border-radius:4px; }
+.hero-indicators span.active{ background: white; width: 15px; border-radius: 4px; }
 
 /* ================= SEARCH BAR ================= */
 .search-wrapper{
